@@ -203,6 +203,9 @@ let rec print_expr indent expr =
       print_expr (indent + 2) c;
       print_expr (indent + 2) t;
       print_expr (indent + 2) f
+  | New(class_name, args) ->
+      Printf.printf "%sNew: %s\n" prefix class_name;
+      List.iter (print_expr (indent + 2)) args
 
 let rec print_stmt indent stmt =
   let prefix = String.make indent ' ' in

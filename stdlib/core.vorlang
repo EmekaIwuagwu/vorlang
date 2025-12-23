@@ -1,4 +1,3 @@
-module Core
 
 /** 
  * Returns the type name of the given value.

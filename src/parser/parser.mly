@@ -10,6 +10,10 @@
       | (Ast.ModuleDecl m) :: rest -> aux (Ast.DModule m :: decls) bdy rest
       | s :: rest -> aux decls (s :: bdy) rest
     in aux [] [] stmts
+  let rec flatten_member_access = function
+    | Ast.Identifier id -> id
+    | Ast.MemberAccess(e, id) -> flatten_member_access e ^ "." ^ id
+    | _ -> failwith "not a member access"
 %}
 
 %token <string> IDENTIFIER
@@ -291,10 +295,10 @@ postfix_expr:
   | postfix_expr DOT any_id %prec DOT { MemberAccess($1, $3) }
   | postfix_expr LBRACKET expr RBRACKET %prec LBRACKET { IndexAccess($1, $3) }
   | postfix_expr LPAREN expr_list RPAREN %prec LPAREN { 
-      match $1 with
-      | Identifier id -> FunctionCall(id, $3)
-      | MemberAccess(Identifier modname, funcname) -> FunctionCall(modname ^ "." ^ funcname, $3)
-      | _ -> FunctionCall("DynamicCall", $3) 
+      try 
+        let name = flatten_member_access $1 in
+        FunctionCall(name, $3)
+      with _ -> FunctionCall("DynamicCall", $3) 
     }
 ;
 

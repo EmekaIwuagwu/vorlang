@@ -18,9 +18,9 @@ begin
     var s = JSON.stringify(data)
     print("JSON: " + s)
 
-    // print("Testing Collections...")
-    // var list = [1, 2, 3]
-    // Collections.push(list, 4)
-    // print("list[3] = " + str(list[3]))
-    // print("Collections.first(list) = " + str(Collections.first(list)))
+    print("Testing Collections...")
+    var list = [1, 2, 3]
+    Collections.push(list, 4)
+    print("list[3] = " + str(list[3]))
+    print("Collections.first(list) = " + str(Collections.first(list)))
 end

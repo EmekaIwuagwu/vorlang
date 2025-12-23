@@ -45,61 +45,62 @@ let parse_file filename =
       close_in ic;
       raise (Parse_error msg)
 
-let rec prefix_calls_in_expr prefix names expr =
-  let p = prefix_calls_in_expr prefix names in
+let rec prefix_calls_in_expr prefix global_names local_names expr =
+  let p = prefix_calls_in_expr prefix global_names local_names in
   match expr with
   | Literal _ -> expr
-  | Identifier id -> if List.mem id names then Identifier (prefix ^ "." ^ id) else expr
+  | Identifier id -> 
+      if List.mem id local_names then Identifier id
+      else if List.mem id global_names then Identifier (prefix ^ "." ^ id) 
+      else expr
   | BinaryOp(op, l, r) -> BinaryOp(op, p l, p r)
   | UnaryOp(op, e) -> UnaryOp(op, p e)
   | Assignment(l, r) -> Assignment(p l, p r)
   | FunctionCall(name, args) ->
-      let new_name = if List.mem name names then prefix ^ "." ^ name else name in
+      let is_prefixed = String.contains name '.' in
+      let new_name = 
+        if is_prefixed || List.mem name local_names then name
+        else if List.mem name global_names then prefix ^ "." ^ name 
+        else name in
       FunctionCall(new_name, List.map p args)
   | MemberAccess(e, m) -> MemberAccess(p e, m)
   | IndexAccess(e, i) -> IndexAccess(p e, p i)
   | ListLiteral elts -> ListLiteral (List.map p elts)
   | MapLiteral pairs -> MapLiteral (List.map (fun (k, v) -> (p k, p v)) pairs)
   | TupleLiteral elts -> TupleLiteral (List.map p elts)
-  | Lambda(params, body) -> Lambda(params, p body)
+  | Lambda(params, body) -> Lambda(params, prefix_calls_in_expr prefix global_names (params @ local_names) body)
   | Conditional(c, t, e) -> Conditional(p c, p t, p e)
+  | New(cls, args) -> 
+      let new_cls = if List.mem cls global_names && not (List.mem cls local_names) then prefix ^ "." ^ cls else cls in
+      New(new_cls, List.map p args)
 
-let rec prefix_calls_in_stmt prefix names stmt =
-  let p_e = prefix_calls_in_expr prefix names in
-  let p_s = prefix_calls_in_stmt prefix names in
+let rec prefix_calls_in_stmt prefix global_names local_names stmt =
+  let p_e = prefix_calls_in_expr prefix global_names local_names in
+  let p_s = prefix_calls_in_stmt prefix global_names local_names in
   match stmt with
   | ExprStmt e -> ExprStmt (p_e e)
   | VarDecl(n, t, e) -> VarDecl(n, t, Option.map p_e e)
   | ConstDecl(n, t, e) -> ConstDecl(n, t, p_e e)
   | AssignStmt(l, r) -> AssignStmt(p_e l, p_e r)
   | BlockStmt stmts -> BlockStmt (List.map p_s stmts)
-  | IfStmt(c, t, e) -> IfStmt(p_e c, p_s t, Option.map p_s e)
+  | IfStmt(c, t, e) -> IfStmt(p_e c, p_s t, Option.map (prefix_calls_in_stmt prefix global_names local_names) e)
   | WhileStmt(c, b) -> WhileStmt(p_e c, p_s b)
-  | ForStmt (ForEach(id, e, b)) -> ForStmt (ForEach(id, p_e e, p_s b))
-  | ForStmt (ForRange(id, s, e, b)) -> ForStmt (ForRange(id, p_e s, p_e e, p_s b))
-  | FunctionDecl f -> FunctionDecl { f with body = List.map p_s f.body }
+  | ForStmt (ForEach(id, e, b)) -> 
+      let inner_local = id :: local_names in
+      ForStmt (ForEach(id, p_e e, prefix_calls_in_stmt prefix global_names inner_local b))
+  | ForStmt (ForRange(id, s, e, b)) -> 
+      let inner_local = id :: local_names in
+      ForStmt (ForRange(id, p_e s, p_e e, prefix_calls_in_stmt prefix global_names inner_local b))
+  | FunctionDecl f -> 
+      let params = List.map (fun (n, _, _) -> n) f.params in
+      FunctionDecl { f with body = List.map (prefix_calls_in_stmt prefix global_names (params @ local_names)) f.body }
   | ReturnStmt e -> ReturnStmt (Option.map p_e e)
   | TryStmt(b, catches, fin) ->
-      TryStmt(p_s b, List.map (fun (id, s) -> (id, p_s s)) catches, Option.map p_s fin)
+      TryStmt(p_s b, 
+              List.map (fun (id, s) -> (id, prefix_calls_in_stmt prefix global_names (id :: local_names) s)) catches, 
+              Option.map p_s fin)
   | ThrowStmt e -> ThrowStmt (p_e e)
   | _ -> stmt
-
-let rec prefix_declarations prefix names decls =
-  List.map (fun decl ->
-    match decl with
-    | DFunction f -> 
-        let new_name = if String.contains f.name '.' then f.name else prefix ^ "." ^ f.name in
-        DFunction { f with name = new_name; body = List.map (prefix_calls_in_stmt prefix names) f.body }
-    | DClass c -> 
-        let new_name = if String.contains c.name '.' then c.name else prefix ^ "." ^ c.name in
-        DClass { c with name = new_name }
-    | DContract c -> 
-        let new_name = if String.contains c.name '.' then c.name else prefix ^ "." ^ c.name in
-        DContract { c with name = new_name }
-    | DModule m -> 
-        let new_name = if String.contains m.name '.' then m.name else prefix ^ "." ^ m.name in
-        DModule { m with name = new_name; declarations = prefix_declarations prefix names m.declarations }
-  ) decls
 
 let rec get_declaration_names decls =
   List.map (fun decl ->
@@ -108,6 +109,27 @@ let rec get_declaration_names decls =
     | DClass c -> c.name
     | DContract c -> c.name
     | DModule m -> m.name
+  ) decls
+
+let rec prefix_declarations prefix names decls =
+  List.map (fun decl ->
+    match decl with
+    | DFunction f -> 
+        let new_name = if String.contains f.name '.' then f.name else prefix ^ "." ^ f.name in
+        let params = List.map (fun (n, _, _) -> n) f.params in
+        DFunction { f with name = new_name; body = List.map (prefix_calls_in_stmt prefix names params) f.body }
+    | DClass c -> 
+        let new_name = if String.contains c.name '.' then c.name else prefix ^ "." ^ c.name in
+        DClass { c with name = new_name }
+    | DContract c -> 
+        let new_name = if String.contains c.name '.' then c.name else prefix ^ "." ^ c.name in
+        DContract { c with name = new_name }
+    | DModule m -> 
+        let full_name = if m.name = prefix || String.starts_with ~prefix:(prefix ^ ".") m.name 
+                        then m.name 
+                        else prefix ^ "." ^ m.name in
+        let inner_names = get_declaration_names m.declarations in
+        DModule { name = full_name; declarations = prefix_declarations full_name inner_names m.declarations }
   ) decls
 
 let rec resolve_imports (p : Ast.program) : Ast.program =
@@ -141,7 +163,22 @@ let rec resolve_imports (p : Ast.program) : Ast.program =
     )
   in
   List.iter load_import p.imports;
-  { p with declarations = !resolved_declarations }
+  (* Process local declarations to prefix internal modules/classes if they are nested *)
+  let names = get_declaration_names !resolved_declarations in
+  let local_prefixed = List.map (fun decl ->
+    match decl with
+    | DModule m -> 
+        let inner_names = get_declaration_names m.declarations in
+        DModule { m with declarations = prefix_declarations m.name inner_names m.declarations }
+    | DFunction f ->
+        let params = List.map (fun (n, _, _) -> n) f.params in
+        DFunction { f with body = List.map (prefix_calls_in_stmt p.name names params) f.body }
+    | _ -> decl
+  ) !resolved_declarations in
+  
+  let body_prefixed = List.map (prefix_calls_in_stmt p.name names []) p.body in
+  
+  { p with declarations = local_prefixed; body = body_prefixed }
 
 let parse_file_with_imports filename =
   let p = parse_file filename in

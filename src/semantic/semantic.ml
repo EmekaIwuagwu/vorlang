@@ -73,6 +73,34 @@ let lookup_symbol env name =
           find s.parent
   in
   find (Some env.current_scope)
+  
+let rec resolve_dotted scope parts prefix =
+  match parts with
+  | [] -> None
+  | [last] -> 
+      let full_name = if prefix = "" then last else prefix ^ "." ^ last in
+      Hashtbl.find_opt scope.symbols full_name
+  | head :: rest ->
+      let full_name = if prefix = "" then head else prefix ^ "." ^ head in
+      match Hashtbl.find_opt scope.symbols full_name with
+      | Some s -> 
+          (match s.scope with
+           | Some sc -> resolve_dotted sc rest full_name
+           | None -> None)
+      | None -> None
+
+let lookup_symbol_dotted env name =
+  let parts = String.split_on_char '.' name in
+  match parts with
+  | [] -> None
+  | [single] -> lookup_symbol env single
+  | head :: rest ->
+      (match lookup_symbol env head with
+       | Some s -> 
+           (match s.scope with
+            | Some sc -> resolve_dotted sc rest head
+            | None -> None)
+       | None -> None)
 
 (* Check if a type is valid *)
 let rec is_valid_type = function
@@ -83,6 +111,20 @@ let rec is_valid_type = function
   | TTuple ts -> List.for_all is_valid_type ts
   | TFunction(args, ret) -> List.for_all is_valid_type args && is_valid_type ret
   | TOptional t -> is_valid_type t
+
+let rec string_of_type = function
+  | TInteger -> "Integer"
+  | TFloat -> "Float"
+  | TString -> "String"
+  | TBoolean -> "Boolean"
+  | TNull -> "Null"
+  | TIdentifier id -> id
+  | TList t -> "List<" ^ string_of_type t ^ ">"
+  | TMap(k, v) -> "Map<" ^ string_of_type k ^ ", " ^ string_of_type v ^ ">"
+  | TSet t -> "Set<" ^ string_of_type t ^ ">"
+  | TTuple ts -> "(" ^ String.concat ", " (List.map string_of_type ts) ^ ")"
+  | TFunction(args, ret) -> "(" ^ String.concat ", " (List.map string_of_type args) ^ ") -> " ^ string_of_type ret
+  | TOptional t -> "Optional<" ^ string_of_type t ^ ">"
 
 let normalize_type = function
   | TIdentifier "Integer" | TIdentifier "Int" -> TInteger
@@ -156,21 +198,7 @@ let rec analyze_expr env = function
            rhs_type
        | _ -> raise (Semantic_error "Invalid assignment target"))
   | FunctionCall(name, args) ->
-      let symbol_opt = 
-        if String.contains name '.' then
-          let parts = String.split_on_char '.' name in
-          match parts with
-          | [modname; funcname] ->
-              (match lookup_symbol env modname with
-               | Some mod_sym ->
-                   (match mod_sym.scope with
-                    | Some sc -> Hashtbl.find_opt sc.symbols funcname
-                    | None -> None)
-               | None -> None)
-          | _ -> None
-        else
-          lookup_symbol env name
-      in
+      let symbol_opt = lookup_symbol_dotted env name in
       (match symbol_opt with
        | Some symbol ->
            (match normalize_type symbol.typ with
@@ -203,11 +231,12 @@ let rec analyze_expr env = function
       let obj_type = analyze_expr env expr in
       (match obj_type with
        | TIdentifier id ->
-           (match lookup_symbol env id with
+           (match lookup_symbol_dotted env id with
             | Some symbol ->
                 (match symbol.scope with
                  | Some sc ->
-                     (match Hashtbl.find_opt sc.symbols member with
+                     let full_member_name = id ^ "." ^ member in
+                     (match Hashtbl.find_opt sc.symbols full_member_name with
                       | Some s -> s.typ
                       | None -> TIdentifier "Any")
                  | None -> TIdentifier "Any")
@@ -297,7 +326,8 @@ and analyze_binary_op op left_type right_type =
               (types_compatible left_type TFloat && types_compatible right_type TInteger) then
         if types_compatible left_type TFloat || types_compatible right_type TFloat then TFloat else TInteger
       else
-        raise (Semantic_error "Addition requires numeric types or string types")
+        raise (Semantic_error ("Addition requires numeric types or string types, but got " ^ 
+                              string_of_type left_type ^ " and " ^ string_of_type right_type))
   | Sub | Mul | Div | Mod ->
       let left_normalized = normalize_type left_type in
       let right_normalized = normalize_type right_type in
@@ -306,7 +336,8 @@ and analyze_binary_op op left_type right_type =
         TIdentifier "Any"
       else if not ((types_compatible left_type TInteger || types_compatible left_type TFloat) &&
                    (types_compatible right_type TInteger || types_compatible right_type TFloat)) then
-        raise (Semantic_error "Arithmetic operations require numeric types")
+        raise (Semantic_error ("Arithmetic operations require numeric types, but got " ^ 
+                              string_of_type left_type ^ " and " ^ string_of_type right_type))
       else if types_compatible left_type TFloat || types_compatible right_type TFloat then 
         TFloat 
       else 

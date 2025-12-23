@@ -261,14 +261,11 @@ and generate_function state func =
 and generate_declaration state = function
   | DFunction func -> generate_function state func
   | DClass class_def ->
-      (* For now, classes are not fully implemented *)
-      ()
+      List.iter (generate_function state) class_def.methods
   | DContract contract_def ->
-      (* For now, contracts are not fully implemented *)
-      ()
+      List.iter (generate_function state) contract_def.methods
   | DModule module_def ->
-      (* For now, modules are not fully implemented *)
-      ()
+      List.iter (generate_declaration state) module_def.declarations
 
 (* Generate code for the entire program *)
 let rec generate_program (program : Ast.program) =
@@ -374,6 +371,7 @@ and string_of_instruction = function
   | ILabel name -> "ILabel " ^ name
   | IHalt -> "IHalt"
   | IThrow -> "IThrow"
+  | INew(class_name, argc) -> "INew " ^ class_name ^ " " ^ string_of_int argc
 
 and string_of_binary_op = function
   | Add -> "Add"
