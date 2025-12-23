@@ -1,0 +1,191 @@
+module Core
+
+/** 
+ * Returns the type name of the given value.
+ * @param value The value to check.
+ * @return String The type name (e.g., "Integer", "String", "Array").
+ */
+define function typeOf(value: Any) : String
+begin
+    // Internal: compiler-intrinsic to return type name
+end
+
+/** 
+ * Checks if the value is a number (Integer or Float).
+ */
+define function isNumber(value: Any) : Bool
+begin
+    return typeOf(value) == "Integer" or typeOf(value) == "Float"
+end
+
+/** 
+ * Checks if the value is a string.
+ */
+define function isString(value: Any) : Bool
+begin
+    return typeOf(value) == "String"
+end
+
+/** 
+ * Checks if the value is a boolean.
+ */
+define function isBool(value: Any) : Bool
+begin
+    return typeOf(value) == "Bool"
+end
+
+/** 
+ * Checks if the value is an array.
+ */
+define function isArray(value: Any) : Bool
+begin
+    return typeOf(value) == "Array"
+end
+
+/** 
+ * Checks if the value is a map.
+ */
+define function isMap(value: Any) : Bool
+begin
+    return typeOf(value) == "Map"
+end
+
+// Type conversions
+
+/** 
+ * Converts any value to its string representation.
+ */
+define function toString(value: Any) : String
+begin
+    // Internal: built-in conversion
+end
+
+/** 
+ * Converts a value to an integer. Panics if conversion fails.
+ */
+define function toInt(value: Any) : Integer
+begin
+    // Internal: built-in conversion
+end
+
+/** 
+ * Converts a value to a float. Panics if conversion fails.
+ */
+define function toFloat(value: Any) : Float
+begin
+    // Internal: built-in conversion
+end
+
+/** 
+ * Converts a value to a boolean.
+ */
+define function toBool(value: Any) : Bool
+begin
+    // Internal: built-in conversion
+end
+
+// Null/option helpers 
+
+/** 
+ * Returns true if the value is null.
+ */
+define function isNull(value: Any) : Bool
+begin
+    return value == null
+end
+
+/** 
+ * Returns true if the value is not null.
+ */
+define function isSome(value: Any) : Bool
+begin
+    return value != null
+end
+
+/** 
+ * Returns the value if not null, otherwise panics.
+ */
+define function unwrap(value: Any) : Any
+begin
+    if isNull(value) then
+        panic("Attempted to unwrap a null value")
+    end if
+    return value
+end
+
+/** 
+ * Returns the value if not null, otherwise returns the default value.
+ */
+define function unwrapOr(value: Any, default: Any) : Any
+begin
+    if isNull(value) then
+        return default
+    end if
+    return value
+end
+
+// Assertions & fatal errors
+
+/** 
+ * Asserts that a condition is true, otherwise panics with an optional message.
+ */
+define function assert(condition: Bool, message: String = "Assertion failed")
+begin
+    if not condition then
+        panic(message)
+    end if
+end
+
+/** 
+ * Halts execution immediately with an error message.
+ */
+define function panic(message: String)
+begin
+    // Internal: compiler-intrinsic to halt execution
+end
+
+/** 
+ * Marks code that should be unreachable. Panics if called.
+ */
+define function unreachable()
+begin
+    panic("Entered unreachable code")
+end
+
+// Equality helpers
+
+/** 
+ * Performs a deep equality check between two values.
+ */
+define function deepEqual(a: Any, b: Any) : Bool
+begin
+    // Internal: deep comparison logic
+end
+
+/** 
+ * Performs a shallow equality check (reference or immediate value).
+ */
+define function shallowEqual(a: Any, b: Any) : Bool
+begin
+    return a == b
+end
+
+// Memory/reference utilities
+
+/** 
+ * Creates a deep copy of the value.
+ */
+define function clone(value: Any) : Any
+begin
+    // Internal: recursive copy
+end
+
+/** 
+ * Makes the value immutable.
+ */
+define function freeze(value: Any) : Any
+begin
+    // Internal: prevents further mutations
+end
+
+end module

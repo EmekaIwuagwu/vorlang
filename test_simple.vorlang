@@ -1,0 +1,6 @@
+program Test
+begin
+    if true then
+        print("hi")
+    end if
+end

@@ -1,0 +1,8 @@
+program TestArithmetic
+begin
+    var x = 5
+    var y = 10
+    var z = x + y
+    var w = z / 2
+    print(str(w))
+end

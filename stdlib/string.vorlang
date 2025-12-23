@@ -1,0 +1,255 @@
+module String
+
+// Concatenation & building
+
+/** 
+ * Concatenates two strings.
+ */
+define function concat(a: String, b: String) : String
+begin
+    return a + b
+end
+
+/** 
+ * Joins an array of strings with a separator.
+ */
+define function join(parts: Array, separator: String = "") : String
+begin
+    var result = ""
+    var i = 0
+    var len = length(parts)
+    while i < len do
+        result = result + parts[i]
+        if i < len - 1 then
+            result = result + separator
+        end if
+        i = i + 1
+    end while
+    return result
+end
+
+/** 
+ * Repeats a string n times.
+ */
+define function repeat(s: String, count: Integer) : String
+begin
+    var result = ""
+    var i = 0
+    while i < count do
+        result = result + s
+        i = i + 1
+    end while
+    return result
+end
+
+// Length & inspection
+
+/** 
+ * Returns the number of characters in the string.
+ */
+define function length(s: String) : Integer
+begin
+    // Internal: implementation mapping
+    return 0
+end
+
+/** 
+ * Returns true if the string is empty.
+ */
+define function isEmpty(s: String) : Bool
+begin
+    return length(s) == 0
+end
+
+/** 
+ * Checks if a string contains a substring.
+ */
+define function contains(s: String, substr: String) : Bool
+begin
+    return indexOf(s, substr) != -1
+end
+
+/** 
+ * Checks if a string starts with a prefix.
+ */
+define function startsWith(s: String, prefix: String) : Bool
+begin
+    var len = length(prefix)
+    if length(s) < len then return false end if
+    return slice(s, 0, len) == prefix
+end
+
+/** 
+ * Checks if a string ends with a suffix.
+ */
+define function endsWith(s: String, suffix: String) : Bool
+begin
+    var len = length(s)
+    var slen = length(suffix)
+    if len < slen then return false end if
+    return slice(s, len - slen, len) == suffix
+end
+
+// Substring operations
+
+/** 
+ * Returns a portion of the string from start to end (exclusive).
+ */
+define function slice(s: String, start: Integer, endIdx: Integer) : String
+begin
+    // Internal: implementation mapping
+    return ""
+end
+
+/** 
+ * Returns a substring of length len starting at start.
+ */
+define function substring(s: String, start: Integer, len: Integer) : String
+begin
+    return slice(s, start, start + len)
+end
+
+/** 
+ * Returns the character at the specified index.
+ */
+define function charAt(s: String, index: Integer) : String
+begin
+    return slice(s, index, index + 1)
+end
+
+// Splitting & joining
+
+/** 
+ * Splits a string into an array of strings using a separator.
+ */
+define function split(s: String, separator: String) : Array
+begin
+    // Internal: implementation mapping
+    return []
+end
+
+/** 
+ * Splits a string into lines.
+ */
+define function splitLines(s: String) : Array
+begin
+    return split(s, "\n")
+end
+
+// Search & replace
+
+/** 
+ * Returns the first index of a substring, or -1 if not found.
+ */
+define function indexOf(s: String, substr: String) : Integer
+begin
+    // Internal: implementation mapping
+    return -1
+end
+
+/** 
+ * Returns the last index of a substring, or -1 if not found.
+ */
+define function lastIndexOf(s: String, substr: String) : Integer
+begin
+    // Internal: implementation mapping
+    return -1
+end
+
+/** 
+ * Replaces the first occurrence of a target substring with a replacement.
+ */
+define function replace(s: String, target: String, replacement: String) : String
+begin
+    var idx = indexOf(s, target)
+    if idx == -1 then return s end if
+    return slice(s, 0, idx) + replacement + slice(s, idx + length(target), length(s))
+end
+
+/** 
+ * Replaces all occurrences of a target substring with a replacement.
+ */
+define function replaceAll(s: String, target: String, replacement: String) : String
+begin
+    var result = s
+    var idx = indexOf(result, target)
+    while idx != -1 do
+        result = slice(result, 0, idx) + replacement + slice(result, idx + length(target), length(result))
+        idx = indexOf(result, target)
+    end while
+    return result
+end
+
+// Case conversion
+
+/** 
+ * Converts a string to uppercase.
+ */
+define function upper(s: String) : String
+begin
+    // Internal: implementation mapping
+    return ""
+end
+
+/** 
+ * Converts a string to lowercase.
+ */
+define function lower(s: String) : String
+begin
+    // Internal: implementation mapping
+    return ""
+end
+
+/** 
+ * Capitalizes the first character of a string and lowers the rest.
+ */
+define function capitalize(s: String) : String
+begin
+    if isEmpty(s) then return s end if
+    return upper(charAt(s, 0)) + lower(slice(s, 1, length(s)))
+end
+
+// Whitespace
+
+/** 
+ * Checks if a character is whitespace.
+ */
+define function isWhitespace(c: String) : Bool
+begin
+    return c == " " or c == "\t" or c == "\n" or c == "\r"
+end
+
+/** 
+ * Removes leading and trailing whitespace.
+ */
+define function trim(s: String) : String
+begin
+    return trimStart(trimEnd(s))
+end
+
+/** 
+ * Removes leading whitespace.
+ */
+define function trimStart(s: String) : String
+begin
+    var i = 0
+    var len = length(s)
+    while i < len and isWhitespace(charAt(s, i)) do
+        i = i + 1
+    end while
+    return slice(s, i, len)
+end
+
+/** 
+ * Removes trailing whitespace.
+ */
+define function trimEnd(s: String) : String
+begin
+    var i = length(s) - 1
+    while i >= 0 and isWhitespace(charAt(s, i)) do
+        i = i - 1
+    end while
+    return slice(s, 0, i + 1)
+end
+
+end module

@@ -1,0 +1,123 @@
+module Errors
+
+// Custom error types
+
+/** 
+ * Creates a new error object with a message and optional code.
+ */
+define function create(message: String, code: Integer = 0, context: Map = {}) : Map
+begin
+    return {
+        "message": message,
+        "code": code,
+        "context": context,
+        "stack": getStackTrace()
+    }
+end
+
+/** 
+ * Checks if a value is an error object.
+ */
+define function is(value: Any) : Bool
+begin
+    return typeOf(value) == "Map" and has(value, "message") and has(value, "stack")
+end
+
+// Error wrapping
+
+/** 
+ * Wraps an existing error with a new message.
+ */
+define function wrap(err: Any, message: String) : Map
+begin
+    var newErr = create(message)
+    set(newErr, "cause", err)
+    return newErr
+end
+
+/** 
+ * Returns the underlying cause of an error.
+ */
+define function unwrap(err: Map) : Any
+begin
+    return get(err, "cause", null)
+end
+
+/** 
+ * Returns the original cause of an error by traversing the chain.
+ */
+define function cause(err: Map) : Any
+begin
+    var current = err
+    while isSome(get(current, "cause", null)) do
+        current = get(current, "cause")
+    end while
+    return current
+end
+
+// Result types
+
+/** 
+ * Returns an Ok Result containing value.
+ */
+define function Ok(value: Any) : Map
+begin
+    return { "status": "ok", "value": value }
+end
+
+/** 
+ * Returns an Err Result containing error.
+ */
+define function Err(error: Any) : Map
+begin
+    return { "status": "error", "error": error }
+end
+
+/** 
+ * Returns true if the result is Ok.
+ */
+define function isOk(res: Map) : Bool
+begin
+    return get(res, "status") == "ok"
+end
+
+/** 
+ * Returns true if the result is an Error.
+ */
+define function isErr(res: Map) : Bool
+begin
+    return get(res, "status") == "error"
+end
+
+// Try/catch helpers
+
+/** 
+ * Executes a function and returns a Result.
+ */
+define function try(callback: Function) : Map
+begin
+    // Internal: implementation mapping
+    // This requires compiler support to catch panics/unhandled errors
+    return Ok(callback())
+end
+
+// Stack traces
+
+/** 
+ * Returns the current stack trace as an array of strings.
+ */
+define function getStackTrace() : Array
+begin
+    // Internal: implementation mapping
+    return []
+end
+
+/** 
+ * Prints the stack trace of an error.
+ */
+define function printStackTrace(err: Map)
+begin
+    // Internal: implementation mapping
+end
+
+end module

@@ -1,0 +1,1019 @@
+
+** Conflict (reduce/reduce) in state 343.
+** Tokens involved: FINALLY ENDTRY
+** The following explanations concentrate on token FINALLY.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list TRY stmt_list CATCH IDENTIFIER stmt_list
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    try_stmt 
+                                    TRY stmt_list catch_list finally ENDTRY // lookahead token appears because finally can begin with FINALLY
+                                                  (?)
+
+** In state 343, looking ahead at FINALLY, reducing production
+** catch_list ->
+** is permitted because of the following sub-derivation:
+
+CATCH IDENTIFIER stmt_list catch_list // lookahead token is inherited
+                           . 
+
+** In state 343, looking ahead at FINALLY, reducing production
+** catch_list -> CATCH IDENTIFIER stmt_list
+** is permitted because of the following sub-derivation:
+
+CATCH IDENTIFIER stmt_list . 
+
+** Conflict (shift/reduce) in state 241.
+** Tokens involved: LPAREN DOT
+** The following explanations concentrate on token LPAREN.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list any_id
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 241, looking ahead at LPAREN, reducing production
+** expr -> any_id
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with LPAREN
+stmt_list stmt // lookahead token is inherited
+          expr_stmt // lookahead token is inherited
+          expr terminator // lookahead token is inherited because terminator can vanish
+          any_id . 
+
+** In state 241, looking ahead at LPAREN, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          expr_stmt 
+          expr terminator 
+          any_id . LPAREN expr_list RPAREN 
+
+** Conflict (shift/reduce) in state 238.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list assign_target ASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 238, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          assign_stmt 
+          assign_target ASSIGN expr terminator 
+                               expr . MINUS expr 
+
+** In state 238, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          assign_stmt // lookahead token is inherited
+          assign_target ASSIGN expr terminator // lookahead token is inherited
+                                    . 
+
+** Conflict (shift/reduce) in state 235.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list assign_target DIVIDEASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 235, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          assign_stmt 
+          assign_target DIVIDEASSIGN expr terminator 
+                                     expr . MINUS expr 
+
+** In state 235, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          assign_stmt // lookahead token is inherited
+          assign_target DIVIDEASSIGN expr terminator // lookahead token is inherited
+                                          . 
+
+** Conflict (shift/reduce) in state 232.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list assign_target MINUSASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 232, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          assign_stmt 
+          assign_target MINUSASSIGN expr terminator 
+                                    expr . MINUS expr 
+
+** In state 232, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          assign_stmt // lookahead token is inherited
+          assign_target MINUSASSIGN expr terminator // lookahead token is inherited
+                                         . 
+
+** Conflict (shift/reduce) in state 229.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list assign_target MULTIPLYASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 229, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          assign_stmt 
+          assign_target MULTIPLYASSIGN expr terminator 
+                                       expr . MINUS expr 
+
+** In state 229, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          assign_stmt // lookahead token is inherited
+          assign_target MULTIPLYASSIGN expr terminator // lookahead token is inherited
+                                            . 
+
+** Conflict (shift/reduce) in state 226.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list assign_target PLUSASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 226, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          assign_stmt 
+          assign_target PLUSASSIGN expr terminator 
+                                   expr . MINUS expr 
+
+** In state 226, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          assign_stmt // lookahead token is inherited
+          assign_target PLUSASSIGN expr terminator // lookahead token is inherited
+                                        . 
+
+** Conflict (shift/reduce) in state 211.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 211, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          expr_stmt 
+          expr terminator 
+          expr . MINUS expr 
+
+** In state 211, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          expr_stmt // lookahead token is inherited
+          expr terminator // lookahead token is inherited
+               . 
+
+** Conflict (shift/reduce) in state 194.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list CONST any_id ASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 194, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          const_decl 
+          CONST any_id ASSIGN expr terminator 
+                              expr . MINUS expr 
+
+** In state 194, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          const_decl // lookahead token is inherited
+          CONST any_id ASSIGN expr terminator // lookahead token is inherited
+                                   . 
+
+** Conflict (shift/reduce) in state 191.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list CONST any_id COLON type_expr ASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 191, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          const_decl 
+          CONST any_id COLON type_expr ASSIGN expr terminator 
+                                              expr . MINUS expr 
+
+** In state 191, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          const_decl // lookahead token is inherited
+          CONST any_id COLON type_expr ASSIGN expr terminator // lookahead token is inherited
+                                                   . 
+
+** Conflict (shift/reduce) in state 142.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list RETURN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 142, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          return_stmt 
+          RETURN expr terminator 
+                 expr . MINUS expr 
+
+** In state 142, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          return_stmt // lookahead token is inherited
+          RETURN expr terminator // lookahead token is inherited
+                      . 
+
+** Conflict (shift/reduce) in state 140.
+** Tokens involved: TUPLE TRUE STRING SET NULL NOT MINUS MAP LPAREN LIST LBRACKET LBRACE INTEGER IDENTIFIER FLOAT FALSE
+** The following explanations concentrate on token TUPLE.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list RETURN
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 140, looking ahead at TUPLE, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          return_stmt 
+          RETURN expr terminator 
+                 . TUPLE LPAREN expr_list RPAREN 
+
+** In state 140, looking ahead at TUPLE, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with TUPLE
+stmt_list stmt // lookahead token is inherited
+          return_stmt // lookahead token is inherited
+          RETURN terminator // lookahead token is inherited
+                 . 
+
+** Conflict (shift/reduce) in state 138.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list THROW expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 138, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          throw_stmt 
+          THROW expr terminator 
+                expr . MINUS expr 
+
+** In state 138, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          throw_stmt // lookahead token is inherited
+          THROW expr terminator // lookahead token is inherited
+                     . 
+
+** Conflict (shift/reduce) in state 132.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list VAR any_id ASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 132, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          var_decl 
+          VAR any_id ASSIGN expr terminator 
+                            expr . MINUS expr 
+
+** In state 132, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          var_decl // lookahead token is inherited
+          VAR any_id ASSIGN expr terminator // lookahead token is inherited
+                                 . 
+
+** Conflict (shift/reduce) in state 128.
+** Tokens involved: MINUS LBRACKET
+** The following explanations concentrate on token MINUS.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list VAR any_id COLON type_expr ASSIGN expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          (?)
+
+** In state 128, looking ahead at MINUS, shifting is permitted
+** because of the following sub-derivation:
+
+stmt_list stmt 
+          var_decl 
+          VAR any_id COLON type_expr ASSIGN expr terminator 
+                                            expr . MINUS expr 
+
+** In state 128, looking ahead at MINUS, reducing production
+** terminator ->
+** is permitted because of the following sub-derivation:
+
+stmt_list stmt // lookahead token appears because stmt can begin with MINUS
+stmt_list stmt // lookahead token is inherited
+          var_decl // lookahead token is inherited
+          VAR any_id COLON type_expr ASSIGN expr terminator // lookahead token is inherited
+                                                 . 
+
+** Conflict (shift/reduce) in state 84.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list NOT expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 84, looking ahead at LBRACKET, reducing production
+** expr -> NOT expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+NOT expr . 
+
+** In state 84, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+NOT expr 
+    expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 83.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list MINUS expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 83, looking ahead at LBRACKET, reducing production
+** expr -> MINUS expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+MINUS expr . 
+
+** In state 83, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+MINUS expr 
+      expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 70.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr AND expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 70, looking ahead at LBRACKET, reducing production
+** expr -> expr AND expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr AND expr . 
+
+** In state 70, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr AND expr 
+         expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 68.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr EQUAL expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 68, looking ahead at LBRACKET, reducing production
+** expr -> expr EQUAL expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr EQUAL expr . 
+
+** In state 68, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr EQUAL expr 
+           expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 66.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr GREATER expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 66, looking ahead at LBRACKET, reducing production
+** expr -> expr GREATER expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr GREATER expr . 
+
+** In state 66, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr GREATER expr 
+             expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 64.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr GREATEREQUAL expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 64, looking ahead at LBRACKET, reducing production
+** expr -> expr GREATEREQUAL expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr GREATEREQUAL expr . 
+
+** In state 64, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr GREATEREQUAL expr 
+                  expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 62.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr LESS expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 62, looking ahead at LBRACKET, reducing production
+** expr -> expr LESS expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr LESS expr . 
+
+** In state 62, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr LESS expr 
+          expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 60.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr LESSEQUAL expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 60, looking ahead at LBRACKET, reducing production
+** expr -> expr LESSEQUAL expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr LESSEQUAL expr . 
+
+** In state 60, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr LESSEQUAL expr 
+               expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 58.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr DIVIDE expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 58, looking ahead at LBRACKET, reducing production
+** expr -> expr DIVIDE expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr DIVIDE expr . 
+
+** In state 58, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr DIVIDE expr 
+            expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 56.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr MINUS expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 56, looking ahead at LBRACKET, reducing production
+** expr -> expr MINUS expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr MINUS expr . 
+
+** In state 56, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr MINUS expr 
+           expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 54.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr MODULO expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 54, looking ahead at LBRACKET, reducing production
+** expr -> expr MODULO expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr MODULO expr . 
+
+** In state 54, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr MODULO expr 
+            expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 52.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr NOTEQUAL expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 52, looking ahead at LBRACKET, reducing production
+** expr -> expr NOTEQUAL expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr NOTEQUAL expr . 
+
+** In state 52, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr NOTEQUAL expr 
+              expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 50.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr OR expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 50, looking ahead at LBRACKET, reducing production
+** expr -> expr OR expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr OR expr . 
+
+** In state 50, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr OR expr 
+        expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 43.
+** Tokens involved: LPAREN DOT
+** The following explanations concentrate on token DOT.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list WHILE any_id
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    while_stmt 
+                                    WHILE expr DO stmt_list ENDWHILE 
+                                          (?)
+
+** In state 43, looking ahead at DOT, reducing production
+** expr -> any_id
+** is permitted because of the following sub-derivation:
+
+expr DOT any_id // lookahead token appears
+any_id . 
+
+** In state 43, looking ahead at DOT, shifting is permitted
+** because of the following sub-derivation:
+
+any_id . DOT any_id LPAREN expr_list RPAREN 
+
+** Conflict (shift/reduce) in state 40.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr MULTIPLY expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 40, looking ahead at LBRACKET, reducing production
+** expr -> expr MULTIPLY expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr MULTIPLY expr . 
+
+** In state 40, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr MULTIPLY expr 
+              expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 38.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr PLUS expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 38, looking ahead at LBRACKET, reducing production
+** expr -> expr PLUS expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr PLUS expr . 
+
+** In state 38, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr PLUS expr 
+          expr . LBRACKET expr RBRACKET 
+
+** Conflict (shift/reduce) in state 33.
+** Tokens involved: LBRACKET DOT
+** The following explanations concentrate on token LBRACKET.
+** This state is reached from program after reading:
+
+imports MODULE IDENTIFIER stmt_list expr POWER expr
+
+** The derivations that appear below have the following common factor:
+** (The question mark symbol (?) represents the spot where the derivations begin to differ.)
+
+program 
+imports MODULE IDENTIFIER stmt_list ENDMODULE EOF 
+                          stmt_list stmt 
+                                    (?)
+
+** In state 33, looking ahead at LBRACKET, reducing production
+** expr -> expr POWER expr
+** is permitted because of the following sub-derivation:
+
+assign_stmt 
+assign_target ASSIGN expr terminator 
+expr LBRACKET expr RBRACKET // lookahead token appears
+expr POWER expr . 
+
+** In state 33, looking ahead at LBRACKET, shifting is permitted
+** because of the following sub-derivation:
+
+expr_stmt 
+expr terminator 
+expr POWER expr 
+           expr . LBRACKET expr RBRACKET 

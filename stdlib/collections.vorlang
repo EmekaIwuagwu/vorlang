@@ -1,0 +1,413 @@
+module Collections
+
+// Array/List operations
+
+/** 
+ * Appends an item to the end of an array.
+ * Note: Mapped to internal push in production for performance.
+ */
+define function push(arr: Array, item: Any) : Array
+begin
+    // Internal: push mapping
+    return arr
+end
+
+/** 
+ * Removes and returns the last item from an array.
+ */
+define function pop(arr: Array) : Any
+begin
+    // Internal: pop mapping
+    return null
+end
+
+/** 
+ * Returns the first item from an array.
+ */
+define function first(arr: Array) : Any
+begin
+    if length(arr) > 0 then
+        return arr[0]
+    end if
+    return null
+end
+
+/** 
+ * Returns the last item from an array.
+ */
+define function last(arr: Array) : Any
+begin
+    var len = length(arr)
+    if len > 0 then
+        return arr[len - 1]
+    end if
+    return null
+end
+
+/** 
+ * Removes and returns the first item from an array.
+ */
+define function shift(arr: Array) : Any
+begin
+    // Internal: shift mapping
+    return null
+end
+
+/** 
+ * Adds an item to the beginning of an array.
+ */
+define function unshift(arr: Array, item: Any) : Array
+begin
+    // Internal: unshift mapping
+    return arr
+end
+
+/** 
+ * Returns a slice of the array from start to end (exclusive).
+ */
+define function slice(arr: Array, start: Integer, endIdx: Integer) : Array
+begin
+    // Internal: slice mapping
+    return []
+end
+
+// Map/Dictionary utilities
+
+/** 
+ * Returns an array of keys present in the map.
+ */
+define function keys(m: Map) : Array
+begin
+    var result = []
+    for k in m do
+        push(result, k)
+    end for
+    return result
+end
+
+/** 
+ * Returns an array of values present in the map.
+ */
+define function values(m: Map) : Array
+begin
+    var result = []
+    for k in m do
+        push(result, m[k])
+    end for
+    return result
+end
+
+/** 
+ * Returns an array of [key, value] pairs from the map.
+ */
+define function entries(m: Map) : Array
+begin
+    var result = []
+    for k in m do
+        push(result, [k, m[k]])
+    end for
+    return result
+end
+
+/** 
+ * Checks if a map contains the specified key.
+ */
+define function hasKey(m: Map, key: Any) : Bool
+begin
+    for k in m do
+        if k == key then
+            return true
+        end if
+    end for
+    return false
+end
+
+/** 
+ * Returns the value for key, or default if the key is missing.
+ */
+define function get(m: Map, key: Any, default: Any = null) : Any
+begin
+    if hasKey(m, key) then
+        return m[key]
+    end if
+    return default
+end
+
+// Set operations
+
+/** 
+ * Returns true if the collection contains the item.
+ */
+define function contains(coll: Any, item: Any) : Bool
+begin
+    for x in coll do
+        if x == item then
+            return true
+        end if
+    end for
+    return false
+end
+
+/** 
+ * Returns the union of two arrays treated as sets.
+ */
+define function union(a: Array, b: Array) : Array
+begin
+    var result = []
+    for x in a do
+        push(result, x)
+    end for
+    for x in b do
+        if not contains(result, x) then
+            push(result, x)
+        end if
+    end for
+    return result
+end
+
+/** 
+ * Returns the intersection of two arrays treated as sets.
+ */
+define function intersection(a: Array, b: Array) : Array
+begin
+    var result = []
+    for x in a do
+        if contains(b, x) then
+            push(result, x)
+        end if
+    end for
+    return result
+end
+
+/** 
+ * Returns the elements in a that are not in b.
+ */
+define function difference(a: Array, b: Array) : Array
+begin
+    var result = []
+    for x in a do
+        if not contains(b, x) then
+            push(result, x)
+        end if
+    end for
+    return result
+end
+
+/** 
+ * Returns true if subset is entirely contained within superset.
+ */
+define function isSubset(subset: Array, superset: Array) : Bool
+begin
+    for x in subset do
+        if not contains(superset, x) then
+            return false
+        end if
+    end for
+    return true
+end
+
+// Stack & Queue implementations
+
+/** 
+ * Creates a new stack structure.
+ */
+define function createStack() : Map
+begin
+    return { "items": [], "type": "stack" }
+end
+
+/** 
+ * Creates a new queue structure.
+ */
+define function createQueue() : Map
+begin
+    return { "items": [], "type": "queue" }
+end
+
+// Iteration helpers
+
+/** 
+ * Returns a new array by applying the callback to each element of the input array.
+ */
+define function map(arr: Array, callback: Function) : Array
+begin
+    var result = []
+    for item in arr do
+        push(result, callback(item))
+    end for
+    return result
+end
+
+/** 
+ * Returns a new array containing only the elements that satisfy the predicate.
+ */
+define function filter(arr: Array, callback: Function) : Array
+begin
+    var result = []
+    for item in arr do
+        if callback(item) then
+            push(result, item)
+        end if
+    end for
+    return result
+end
+
+/** 
+ * Reduces the array to a single value using the callback.
+ */
+define function reduce(arr: Array, callback: Function, initialValue: Any) : Any
+begin
+    var accumulator = initialValue
+    for item in arr do
+        accumulator = callback(accumulator, item)
+    end for
+    return accumulator
+end
+
+/** 
+ * Executes the callback for each element in the array.
+ */
+define function forEach(arr: Array, callback: Function)
+begin
+    for item in arr do
+        callback(item)
+    end for
+end
+
+/** 
+ * Returns the first element that satisfies the predicate, or null if none found.
+ */
+define function find(arr: Array, callback: Function) : Any
+begin
+    for item in arr do
+        if callback(item) then
+            return item
+        end if
+    end for
+    return null
+end
+
+/** 
+ * Returns true if at least one element satisfies the predicate.
+ */
+define function some(arr: Array, callback: Function) : Bool
+begin
+    for item in arr do
+        if callback(item) then
+            return true
+        end if
+    end for
+    return false
+end
+
+/** 
+ * Returns true if all elements satisfy the predicate.
+ */
+define function every(arr: Array, callback: Function) : Bool
+begin
+    for item in arr do
+        if not callback(item) then
+            return false
+        end if
+    end for
+    return true
+end
+
+// Sorting & searching
+
+/** 
+ * Returns a sorted copy of the array.
+ */
+define function sort(arr: Array) : Array
+begin
+    // Internal: sort mapping
+    return arr
+end
+
+/** 
+ * Returns a sorted copy of the array using a custom comparator.
+ */
+define function sortBy(arr: Array, callback: Function) : Array
+begin
+    // Internal: sortBy mapping
+    return arr
+end
+
+/** 
+ * Performs binary search on a sorted array.
+ */
+define function binarySearch(arr: Array, target: Any) : Integer
+begin
+    var low = 0
+    var high = length(arr) - 1
+    while low <= high do
+        var mid = (low + high) / 2
+        if arr[mid] == target then
+            return mid
+        else if arr[mid] < target then
+            low = mid + 1
+        else
+            high = mid - 1
+        end if
+    end while
+    return -1
+end
+
+// Grouping & partitioning
+
+/** 
+ * Groups array elements by the result of the callback.
+ */
+define function groupBy(arr: Array, callback: Function) : Map
+begin
+    var result = {}
+    for item in arr do
+        var key = callback(item)
+        if not hasKey(result, key) then
+            result[key] = []
+        end if
+        push(result[key], item)
+    end for
+    return result
+end
+
+/** 
+ * Splits the array into two groups based on the predicate.
+ */
+define function partition(arr: Array, callback: Function) : Array
+begin
+    var trueGroup = []
+    var falseGroup = []
+    for item in arr do
+        if callback(item) then
+            push(trueGroup, item)
+        else
+            push(falseGroup, item)
+        end if
+    end for
+    return [trueGroup, falseGroup]
+end
+
+/** 
+ * Splits an array into chunks of a given size.
+ */
+define function chunk(arr: Array, size: Integer) : Array
+begin
+    var result = []
+    var currentChunk = []
+    var i = 0
+    while i < length(arr) do
+        push(currentChunk, arr[i])
+        if length(currentChunk) == size then
+            push(result, currentChunk)
+            currentChunk = []
+        end if
+        i = i + 1
+    end while
+    if length(currentChunk) > 0 then
+        push(result, currentChunk)
+    end if
+    return result
+end
+
+end module

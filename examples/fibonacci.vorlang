@@ -1,0 +1,22 @@
+program Fibonacci
+begin
+  define function fibonacci(n: Integer) : Integer
+  begin
+    if n <= 1 then
+      return n
+    else
+      return fibonacci(n - 1) + fibonacci(n - 2)
+    end if
+  end
+  
+  define function printFibonacci(count: Integer)
+  begin
+    var i = 0
+    while i < count do
+      print("fibonacci(" + str(i) + ") = " + str(fibonacci(i)))
+      i = i + 1
+    end while
+  end
+  
+  printFibonacci(10)
+end

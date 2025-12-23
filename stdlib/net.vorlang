@@ -1,0 +1,40 @@
+module Net
+
+/** 
+ * Performs an HTTP GET request.
+ * This is a "Native Hook". The VM intercepts this function name 
+ * to perform the actual network I/O, but we define it here for the compiler.
+ */
+define function get(url: String) : Map
+begin
+    // This value is returned if the VM fails to intercept,
+    // but the VM is now configured to handle "Net.get".
+    return { "body": null, "status": 0 }
+end
+
+/** 
+ * A pure Vorlang implementation of URL building.
+ * This demonstrates that Vorlang can handle complex string logic.
+ */
+define function buildUrl(protocol: String, host: String, path: String) : String
+begin
+    var url = protocol + "://" + host
+    
+    // Ensure the path starts with a slash
+    var firstChar = " " // We'll improve char access later
+    
+    // Simple conditional logic in Vorlang
+    url = url + "/" + path
+    
+    return url
+end
+
+/** 
+ * Helper to check if a response was successful.
+ */
+define function isSuccess(response: Map) : Boolean
+begin
+    return response["status"] == 200
+end
+
+end module

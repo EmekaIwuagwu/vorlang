@@ -1,0 +1,21 @@
+program TestCollections
+begin
+    var list = [1, 2, 3]
+    print("Initial list: " + str(list))
+    print("List length: " + str(list.length))
+    
+    list[1] = 20
+    print("Modified list: " + str(list))
+    
+    List.append(list, 4)
+    print("Appended list: " + str(list))
+    print("New length: " + str(List.length(list)))
+    
+    var map = { "a": 1, "b": 2 }
+    print("Map: " + str(map))
+    print("Map size: " + str(Map.size(map)))
+    print("Map keys: " + str(Map.keys(map)))
+    
+    var val = map["a"]
+    print("map['a'] = " + str(val))
+end

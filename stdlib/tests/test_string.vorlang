@@ -1,0 +1,22 @@
+import string
+import io
+import core
+
+program TestString
+begin
+    io.println("Testing String module...")
+
+    var s = "hello world"
+    
+    assert(string.length(s) == 11, "length check")
+    assert(string.startsWith(s, "hello"), "startsWith check")
+    assert(string.endsWith(s, "world"), "endsWith check")
+    assert(string.contains(s, " "), "contains check")
+    
+    assert(string.upper("abc") == "ABC", "upper check")
+    assert(string.capitalize("hello") == "Hello", "capitalize check")
+    
+    assert(string.repeat("a", 3) == "aaa", "repeat check")
+    
+    io.println("String module tests passed!")
+end

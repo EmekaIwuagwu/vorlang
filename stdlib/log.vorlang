@@ -1,0 +1,158 @@
+import io
+import time
+import core
+
+module Log
+
+// Log levels
+const DEBUG = 0
+const INFO = 1
+const WARN = 2
+const ERROR = 3
+const FATAL = 4
+
+var currentLevel = INFO
+var outputs = ["console"]
+
+/** 
+ * Sets the global log level.
+ */
+define function setLevel(level: String)
+begin
+    if level == "debug" then currentLevel = DEBUG
+    else if level == "info" then currentLevel = INFO
+    else if level == "warn" then currentLevel = WARN
+    else if level == "error" then currentLevel = ERROR
+    else if level == "fatal" then currentLevel = FATAL
+    end if
+end
+
+/** 
+ * Returns the string name of a level.
+ */
+define function getLevelName(level: Integer) : String
+begin
+    if level == DEBUG then return "DEBUG" end if
+    if level == INFO then return "INFO" end if
+    if level == WARN then return "WARN" end if
+    if level == ERROR then return "ERROR" end if
+    if level == FATAL then return "FATAL" end if
+    return "UNKNOWN"
+end
+
+/** 
+ * Formats a log entry into a string.
+ */
+define function format(level: Integer, message: String, context: Map) : String
+begin
+    var timestamp = time.toISOString(time.now())
+    var levelName = getLevelName(level)
+    var ctxStr = ""
+    if length(context) > 0 then
+        ctxStr = " " + core.toString(context)
+    end if
+    return "[" + timestamp + "] " + levelName + ": " + message + ctxStr
+end
+
+/** 
+ * Internal: Writes message to all outputs.
+ */
+define function write(msg: String)
+begin
+    for out in outputs do
+        if out == "console" then
+            io.println(msg)
+        else
+            // Internal: could be a file path
+            // fs.append(out, msg + "\n")
+        end if
+    end for
+end
+
+/** 
+ * Log a message at the DEBUG level.
+ */
+define function debug(message: String, context: Map = {})
+begin
+    if currentLevel <= DEBUG then
+        write(format(DEBUG, message, context))
+    end if
+end
+
+/** 
+ * Log a message at the INFO level.
+ */
+define function info(message: String, context: Map = {})
+begin
+    if currentLevel <= INFO then
+        write(format(INFO, message, context))
+    end if
+end
+
+/** 
+ * Log a message at the WARN level.
+ */
+define function warn(message: String, context: Map = {})
+begin
+    if currentLevel <= WARN then
+        write(format(WARN, message, context))
+    end if
+end
+
+/** 
+ * Log a message at the ERROR level.
+ */
+define function error(message: String, context: Map = {})
+begin
+    if currentLevel <= ERROR then
+        write(format(ERROR, message, context))
+    end if
+end
+
+/** 
+ * Log a message at the FATAL level and halt.
+ */
+define function fatal(message: String, context: Map = {})
+begin
+    write(format(FATAL, message, context))
+    panic(message)
+end
+
+/** 
+ * Adds a log output.
+ */
+define function addOutput(dest: String)
+begin
+    // Simple logic: add to array
+    // push(outputs, dest) 
+end
+
+// Contextual loggers
+
+/** 
+ * Creates a new logger with specific configuration and context.
+ */
+define function createLogger(config: Map) : Map
+begin
+    return { 
+        "config": config,
+        "context": get(config, "context", {}),
+        "level": get(config, "level", INFO)
+    }
+end
+
+/** 
+ * Returns a new logger that includes additional context.
+ */
+define function withContext(logger: Map, context: Map) : Map
+begin
+    var newCtx = get(logger, "context", {})
+    // merge logic would go here
+    return {
+        "config": get(logger, "config"),
+        "context": context,
+        "level": get(logger, "level")
+    }
+end
+
+end module

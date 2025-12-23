@@ -1,0 +1,33 @@
+program Calculator
+begin
+  define function add(a: Integer, b: Integer) : Integer
+  begin
+    return a + b
+  end
+  
+  define function subtract(a: Integer, b: Integer) : Integer
+  begin
+    return a - b
+  end
+  
+  define function multiply(a: Integer, b: Integer) : Integer
+  begin
+    return a * b
+  end
+  
+  define function divide(a: Integer, b: Integer) : Integer
+  begin
+    if b == 0 then
+      throw "Division by zero"
+    end if
+    return a / b
+  end
+  
+  var x = 10
+  var y = 5
+  
+  print("Addition: " + str(add(x, y)))
+  print("Subtraction: " + str(subtract(x, y)))
+  print("Multiplication: " + str(multiply(x, y)))
+  print("Division: " + str(divide(x, y)))
+end

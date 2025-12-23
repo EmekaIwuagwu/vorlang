@@ -1,0 +1,6 @@
+program Test
+begin
+    var l = [1, 2];
+    var x = l.length;
+    print(x);
+end

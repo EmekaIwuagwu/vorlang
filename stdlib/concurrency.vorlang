@@ -1,0 +1,166 @@
+module Concurrency
+
+// Async/await primitives
+
+/** 
+ * Marks a function as asynchronous.
+ * Note: In Vorlang, 'async' and 'await' might be keywords, 
+ * but these helpers provide additional control.
+ */
+define function spawn(callback: Function) : Map
+begin
+    // Internal: starts a lightweight task/thread
+    // Returns a Task object
+    return {}
+end
+
+// Futures/Promises
+
+/** 
+ * Creates a new Future object.
+ */
+define function Future(callback: Function) : Map
+begin
+    // Internal: implementation mapping
+    return {}
+end
+
+/** 
+ * Returns a Promise that resolves or rejects.
+ */
+define function Promise(callback: Function) : Map
+begin
+    // Internal: implementation mapping
+    return {}
+end
+
+// Channels for message passing
+
+/** 
+ * Creates a new communication channel.
+ */
+define function Channel(capacity: Integer = 0) : Map
+begin
+    // Internal: returns a Channel object
+    return { "capacity": capacity }
+end
+
+/** 
+ * Sends a message into a channel (blocks if capacity is full).
+ */
+define function send(channel: Map, msg: Any)
+begin
+    // Internal: implementation mapping
+end
+
+/** 
+ * Receives a message from a channel (blocks if empty).
+ */
+define function receive(channel: Map) : Any
+begin
+    // Internal: implementation mapping
+    return null
+end
+
+/** 
+ * Closes a channel.
+ */
+define function close(channel: Map)
+begin
+    // Internal: implementation mapping
+end
+
+// Task management
+
+/** 
+ * Joins multiple tasks and returns their results.
+ */
+define function join(tasks: Array) : Array
+begin
+    // Internal: implementation mapping
+    return []
+end
+
+/** 
+ * Cancels a running task.
+ */
+define function cancel(task: Map)
+begin
+    // Internal: implementation mapping
+end
+
+/** 
+ * Sets a timeout for a task.
+ */
+define function timeout(task: Map, ms: Integer)
+begin
+    // Internal: implementation mapping
+end
+
+// High-level synchronization
+
+/** 
+ * Returns a Mutex object for mutual exclusion.
+ */
+define function Mutex() : Map
+begin
+    // Internal: implementation mapping
+    return {}
+end
+
+/** 
+ * Returns a Read-Write Lock object.
+ */
+define function RwLock() : Map
+begin
+    // Internal: implementation mapping
+    return {}
+end
+
+/** 
+ * Returns a Semaphore object.
+ */
+define function Semaphore(count: Integer) : Map
+begin
+    // Internal: implementation mapping
+    return {}
+end
+
+/** f
+ * Returns a Barrier object.
+ */
+define function Barrier(count: Integer) : Map
+begin
+    // Internal: implementation mapping
+    return {}
+end
+
+// Parallel iteration
+
+/** 
+ * Maps elements in parallel across multiple threads/tasks.
+ */
+define function parMap(arr: Array, callback: Function) : Array
+begin
+    // Internal: implementation mapping
+    return []
+end
+
+/** 
+ * Filters elements in parallel.
+ */
+define function parFilter(arr: Array, callback: Function) : Array
+begin
+    // Internal: implementation mapping
+    return []
+end
+
+/** 
+ * Executes a callback for each element in parallel.
+ */
+define function parForEach(arr: Array, callback: Function)
+begin
+    // Internal: implementation mapping
+end
+
+end module

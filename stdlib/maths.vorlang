@@ -1,0 +1,250 @@
+module Maths
+
+/**
+ * Mathematical constant PI.
+ */
+const PI = 3.141592653589793
+
+/**
+ * Mathematical constant E (Euler's number).
+ */
+const E = 2.718281828459045
+
+/**
+ * Mathematical constant TAU (2 * PI).
+ */
+const TAU = 6.283185307179586
+
+// Basic operations
+
+/** 
+ * Returns the absolute value of x.
+ */
+define function abs(x: Float) : Float
+begin
+    if x < 0 then
+        return -x
+    else
+        return x
+    end if
+end
+
+/** 
+ * Returns the smaller of two numbers.
+ */
+define function min(a: Float, b: Float) : Float
+begin
+    if a < b then
+        return a
+    else
+        return b
+    end if
+end
+
+/** 
+ * Returns the larger of two numbers.
+ */
+define function max(a: Float, b: Float) : Float
+begin
+    if a > b then
+        return a
+    else
+        return b
+    end if
+end
+
+/** 
+ * Clamps a value between a minimum and maximum.
+ */
+define function clamp(value: Float, minVal: Float, maxVal: Float) : Float
+begin
+    if value < minVal then
+        return minVal
+    else if value > maxVal then
+        return maxVal
+    else
+        return value
+    end if
+end
+
+// Rounding
+
+/** 
+ * Returns the largest integer less than or equal to x.
+ */
+define function floor(x: Float) : Integer
+begin
+    // Internal: implementation mapping
+    return 0
+end
+
+/** 
+ * Returns the smallest integer greater than or equal to x.
+ */
+define function ceil(x: Float) : Integer
+begin
+    // Internal: implementation mapping
+    return 0
+end
+
+/** 
+ * Returns the nearest integer to x.
+ */
+define function round(x: Float) : Integer
+begin
+    // Internal: implementation mapping
+    return 0
+end
+
+// Power & roots
+
+/** 
+ * Returns the base raised to the power of exponent.
+ */
+define function pow(base: Float, exponent: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the square root of x.
+ */
+define function sqrt(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the cube root of x.
+ */
+define function cbrt(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+// Trigonometry
+
+/** 
+ * Returns the sine of x (in radians).
+ */
+define function sin(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the cosine of x (in radians).
+ */
+define function cos(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the tangent of x (in radians).
+ */
+define function tan(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the arcsine of x.
+ */
+define function asin(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the arccosine of x.
+ */
+define function acos(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the arctangent of x.
+ */
+define function atan(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+// Logarithms
+
+/** 
+ * Returns the natural logarithm of x.
+ */
+define function log(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the base-10 logarithm of x.
+ */
+define function log10(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns the base-2 logarithm of x.
+ */
+define function log2(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns E raised to the power of x.
+ */
+define function exp(x: Float) : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+// Random number generation
+
+/** 
+ * Returns a random float between 0.0 (inclusive) and 1.0 (exclusive).
+ */
+define function random() : Float
+begin
+    // Internal: implementation mapping
+    return 0.0
+end
+
+/** 
+ * Returns a random integer between min and max (inclusive).
+ */
+define function randomInt(min: Integer, max: Integer) : Integer
+begin
+    // Internal: implementation mapping
+    return 0
+end
+
+/** 
+ * Returns a random float between min (inclusive) and max (exclusive).
+ */
+define function randomRange(min: Float, max: Float) : Float
+begin
+    return min + (random() * (max - min))
+end
+
+end module

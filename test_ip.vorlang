@@ -1,0 +1,20 @@
+import net
+
+program GetIP
+begin
+    var url = "https://www.icanhazip.com/"
+    
+    print("Fetching IP from " + url + "...")
+    
+    // Perform an HTTP GET request using the Net library
+    var response = Net.get(url)
+    
+    // Extract the body from the response map
+    var ip = response["body"]
+    
+    if ip != null then
+        print("Your IP address is: " + str(ip))
+    else
+        print("Failed to retrieve IP address.")
+    end if
+end

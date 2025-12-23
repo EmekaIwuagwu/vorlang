@@ -1,0 +1,225 @@
+module Time
+
+// Current timestamp
+
+/** 
+ * Returns a Map representing the current date and time.
+ */
+define function now() : Map
+begin
+    // Internal: implementation mapping
+    return {}
+end
+
+/** 
+ * Returns the current Unix timestamp in seconds.
+ */
+define function unixTimestamp() : Integer
+begin
+    // Internal: implementation mapping
+    return 0
+end
+
+/** 
+ * Returns the current time in milliseconds since the Unix epoch.
+ */
+define function milliseconds() : Integer
+begin
+    // Internal: implementation mapping
+    return 0
+end
+
+// Sleep/delay
+
+/** 
+ * Pauses execution for the specified number of seconds.
+ */
+define function sleep(seconds: Float)
+begin
+    // Internal: implementation mapping
+end
+
+/** 
+ * Pauses execution for the specified number of milliseconds.
+ */
+define function sleepMs(ms: Integer)
+begin
+    sleep(toFloat(ms) / 1000.0)
+end
+
+// Date parsing & formatting
+
+/** 
+ * Parses a string into a time Map based on an optional format.
+ */
+define function parse(s: String, formatStr: String = "") : Map
+begin
+    // Internal: implementation mapping
+    return {}
+end
+
+/** 
+ * Formats a time Map into a string based on the given format.
+ */
+define function format(t: Map, formatStr: String) : String
+begin
+    // Internal: implementation mapping
+    return ""
+end
+
+/** 
+ * Returns an ISO 8601 string representation of the given time.
+ */
+define function toISOString(t: Map) : String
+begin
+    return format(t, "YYYY-MM-DDTHH:mm:ss.SSSZ")
+end
+
+// Date components
+
+/** 
+ * Returns the year from a time Map.
+ */
+define function year(t: Map) : Integer
+begin
+    return get(t, "year", 0)
+end
+
+/** 
+ * Returns the month (1-12) from a time Map.
+ */
+define function month(t: Map) : Integer
+begin
+    return get(t, "month", 1)
+end
+
+/** 
+ * Returns the day of the month (1-31) from a time Map.
+ */
+define function day(t: Map) : Integer
+begin
+    return get(t, "day", 1)
+end
+
+/** 
+ * Returns the hour (0-23) from a time Map.
+ */
+define function hour(t: Map) : Integer
+begin
+    return get(t, "hour", 0)
+end
+
+/** 
+ * Returns the minute (0-59) from a time Map.
+ */
+define function minute(t: Map) : Integer
+begin
+    return get(t, "minute", 0)
+end
+
+/** 
+ * Returns the second (0-59) from a time Map.
+ */
+define function second(t: Map) : Integer
+begin
+    return get(t, "second", 0)
+end
+
+// Duration math
+
+/** 
+ * Adds a duration (in milliseconds) to a time Map.
+ */
+define function add(t: Map, durationMs: Integer) : Map
+begin
+    // Internal: implementation mapping
+    return t
+end
+
+/** 
+ * Subtracts a duration (in milliseconds) from a time Map.
+ */
+define function subtract(t: Map, durationMs: Integer) : Map
+begin
+    // Internal: implementation mapping
+    return t
+end
+
+/** 
+ * Converts an amount and unit into a duration in milliseconds.
+ * Units: "seconds", "minutes", "hours", "days".
+ */
+define function duration(amount: Integer, unit: String) : Integer
+begin
+    if unit == "seconds" then return amount * 1000 end if
+    if unit == "minutes" then return amount * 60 * 1000 end if
+    if unit == "hours" then return amount * 60 * 60 * 1000 end if
+    if unit == "days" then return amount * 24 * 60 * 60 * 1000 end if
+    return amount
+end
+
+/** 
+ * Returns the difference between two time Maps in milliseconds.
+ */
+define function between(start: Map, endTime: Map) : Integer
+begin
+    // Internal: implementation mapping
+    return 0
+end
+
+// Timezone operations
+
+/** 
+ * Converts a time Map to UTC.
+ */
+define function toUTC(t: Map) : Map
+begin
+    // Internal: implementation mapping
+    return t
+end
+
+/** 
+ * Converts a time Map to the specified timezone.
+ */
+define function toTimezone(t: Map, zone: String) : Map
+begin
+    // Internal: implementation mapping
+    return t
+end
+
+/** 
+ * Returns the system's current timezone identifier.
+ */
+define function getTimezone() : String
+begin
+    // Internal: implementation mapping
+    return "UTC"
+end
+
+// Comparison
+
+/** 
+ * Returns true if time a occurs before time b.
+ */
+define function isBefore(a: Map, b: Map) : Bool
+begin
+    return between(a, b) > 0
+end
+
+/** 
+ * Returns true if time a occurs after time b.
+ */
+define function isAfter(a: Map, b: Map) : Bool
+begin
+    return between(a, b) < 0
+end
+
+/** 
+ * Returns true if time a and time b are equal.
+ */
+define function isEqual(a: Map, b: Map) : Bool
+begin
+    return between(a, b) == 0
+end
+
+end module

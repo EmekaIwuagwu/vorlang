@@ -1,0 +1,31 @@
+module IO
+
+/** 
+ * Prints a message followed by a newline.
+ * This is implemented entirely in Vorlang using the base 'print' primitive.
+ */
+define function println(message: Any)
+begin
+    print(message)
+    print("\n")
+end
+
+/** 
+ * Formats a key-value pair for display.
+ */
+define function printPair(label: String, value: Any)
+begin
+    print(label + ": " + str(value) + "\n")
+end
+
+/** 
+ * Wraps a message in decorative borders.
+ */
+define function printBanner(title: String)
+begin
+    print("========================================\n")
+    print("  " + title + "\n")
+    print("========================================\n")
+end
+
+end module

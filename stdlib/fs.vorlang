@@ -1,0 +1,207 @@
+import string
+
+module FS
+
+// File reading
+
+/** 
+ * Reads the entire content of a file.
+ */
+define function read(path: String) : String
+begin
+    // Internal: mapping to syscall
+    return ""
+end
+
+/** 
+ * Reads a file and returns an array of its lines.
+ */
+define function readLines(path: String) : Array
+begin
+    return string.splitLines(read(path))
+end
+
+/** 
+ * Reads the content as raw bytes.
+ */
+define function readBytes(path: String) : Array
+begin
+    // Internal: mapping
+    return []
+end
+
+// File writing
+
+/** 
+ * Writes a string to a file.
+ */
+define function write(path: String, content: String)
+begin
+    // Internal: mapping
+end
+
+/** 
+ * Writes an array of lines to a file.
+ */
+define function writeLines(path: String, lines: Array)
+begin
+    write(path, string.join(lines, "\n"))
+end
+
+/** 
+ * Appends a string to a file.
+ */
+define function append(path: String, content: String)
+begin
+    // Internal: mapping
+end
+
+// File operations
+
+/** 
+ * Checks if a path exists.
+ */
+define function exists(path: String) : Bool
+begin
+    // Internal: mapping
+    return false
+end
+
+/** 
+ * Deletes a file.
+ */
+define function delete(path: String)
+begin
+    // Internal: mapping
+end
+
+/** 
+ * Renames a file.
+ */
+define function rename(oldPath: String, newPath: String)
+begin
+    // Internal: mapping
+end
+
+/** 
+ * Copies a file.
+ */
+define function copy(src: String, dest: String)
+begin
+    write(dest, read(src))
+end
+
+/** 
+ * Moves a file.
+ */
+define function move(src: String, dest: String)
+begin
+    rename(src, dest)
+end
+
+// File metadata
+
+/** 
+ * Returns file size.
+ */
+define function size(path: String) : Integer
+begin
+    // Internal: mapping
+    return 0
+end
+
+/** 
+ * Returns last modified timestamp.
+ */
+define function modified(path: String) : Map
+begin
+    // Internal: mapping
+    return {}
+end
+
+/** 
+ * Returns true if the path is a file.
+ */
+define function isFile(path: String) : Bool
+begin
+    // Internal: mapping
+    return false
+end
+
+/** 
+ * Returns true if the path is a directory.
+ */
+define function isDirectory(path: String) : Bool
+begin
+    // Internal: mapping
+    return false
+end
+
+// Directory operations
+
+/** 
+ * Lists directory contents.
+ */
+define function list(path: String) : Array
+begin
+    // Internal: mapping
+    return []
+end
+
+/** 
+ * Creates a directory.
+ */
+define function create(path: String, recursive: Bool = true)
+begin
+    // Internal: mapping
+end
+
+/** 
+ * Removes a directory.
+ */
+define function remove(path: String, recursive: Bool = false)
+begin
+    // Internal: mapping
+end
+
+// Path manipulation
+
+/** 
+ * Joins path segments.
+ */
+define function join(parts: Array) : String
+begin
+    return string.join(parts, "/")
+end
+
+/** 
+ * Returns the directory name.
+ */
+define function dirname(path: String) : String
+begin
+    var idx = string.lastIndexOf(path, "/")
+    if idx == -1 then return "." end if
+    return string.slice(path, 0, idx)
+end
+
+/** 
+ * Returns the base name.
+ */
+define function basename(path: String) : String
+begin
+    var idx = string.lastIndexOf(path, "/")
+    if idx == -1 then return path end if
+    return string.slice(path, idx + 1, length(path))
+end
+
+/** 
+ * Returns the extension.
+ */
+define function extension(path: String) : String
+begin
+    var idx = string.lastIndexOf(path, ".")
+    if idx == -1 then return "" end if
+    return string.slice(path, idx + 1, length(path))
+end
+
+end module

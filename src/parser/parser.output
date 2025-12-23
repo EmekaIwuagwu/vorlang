@@ -1,0 +1,7386 @@
+   0  $accept : %entry% $end
+
+   1  program : imports PROGRAM IDENTIFIER BEGIN program_body END EOF
+   2          | imports MODULE IDENTIFIER program_body END MODULE EOF
+   3          | imports MODULE IDENTIFIER program_body END EOF
+
+   4  imports :
+   5          | imports import_spec
+
+   6  import_spec : IMPORT IDENTIFIER
+   7              | IMPORT IDENTIFIER AS IDENTIFIER
+   8              | IMPORT IDENTIFIER FROM IDENTIFIER
+   9              | IMPORT LPAREN IDENTIFIER_LIST RPAREN FROM IDENTIFIER
+
+  10  IDENTIFIER_LIST : IDENTIFIER
+  11                  | IDENTIFIER_LIST COMMA IDENTIFIER
+
+  12  program_body :
+  13               | program_body declaration
+  14               | program_body stmt
+
+  15  declaration : function_def
+  16              | class_def
+  17              | contract_def
+  18              | module_def
+
+  19  function_def : DEFINE FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END
+  20               | DEFINE ASYNC FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END
+
+  21  params :
+  22         | param_list
+
+  23  param_list : param
+  24             | param_list COMMA param
+
+  25  param : IDENTIFIER COLON type_expr ASSIGN expr
+  26        | IDENTIFIER COLON type_expr
+  27        | IDENTIFIER ASSIGN expr
+  28        | IDENTIFIER
+
+  29  return_type :
+  30              | COLON type_expr
+
+  31  stmt_list :
+  32            | stmt_list stmt
+
+  33  stmt : expr_stmt
+  34       | var_decl
+  35       | const_decl
+  36       | assign_stmt
+  37       | if_stmt
+  38       | while_stmt
+  39       | for_stmt
+  40       | function_def
+  41       | return_stmt
+  42       | break_stmt
+  43       | continue_stmt
+  44       | try_stmt
+  45       | throw_stmt
+  46       | import_stmt
+  47       | export_stmt
+
+  48  terminator : SEMICOLON
+  49             |
+
+  50  expr_stmt : expr terminator
+
+  51  var_decl : VAR IDENTIFIER COLON type_expr ASSIGN expr terminator
+  52           | VAR IDENTIFIER COLON type_expr terminator
+  53           | VAR IDENTIFIER ASSIGN expr terminator
+  54           | VAR IDENTIFIER terminator
+
+  55  const_decl : CONST IDENTIFIER COLON type_expr ASSIGN expr terminator
+  56             | CONST IDENTIFIER ASSIGN expr terminator
+
+  57  assign_stmt : IDENTIFIER ASSIGN expr terminator
+  58              | IDENTIFIER PLUSASSIGN expr terminator
+  59              | IDENTIFIER MINUSASSIGN expr terminator
+  60              | IDENTIFIER MULTIPLYASSIGN expr terminator
+  61              | IDENTIFIER DIVIDEASSIGN expr terminator
+
+  62  if_stmt : IF expr THEN stmt_list END IF
+  63          | IF expr THEN stmt_list ELSE stmt_list END IF
+  64          | IF expr THEN stmt_list elif_list END IF
+
+  65  elif_list : ELIF expr THEN stmt_list
+  66            | ELIF expr THEN stmt_list ELSE stmt_list
+  67            | ELIF expr THEN stmt_list elif_list
+
+  68  while_stmt : WHILE expr DO stmt_list END WHILE
+
+  69  for_stmt : FOR EACH IDENTIFIER IN expr DO stmt_list END FOR
+  70           | FOR IDENTIFIER IN expr DO stmt_list END FOR
+
+  71  return_stmt : RETURN expr terminator
+  72              | RETURN terminator
+
+  73  break_stmt : BREAK terminator
+
+  74  continue_stmt : CONTINUE terminator
+
+  75  try_stmt : TRY stmt_list catch_list finally END TRY
+
+  76  catch_list :
+  77             | CATCH IDENTIFIER stmt_list
+  78             | CATCH IDENTIFIER stmt_list catch_list
+
+  79  finally :
+  80          | FINALLY stmt_list
+
+  81  throw_stmt : THROW expr terminator
+
+  82  import_stmt : import_spec
+
+  83  export_stmt : EXPORT IDENTIFIER terminator
+  84              | EXPORT FUNCTION IDENTIFIER terminator
+  85              | EXPORT ALL terminator
+
+  86  expr : literal
+  87       | IDENTIFIER
+  88       | expr PLUS expr
+  89       | expr MINUS expr
+  90       | expr MULTIPLY expr
+  91       | expr DIVIDE expr
+  92       | expr MODULO expr
+  93       | expr POWER expr
+  94       | expr EQUAL expr
+  95       | expr NOTEQUAL expr
+  96       | expr LESS expr
+  97       | expr GREATER expr
+  98       | expr LESSEQUAL expr
+  99       | expr GREATEREQUAL expr
+ 100       | expr AND expr
+ 101       | expr OR expr
+ 102       | NOT expr
+ 103       | MINUS expr
+ 104       | LPAREN expr RPAREN
+ 105       | IDENTIFIER LPAREN expr_list RPAREN
+ 106       | expr DOT IDENTIFIER
+ 107       | expr LBRACKET expr RBRACKET
+ 108       | LBRACKET expr_list RBRACKET
+ 109       | LBRACE map_list RBRACE
+ 110       | LPAREN expr_list RPAREN
+ 111       | IF expr THEN expr ELSE expr
+
+ 112  expr_list :
+ 113            | expr
+ 114            | expr_list COMMA expr
+
+ 115  map_list :
+ 116           | map_pair
+ 117           | map_list COMMA map_pair
+
+ 118  map_pair : expr COLON expr
+
+ 119  literal : INTEGER
+ 120          | FLOAT
+ 121          | STRING
+ 122          | TRUE
+ 123          | FALSE
+ 124          | NULL
+
+ 125  type_expr : IDENTIFIER
+ 126            | INTEGER
+ 127            | FLOAT
+ 128            | STRING
+ 129            | BOOLEAN
+ 130            | NULL
+ 131            | LIST LESS type_expr GREATER
+ 132            | MAP LESS type_expr COMMA type_expr GREATER
+ 133            | SET LESS type_expr GREATER
+ 134            | TUPLE LESS type_expr_list GREATER
+ 135            | FUNCTION LESS type_expr_list GREATER
+ 136            | type_expr QUESTION
+
+ 137  type_expr_list : type_expr
+ 138                 | type_expr_list COMMA type_expr
+
+ 139  class_def : DEFINE CLASS IDENTIFIER BEGIN class_body END
+ 140            | DEFINE CLASS IDENTIFIER EXTENDS IDENTIFIER BEGIN class_body END
+
+ 141  class_body :
+ 142             | class_body method_def
+ 143             | class_body field_def
+
+ 144  method_def : DEFINE METHOD IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END
+
+ 145  field_def : VAR IDENTIFIER COLON type_expr terminator
+ 146            | VAR IDENTIFIER COLON type_expr ASSIGN expr terminator
+
+ 147  contract_def : DEFINE CONTRACT IDENTIFIER BEGIN contract_body END
+
+ 148  contract_body :
+ 149                | contract_body method_def
+ 150                | contract_body event_def
+
+ 151  event_def : EVENT IDENTIFIER LPAREN params RPAREN terminator
+
+ 152  module_def : DEFINE MODULE IDENTIFIER BEGIN module_body END
+
+ 153  module_body :
+ 154              | module_body declaration
+
+ 155  %entry% : '\001' program
+
+state 0
+	$accept : . %entry% $end  (0)
+
+	'\001'  shift 1
+	.  error
+
+	%entry%  goto 2
+
+
+state 1
+	%entry% : '\001' . program  (155)
+	imports : .  (4)
+
+	.  reduce 4
+
+	program  goto 3
+	imports  goto 4
+
+
+state 2
+	$accept : %entry% . $end  (0)
+
+	$end  accept
+
+
+state 3
+	%entry% : '\001' program .  (155)
+
+	.  reduce 155
+
+
+state 4
+	program : imports . PROGRAM IDENTIFIER BEGIN program_body END EOF  (1)
+	program : imports . MODULE IDENTIFIER program_body END MODULE EOF  (2)
+	program : imports . MODULE IDENTIFIER program_body END EOF  (3)
+	imports : imports . import_spec  (5)
+
+	PROGRAM  shift 5
+	MODULE  shift 6
+	IMPORT  shift 7
+	.  error
+
+	import_spec  goto 8
+
+
+state 5
+	program : imports PROGRAM . IDENTIFIER BEGIN program_body END EOF  (1)
+
+	IDENTIFIER  shift 9
+	.  error
+
+
+state 6
+	program : imports MODULE . IDENTIFIER program_body END MODULE EOF  (2)
+	program : imports MODULE . IDENTIFIER program_body END EOF  (3)
+
+	IDENTIFIER  shift 10
+	.  error
+
+
+state 7
+	import_spec : IMPORT . IDENTIFIER  (6)
+	import_spec : IMPORT . IDENTIFIER AS IDENTIFIER  (7)
+	import_spec : IMPORT . IDENTIFIER FROM IDENTIFIER  (8)
+	import_spec : IMPORT . LPAREN IDENTIFIER_LIST RPAREN FROM IDENTIFIER  (9)
+
+	IDENTIFIER  shift 11
+	LPAREN  shift 12
+	.  error
+
+
+state 8
+	imports : imports import_spec .  (5)
+
+	.  reduce 5
+
+
+state 9
+	program : imports PROGRAM IDENTIFIER . BEGIN program_body END EOF  (1)
+
+	BEGIN  shift 13
+	.  error
+
+
+state 10
+	program : imports MODULE IDENTIFIER . program_body END MODULE EOF  (2)
+	program : imports MODULE IDENTIFIER . program_body END EOF  (3)
+	program_body : .  (12)
+
+	.  reduce 12
+
+	program_body  goto 14
+
+
+state 11
+	import_spec : IMPORT IDENTIFIER .  (6)
+	import_spec : IMPORT IDENTIFIER . AS IDENTIFIER  (7)
+	import_spec : IMPORT IDENTIFIER . FROM IDENTIFIER  (8)
+
+	AS  shift 15
+	FROM  shift 16
+	IDENTIFIER  reduce 6
+	INTEGER  reduce 6
+	FLOAT  reduce 6
+	STRING  reduce 6
+	PROGRAM  reduce 6
+	END  reduce 6
+	VAR  reduce 6
+	CONST  reduce 6
+	IF  reduce 6
+	ELSE  reduce 6
+	ELIF  reduce 6
+	WHILE  reduce 6
+	FOR  reduce 6
+	DEFINE  reduce 6
+	MODULE  reduce 6
+	IMPORT  reduce 6
+	EXPORT  reduce 6
+	RETURN  reduce 6
+	BREAK  reduce 6
+	CONTINUE  reduce 6
+	TRY  reduce 6
+	CATCH  reduce 6
+	FINALLY  reduce 6
+	THROW  reduce 6
+	TRUE  reduce 6
+	FALSE  reduce 6
+	NULL  reduce 6
+	NOT  reduce 6
+	MINUS  reduce 6
+	LPAREN  reduce 6
+	LBRACE  reduce 6
+	LBRACKET  reduce 6
+
+
+state 12
+	import_spec : IMPORT LPAREN . IDENTIFIER_LIST RPAREN FROM IDENTIFIER  (9)
+
+	IDENTIFIER  shift 17
+	.  error
+
+	IDENTIFIER_LIST  goto 18
+
+
+state 13
+	program : imports PROGRAM IDENTIFIER BEGIN . program_body END EOF  (1)
+	program_body : .  (12)
+
+	.  reduce 12
+
+	program_body  goto 19
+
+
+state 14
+	program : imports MODULE IDENTIFIER program_body . END MODULE EOF  (2)
+	program : imports MODULE IDENTIFIER program_body . END EOF  (3)
+	program_body : program_body . declaration  (13)
+	program_body : program_body . stmt  (14)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 24
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 30
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	declaration  goto 46
+	stmt  goto 47
+	function_def  goto 48
+	class_def  goto 49
+	contract_def  goto 50
+	module_def  goto 51
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 15
+	import_spec : IMPORT IDENTIFIER AS . IDENTIFIER  (7)
+
+	IDENTIFIER  shift 68
+	.  error
+
+
+state 16
+	import_spec : IMPORT IDENTIFIER FROM . IDENTIFIER  (8)
+
+	IDENTIFIER  shift 69
+	.  error
+
+
+state 17
+	IDENTIFIER_LIST : IDENTIFIER .  (10)
+
+	.  reduce 10
+
+
+state 18
+	import_spec : IMPORT LPAREN IDENTIFIER_LIST . RPAREN FROM IDENTIFIER  (9)
+	IDENTIFIER_LIST : IDENTIFIER_LIST . COMMA IDENTIFIER  (11)
+
+	RPAREN  shift 70
+	COMMA  shift 71
+	.  error
+
+
+state 19
+	program : imports PROGRAM IDENTIFIER BEGIN program_body . END EOF  (1)
+	program_body : program_body . declaration  (13)
+	program_body : program_body . stmt  (14)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 72
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 30
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	declaration  goto 46
+	stmt  goto 47
+	function_def  goto 48
+	class_def  goto 49
+	contract_def  goto 50
+	module_def  goto 51
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+20: shift/reduce conflict (shift 78, reduce 87) on LPAREN
+state 20
+	assign_stmt : IDENTIFIER . ASSIGN expr terminator  (57)
+	assign_stmt : IDENTIFIER . PLUSASSIGN expr terminator  (58)
+	assign_stmt : IDENTIFIER . MINUSASSIGN expr terminator  (59)
+	assign_stmt : IDENTIFIER . MULTIPLYASSIGN expr terminator  (60)
+	assign_stmt : IDENTIFIER . DIVIDEASSIGN expr terminator  (61)
+	expr : IDENTIFIER .  (87)
+	expr : IDENTIFIER . LPAREN expr_list RPAREN  (105)
+
+	ASSIGN  shift 73
+	PLUSASSIGN  shift 74
+	MINUSASSIGN  shift 75
+	MULTIPLYASSIGN  shift 76
+	DIVIDEASSIGN  shift 77
+	LPAREN  shift 78
+	IDENTIFIER  reduce 87
+	INTEGER  reduce 87
+	FLOAT  reduce 87
+	STRING  reduce 87
+	END  reduce 87
+	VAR  reduce 87
+	CONST  reduce 87
+	IF  reduce 87
+	ELSE  reduce 87
+	ELIF  reduce 87
+	WHILE  reduce 87
+	FOR  reduce 87
+	DEFINE  reduce 87
+	IMPORT  reduce 87
+	EXPORT  reduce 87
+	RETURN  reduce 87
+	BREAK  reduce 87
+	CONTINUE  reduce 87
+	TRY  reduce 87
+	CATCH  reduce 87
+	FINALLY  reduce 87
+	THROW  reduce 87
+	TRUE  reduce 87
+	FALSE  reduce 87
+	NULL  reduce 87
+	AND  reduce 87
+	OR  reduce 87
+	NOT  reduce 87
+	PLUS  reduce 87
+	MINUS  reduce 87
+	MULTIPLY  reduce 87
+	DIVIDE  reduce 87
+	MODULO  reduce 87
+	POWER  reduce 87
+	EQUAL  reduce 87
+	NOTEQUAL  reduce 87
+	LESS  reduce 87
+	GREATER  reduce 87
+	LESSEQUAL  reduce 87
+	GREATEREQUAL  reduce 87
+	LBRACE  reduce 87
+	LBRACKET  reduce 87
+	SEMICOLON  reduce 87
+	DOT  reduce 87
+
+
+state 21
+	literal : INTEGER .  (119)
+
+	.  reduce 119
+
+
+state 22
+	literal : FLOAT .  (120)
+
+	.  reduce 120
+
+
+state 23
+	literal : STRING .  (121)
+
+	.  reduce 121
+
+
+state 24
+	program : imports MODULE IDENTIFIER program_body END . MODULE EOF  (2)
+	program : imports MODULE IDENTIFIER program_body END . EOF  (3)
+
+	MODULE  shift 79
+	EOF  shift 80
+	.  error
+
+
+state 25
+	var_decl : VAR . IDENTIFIER COLON type_expr ASSIGN expr terminator  (51)
+	var_decl : VAR . IDENTIFIER COLON type_expr terminator  (52)
+	var_decl : VAR . IDENTIFIER ASSIGN expr terminator  (53)
+	var_decl : VAR . IDENTIFIER terminator  (54)
+
+	IDENTIFIER  shift 81
+	.  error
+
+
+state 26
+	const_decl : CONST . IDENTIFIER COLON type_expr ASSIGN expr terminator  (55)
+	const_decl : CONST . IDENTIFIER ASSIGN expr terminator  (56)
+
+	IDENTIFIER  shift 82
+	.  error
+
+
+state 27
+	if_stmt : IF . expr THEN stmt_list END IF  (62)
+	if_stmt : IF . expr THEN stmt_list ELSE stmt_list END IF  (63)
+	if_stmt : IF . expr THEN stmt_list elif_list END IF  (64)
+	expr : IF . expr THEN expr ELSE expr  (111)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 85
+	literal  goto 67
+
+
+state 28
+	while_stmt : WHILE . expr DO stmt_list END WHILE  (68)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 86
+	literal  goto 67
+
+
+state 29
+	for_stmt : FOR . EACH IDENTIFIER IN expr DO stmt_list END FOR  (69)
+	for_stmt : FOR . IDENTIFIER IN expr DO stmt_list END FOR  (70)
+
+	IDENTIFIER  shift 87
+	EACH  shift 88
+	.  error
+
+
+state 30
+	function_def : DEFINE . FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (19)
+	function_def : DEFINE . ASYNC FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (20)
+	class_def : DEFINE . CLASS IDENTIFIER BEGIN class_body END  (139)
+	class_def : DEFINE . CLASS IDENTIFIER EXTENDS IDENTIFIER BEGIN class_body END  (140)
+	contract_def : DEFINE . CONTRACT IDENTIFIER BEGIN contract_body END  (147)
+	module_def : DEFINE . MODULE IDENTIFIER BEGIN module_body END  (152)
+
+	FUNCTION  shift 89
+	CLASS  shift 90
+	CONTRACT  shift 91
+	MODULE  shift 92
+	ASYNC  shift 93
+	.  error
+
+
+state 31
+	export_stmt : EXPORT . IDENTIFIER terminator  (83)
+	export_stmt : EXPORT . FUNCTION IDENTIFIER terminator  (84)
+	export_stmt : EXPORT . ALL terminator  (85)
+
+	IDENTIFIER  shift 94
+	FUNCTION  shift 95
+	ALL  shift 96
+	.  error
+
+
+32: shift/reduce conflict (shift 83, reduce 49) on IDENTIFIER
+32: shift/reduce conflict (shift 21, reduce 49) on INTEGER
+32: shift/reduce conflict (shift 22, reduce 49) on FLOAT
+32: shift/reduce conflict (shift 23, reduce 49) on STRING
+32: shift/reduce conflict (shift 84, reduce 49) on IF
+32: shift/reduce conflict (shift 37, reduce 49) on TRUE
+32: shift/reduce conflict (shift 38, reduce 49) on FALSE
+32: shift/reduce conflict (shift 39, reduce 49) on NULL
+32: shift/reduce conflict (shift 40, reduce 49) on NOT
+32: shift/reduce conflict (shift 41, reduce 49) on MINUS
+32: shift/reduce conflict (shift 42, reduce 49) on LPAREN
+32: shift/reduce conflict (shift 43, reduce 49) on LBRACE
+32: shift/reduce conflict (shift 44, reduce 49) on LBRACKET
+state 32
+	return_stmt : RETURN . expr terminator  (71)
+	return_stmt : RETURN . terminator  (72)
+	terminator : .  (49)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	SEMICOLON  shift 97
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+
+	expr  goto 98
+	terminator  goto 99
+	literal  goto 67
+
+
+state 33
+	break_stmt : BREAK . terminator  (73)
+	terminator : .  (49)
+
+	SEMICOLON  shift 97
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	MINUS  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+	LBRACKET  reduce 49
+
+	terminator  goto 100
+
+
+state 34
+	continue_stmt : CONTINUE . terminator  (74)
+	terminator : .  (49)
+
+	SEMICOLON  shift 97
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	MINUS  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+	LBRACKET  reduce 49
+
+	terminator  goto 101
+
+
+state 35
+	try_stmt : TRY . stmt_list catch_list finally END TRY  (75)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 102
+
+
+state 36
+	throw_stmt : THROW . expr terminator  (81)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 103
+	literal  goto 67
+
+
+state 37
+	literal : TRUE .  (122)
+
+	.  reduce 122
+
+
+state 38
+	literal : FALSE .  (123)
+
+	.  reduce 123
+
+
+state 39
+	literal : NULL .  (124)
+
+	.  reduce 124
+
+
+state 40
+	expr : NOT . expr  (102)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 104
+	literal  goto 67
+
+
+state 41
+	expr : MINUS . expr  (103)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 105
+	literal  goto 67
+
+
+state 42
+	expr : LPAREN . expr RPAREN  (104)
+	expr : LPAREN . expr_list RPAREN  (110)
+	expr_list : .  (112)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	RPAREN  reduce 112
+	COMMA  reduce 112
+
+	expr  goto 106
+	literal  goto 67
+	expr_list  goto 107
+
+
+state 43
+	expr : LBRACE . map_list RBRACE  (109)
+	map_list : .  (115)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	RBRACE  reduce 115
+	COMMA  reduce 115
+
+	expr  goto 108
+	literal  goto 67
+	map_list  goto 109
+	map_pair  goto 110
+
+
+state 44
+	expr : LBRACKET . expr_list RBRACKET  (108)
+	expr_list : .  (112)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	RBRACKET  reduce 112
+	COMMA  reduce 112
+
+	expr  goto 111
+	literal  goto 67
+	expr_list  goto 112
+
+
+state 45
+	import_stmt : import_spec .  (82)
+
+	.  reduce 82
+
+
+state 46
+	program_body : program_body declaration .  (13)
+
+	.  reduce 13
+
+
+state 47
+	program_body : program_body stmt .  (14)
+
+	.  reduce 14
+
+
+48: reduce/reduce conflict (reduce 15, reduce 40) on IDENTIFIER
+48: reduce/reduce conflict (reduce 15, reduce 40) on INTEGER
+48: reduce/reduce conflict (reduce 15, reduce 40) on FLOAT
+48: reduce/reduce conflict (reduce 15, reduce 40) on STRING
+48: reduce/reduce conflict (reduce 15, reduce 40) on END
+48: reduce/reduce conflict (reduce 15, reduce 40) on VAR
+48: reduce/reduce conflict (reduce 15, reduce 40) on CONST
+48: reduce/reduce conflict (reduce 15, reduce 40) on IF
+48: reduce/reduce conflict (reduce 15, reduce 40) on WHILE
+48: reduce/reduce conflict (reduce 15, reduce 40) on FOR
+48: reduce/reduce conflict (reduce 15, reduce 40) on DEFINE
+48: reduce/reduce conflict (reduce 15, reduce 40) on IMPORT
+48: reduce/reduce conflict (reduce 15, reduce 40) on EXPORT
+48: reduce/reduce conflict (reduce 15, reduce 40) on RETURN
+48: reduce/reduce conflict (reduce 15, reduce 40) on BREAK
+48: reduce/reduce conflict (reduce 15, reduce 40) on CONTINUE
+48: reduce/reduce conflict (reduce 15, reduce 40) on TRY
+48: reduce/reduce conflict (reduce 15, reduce 40) on THROW
+48: reduce/reduce conflict (reduce 15, reduce 40) on TRUE
+48: reduce/reduce conflict (reduce 15, reduce 40) on FALSE
+48: reduce/reduce conflict (reduce 15, reduce 40) on NULL
+48: reduce/reduce conflict (reduce 15, reduce 40) on NOT
+48: reduce/reduce conflict (reduce 15, reduce 40) on MINUS
+48: reduce/reduce conflict (reduce 15, reduce 40) on LPAREN
+48: reduce/reduce conflict (reduce 15, reduce 40) on LBRACE
+48: reduce/reduce conflict (reduce 15, reduce 40) on LBRACKET
+state 48
+	declaration : function_def .  (15)
+	stmt : function_def .  (40)
+
+	.  reduce 15
+
+
+state 49
+	declaration : class_def .  (16)
+
+	.  reduce 16
+
+
+state 50
+	declaration : contract_def .  (17)
+
+	.  reduce 17
+
+
+state 51
+	declaration : module_def .  (18)
+
+	.  reduce 18
+
+
+52: shift/reduce conflict (shift 116, reduce 49) on MINUS
+52: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 52
+	expr_stmt : expr . terminator  (50)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 129
+
+
+state 53
+	stmt : expr_stmt .  (33)
+
+	.  reduce 33
+
+
+state 54
+	stmt : var_decl .  (34)
+
+	.  reduce 34
+
+
+state 55
+	stmt : const_decl .  (35)
+
+	.  reduce 35
+
+
+state 56
+	stmt : assign_stmt .  (36)
+
+	.  reduce 36
+
+
+state 57
+	stmt : if_stmt .  (37)
+
+	.  reduce 37
+
+
+state 58
+	stmt : while_stmt .  (38)
+
+	.  reduce 38
+
+
+state 59
+	stmt : for_stmt .  (39)
+
+	.  reduce 39
+
+
+state 60
+	stmt : return_stmt .  (41)
+
+	.  reduce 41
+
+
+state 61
+	stmt : break_stmt .  (42)
+
+	.  reduce 42
+
+
+state 62
+	stmt : continue_stmt .  (43)
+
+	.  reduce 43
+
+
+state 63
+	stmt : try_stmt .  (44)
+
+	.  reduce 44
+
+
+state 64
+	stmt : throw_stmt .  (45)
+
+	.  reduce 45
+
+
+state 65
+	stmt : import_stmt .  (46)
+
+	.  reduce 46
+
+
+state 66
+	stmt : export_stmt .  (47)
+
+	.  reduce 47
+
+
+state 67
+	expr : literal .  (86)
+
+	.  reduce 86
+
+
+state 68
+	import_spec : IMPORT IDENTIFIER AS IDENTIFIER .  (7)
+
+	.  reduce 7
+
+
+state 69
+	import_spec : IMPORT IDENTIFIER FROM IDENTIFIER .  (8)
+
+	.  reduce 8
+
+
+state 70
+	import_spec : IMPORT LPAREN IDENTIFIER_LIST RPAREN . FROM IDENTIFIER  (9)
+
+	FROM  shift 130
+	.  error
+
+
+state 71
+	IDENTIFIER_LIST : IDENTIFIER_LIST COMMA . IDENTIFIER  (11)
+
+	IDENTIFIER  shift 131
+	.  error
+
+
+state 72
+	program : imports PROGRAM IDENTIFIER BEGIN program_body END . EOF  (1)
+
+	EOF  shift 132
+	.  error
+
+
+state 73
+	assign_stmt : IDENTIFIER ASSIGN . expr terminator  (57)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 133
+	literal  goto 67
+
+
+state 74
+	assign_stmt : IDENTIFIER PLUSASSIGN . expr terminator  (58)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 134
+	literal  goto 67
+
+
+state 75
+	assign_stmt : IDENTIFIER MINUSASSIGN . expr terminator  (59)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 135
+	literal  goto 67
+
+
+state 76
+	assign_stmt : IDENTIFIER MULTIPLYASSIGN . expr terminator  (60)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 136
+	literal  goto 67
+
+
+state 77
+	assign_stmt : IDENTIFIER DIVIDEASSIGN . expr terminator  (61)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 137
+	literal  goto 67
+
+
+state 78
+	expr : IDENTIFIER LPAREN . expr_list RPAREN  (105)
+	expr_list : .  (112)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	RPAREN  reduce 112
+	COMMA  reduce 112
+
+	expr  goto 111
+	literal  goto 67
+	expr_list  goto 138
+
+
+state 79
+	program : imports MODULE IDENTIFIER program_body END MODULE . EOF  (2)
+
+	EOF  shift 139
+	.  error
+
+
+state 80
+	program : imports MODULE IDENTIFIER program_body END EOF .  (3)
+
+	.  reduce 3
+
+
+state 81
+	var_decl : VAR IDENTIFIER . COLON type_expr ASSIGN expr terminator  (51)
+	var_decl : VAR IDENTIFIER . COLON type_expr terminator  (52)
+	var_decl : VAR IDENTIFIER . ASSIGN expr terminator  (53)
+	var_decl : VAR IDENTIFIER . terminator  (54)
+	terminator : .  (49)
+
+	ASSIGN  shift 140
+	COLON  shift 141
+	SEMICOLON  shift 97
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	MINUS  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+	LBRACKET  reduce 49
+
+	terminator  goto 142
+
+
+state 82
+	const_decl : CONST IDENTIFIER . COLON type_expr ASSIGN expr terminator  (55)
+	const_decl : CONST IDENTIFIER . ASSIGN expr terminator  (56)
+
+	ASSIGN  shift 143
+	COLON  shift 144
+	.  error
+
+
+83: shift/reduce conflict (shift 78, reduce 87) on LPAREN
+state 83
+	expr : IDENTIFIER .  (87)
+	expr : IDENTIFIER . LPAREN expr_list RPAREN  (105)
+
+	LPAREN  shift 78
+	IDENTIFIER  reduce 87
+	INTEGER  reduce 87
+	FLOAT  reduce 87
+	STRING  reduce 87
+	END  reduce 87
+	VAR  reduce 87
+	CONST  reduce 87
+	IF  reduce 87
+	THEN  reduce 87
+	ELSE  reduce 87
+	ELIF  reduce 87
+	WHILE  reduce 87
+	DO  reduce 87
+	FOR  reduce 87
+	DEFINE  reduce 87
+	IMPORT  reduce 87
+	EXPORT  reduce 87
+	RETURN  reduce 87
+	BREAK  reduce 87
+	CONTINUE  reduce 87
+	TRY  reduce 87
+	CATCH  reduce 87
+	FINALLY  reduce 87
+	THROW  reduce 87
+	TRUE  reduce 87
+	FALSE  reduce 87
+	NULL  reduce 87
+	AND  reduce 87
+	OR  reduce 87
+	NOT  reduce 87
+	PLUS  reduce 87
+	MINUS  reduce 87
+	MULTIPLY  reduce 87
+	DIVIDE  reduce 87
+	MODULO  reduce 87
+	POWER  reduce 87
+	EQUAL  reduce 87
+	NOTEQUAL  reduce 87
+	LESS  reduce 87
+	GREATER  reduce 87
+	LESSEQUAL  reduce 87
+	GREATEREQUAL  reduce 87
+	RPAREN  reduce 87
+	LBRACE  reduce 87
+	RBRACE  reduce 87
+	LBRACKET  reduce 87
+	RBRACKET  reduce 87
+	COMMA  reduce 87
+	COLON  reduce 87
+	SEMICOLON  reduce 87
+	DOT  reduce 87
+
+
+state 84
+	expr : IF . expr THEN expr ELSE expr  (111)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 145
+	literal  goto 67
+
+
+state 85
+	if_stmt : IF expr . THEN stmt_list END IF  (62)
+	if_stmt : IF expr . THEN stmt_list ELSE stmt_list END IF  (63)
+	if_stmt : IF expr . THEN stmt_list elif_list END IF  (64)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	expr : IF expr . THEN expr ELSE expr  (111)
+
+	THEN  shift 146
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	.  error
+
+
+state 86
+	while_stmt : WHILE expr . DO stmt_list END WHILE  (68)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	DO  shift 147
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	.  error
+
+
+state 87
+	for_stmt : FOR IDENTIFIER . IN expr DO stmt_list END FOR  (70)
+
+	IN  shift 148
+	.  error
+
+
+state 88
+	for_stmt : FOR EACH . IDENTIFIER IN expr DO stmt_list END FOR  (69)
+
+	IDENTIFIER  shift 149
+	.  error
+
+
+state 89
+	function_def : DEFINE FUNCTION . IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (19)
+
+	IDENTIFIER  shift 150
+	.  error
+
+
+state 90
+	class_def : DEFINE CLASS . IDENTIFIER BEGIN class_body END  (139)
+	class_def : DEFINE CLASS . IDENTIFIER EXTENDS IDENTIFIER BEGIN class_body END  (140)
+
+	IDENTIFIER  shift 151
+	.  error
+
+
+state 91
+	contract_def : DEFINE CONTRACT . IDENTIFIER BEGIN contract_body END  (147)
+
+	IDENTIFIER  shift 152
+	.  error
+
+
+state 92
+	module_def : DEFINE MODULE . IDENTIFIER BEGIN module_body END  (152)
+
+	IDENTIFIER  shift 153
+	.  error
+
+
+state 93
+	function_def : DEFINE ASYNC . FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (20)
+
+	FUNCTION  shift 154
+	.  error
+
+
+state 94
+	export_stmt : EXPORT IDENTIFIER . terminator  (83)
+	terminator : .  (49)
+
+	SEMICOLON  shift 97
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	MINUS  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+	LBRACKET  reduce 49
+
+	terminator  goto 155
+
+
+state 95
+	export_stmt : EXPORT FUNCTION . IDENTIFIER terminator  (84)
+
+	IDENTIFIER  shift 156
+	.  error
+
+
+state 96
+	export_stmt : EXPORT ALL . terminator  (85)
+	terminator : .  (49)
+
+	SEMICOLON  shift 97
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	MINUS  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+	LBRACKET  reduce 49
+
+	terminator  goto 157
+
+
+state 97
+	terminator : SEMICOLON .  (48)
+
+	.  reduce 48
+
+
+98: shift/reduce conflict (shift 116, reduce 49) on MINUS
+98: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 98
+	return_stmt : RETURN expr . terminator  (71)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 158
+
+
+state 99
+	return_stmt : RETURN terminator .  (72)
+
+	.  reduce 72
+
+
+state 100
+	break_stmt : BREAK terminator .  (73)
+
+	.  reduce 73
+
+
+state 101
+	continue_stmt : CONTINUE terminator .  (74)
+
+	.  reduce 74
+
+
+state 102
+	stmt_list : stmt_list . stmt  (32)
+	try_stmt : TRY stmt_list . catch_list finally END TRY  (75)
+	catch_list : .  (76)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	CATCH  shift 160
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	END  reduce 76
+	FINALLY  reduce 76
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	catch_list  goto 163
+	literal  goto 67
+
+
+103: shift/reduce conflict (shift 116, reduce 49) on MINUS
+103: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 103
+	throw_stmt : THROW expr . terminator  (81)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 164
+
+
+104: shift/reduce conflict (shift 127, reduce 102) on LBRACKET
+104: shift/reduce conflict (shift 128, reduce 102) on DOT
+state 104
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : NOT expr .  (102)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 102
+	INTEGER  reduce 102
+	FLOAT  reduce 102
+	STRING  reduce 102
+	END  reduce 102
+	VAR  reduce 102
+	CONST  reduce 102
+	IF  reduce 102
+	THEN  reduce 102
+	ELSE  reduce 102
+	ELIF  reduce 102
+	WHILE  reduce 102
+	DO  reduce 102
+	FOR  reduce 102
+	DEFINE  reduce 102
+	IMPORT  reduce 102
+	EXPORT  reduce 102
+	RETURN  reduce 102
+	BREAK  reduce 102
+	CONTINUE  reduce 102
+	TRY  reduce 102
+	CATCH  reduce 102
+	FINALLY  reduce 102
+	THROW  reduce 102
+	TRUE  reduce 102
+	FALSE  reduce 102
+	NULL  reduce 102
+	AND  reduce 102
+	OR  reduce 102
+	NOT  reduce 102
+	PLUS  reduce 102
+	MINUS  reduce 102
+	MULTIPLY  reduce 102
+	DIVIDE  reduce 102
+	MODULO  reduce 102
+	POWER  reduce 102
+	EQUAL  reduce 102
+	NOTEQUAL  reduce 102
+	LESS  reduce 102
+	GREATER  reduce 102
+	LESSEQUAL  reduce 102
+	GREATEREQUAL  reduce 102
+	LPAREN  reduce 102
+	RPAREN  reduce 102
+	LBRACE  reduce 102
+	RBRACE  reduce 102
+	RBRACKET  reduce 102
+	COMMA  reduce 102
+	COLON  reduce 102
+	SEMICOLON  reduce 102
+
+
+105: shift/reduce conflict (shift 127, reduce 103) on LBRACKET
+105: shift/reduce conflict (shift 128, reduce 103) on DOT
+state 105
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : MINUS expr .  (103)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 103
+	INTEGER  reduce 103
+	FLOAT  reduce 103
+	STRING  reduce 103
+	END  reduce 103
+	VAR  reduce 103
+	CONST  reduce 103
+	IF  reduce 103
+	THEN  reduce 103
+	ELSE  reduce 103
+	ELIF  reduce 103
+	WHILE  reduce 103
+	DO  reduce 103
+	FOR  reduce 103
+	DEFINE  reduce 103
+	IMPORT  reduce 103
+	EXPORT  reduce 103
+	RETURN  reduce 103
+	BREAK  reduce 103
+	CONTINUE  reduce 103
+	TRY  reduce 103
+	CATCH  reduce 103
+	FINALLY  reduce 103
+	THROW  reduce 103
+	TRUE  reduce 103
+	FALSE  reduce 103
+	NULL  reduce 103
+	AND  reduce 103
+	OR  reduce 103
+	NOT  reduce 103
+	PLUS  reduce 103
+	MINUS  reduce 103
+	MULTIPLY  reduce 103
+	DIVIDE  reduce 103
+	MODULO  reduce 103
+	POWER  reduce 103
+	EQUAL  reduce 103
+	NOTEQUAL  reduce 103
+	LESS  reduce 103
+	GREATER  reduce 103
+	LESSEQUAL  reduce 103
+	GREATEREQUAL  reduce 103
+	LPAREN  reduce 103
+	RPAREN  reduce 103
+	LBRACE  reduce 103
+	RBRACE  reduce 103
+	RBRACKET  reduce 103
+	COMMA  reduce 103
+	COLON  reduce 103
+	SEMICOLON  reduce 103
+
+
+106: shift/reduce conflict (shift 165, reduce 113) on RPAREN
+state 106
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : LPAREN expr . RPAREN  (104)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	expr_list : expr .  (113)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	RPAREN  shift 165
+	LBRACKET  shift 127
+	DOT  shift 128
+	COMMA  reduce 113
+
+
+state 107
+	expr : LPAREN expr_list . RPAREN  (110)
+	expr_list : expr_list . COMMA expr  (114)
+
+	RPAREN  shift 166
+	COMMA  shift 167
+	.  error
+
+
+state 108
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	map_pair : expr . COLON expr  (118)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	COLON  shift 168
+	DOT  shift 128
+	.  error
+
+
+state 109
+	expr : LBRACE map_list . RBRACE  (109)
+	map_list : map_list . COMMA map_pair  (117)
+
+	RBRACE  shift 169
+	COMMA  shift 170
+	.  error
+
+
+state 110
+	map_list : map_pair .  (116)
+
+	.  reduce 116
+
+
+state 111
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	expr_list : expr .  (113)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	RPAREN  reduce 113
+	RBRACKET  reduce 113
+	COMMA  reduce 113
+
+
+state 112
+	expr : LBRACKET expr_list . RBRACKET  (108)
+	expr_list : expr_list . COMMA expr  (114)
+
+	RBRACKET  shift 171
+	COMMA  shift 167
+	.  error
+
+
+state 113
+	expr : expr AND . expr  (100)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 172
+	literal  goto 67
+
+
+state 114
+	expr : expr OR . expr  (101)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 173
+	literal  goto 67
+
+
+state 115
+	expr : expr PLUS . expr  (88)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 174
+	literal  goto 67
+
+
+state 116
+	expr : expr MINUS . expr  (89)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 175
+	literal  goto 67
+
+
+state 117
+	expr : expr MULTIPLY . expr  (90)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 176
+	literal  goto 67
+
+
+state 118
+	expr : expr DIVIDE . expr  (91)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 177
+	literal  goto 67
+
+
+state 119
+	expr : expr MODULO . expr  (92)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 178
+	literal  goto 67
+
+
+state 120
+	expr : expr POWER . expr  (93)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 179
+	literal  goto 67
+
+
+state 121
+	expr : expr EQUAL . expr  (94)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 180
+	literal  goto 67
+
+
+state 122
+	expr : expr NOTEQUAL . expr  (95)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 181
+	literal  goto 67
+
+
+state 123
+	expr : expr LESS . expr  (96)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 182
+	literal  goto 67
+
+
+state 124
+	expr : expr GREATER . expr  (97)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 183
+	literal  goto 67
+
+
+state 125
+	expr : expr LESSEQUAL . expr  (98)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 184
+	literal  goto 67
+
+
+state 126
+	expr : expr GREATEREQUAL . expr  (99)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 185
+	literal  goto 67
+
+
+state 127
+	expr : expr LBRACKET . expr RBRACKET  (107)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 186
+	literal  goto 67
+
+
+state 128
+	expr : expr DOT . IDENTIFIER  (106)
+
+	IDENTIFIER  shift 187
+	.  error
+
+
+state 129
+	expr_stmt : expr terminator .  (50)
+
+	.  reduce 50
+
+
+state 130
+	import_spec : IMPORT LPAREN IDENTIFIER_LIST RPAREN FROM . IDENTIFIER  (9)
+
+	IDENTIFIER  shift 188
+	.  error
+
+
+state 131
+	IDENTIFIER_LIST : IDENTIFIER_LIST COMMA IDENTIFIER .  (11)
+
+	.  reduce 11
+
+
+state 132
+	program : imports PROGRAM IDENTIFIER BEGIN program_body END EOF .  (1)
+
+	.  reduce 1
+
+
+133: shift/reduce conflict (shift 116, reduce 49) on MINUS
+133: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 133
+	assign_stmt : IDENTIFIER ASSIGN expr . terminator  (57)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 189
+
+
+134: shift/reduce conflict (shift 116, reduce 49) on MINUS
+134: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 134
+	assign_stmt : IDENTIFIER PLUSASSIGN expr . terminator  (58)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 190
+
+
+135: shift/reduce conflict (shift 116, reduce 49) on MINUS
+135: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 135
+	assign_stmt : IDENTIFIER MINUSASSIGN expr . terminator  (59)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 191
+
+
+136: shift/reduce conflict (shift 116, reduce 49) on MINUS
+136: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 136
+	assign_stmt : IDENTIFIER MULTIPLYASSIGN expr . terminator  (60)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 192
+
+
+137: shift/reduce conflict (shift 116, reduce 49) on MINUS
+137: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 137
+	assign_stmt : IDENTIFIER DIVIDEASSIGN expr . terminator  (61)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 193
+
+
+state 138
+	expr : IDENTIFIER LPAREN expr_list . RPAREN  (105)
+	expr_list : expr_list . COMMA expr  (114)
+
+	RPAREN  shift 194
+	COMMA  shift 167
+	.  error
+
+
+state 139
+	program : imports MODULE IDENTIFIER program_body END MODULE EOF .  (2)
+
+	.  reduce 2
+
+
+state 140
+	var_decl : VAR IDENTIFIER ASSIGN . expr terminator  (53)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 195
+	literal  goto 67
+
+
+state 141
+	var_decl : VAR IDENTIFIER COLON . type_expr ASSIGN expr terminator  (51)
+	var_decl : VAR IDENTIFIER COLON . type_expr terminator  (52)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 207
+
+
+state 142
+	var_decl : VAR IDENTIFIER terminator .  (54)
+
+	.  reduce 54
+
+
+state 143
+	const_decl : CONST IDENTIFIER ASSIGN . expr terminator  (56)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 208
+	literal  goto 67
+
+
+state 144
+	const_decl : CONST IDENTIFIER COLON . type_expr ASSIGN expr terminator  (55)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 209
+
+
+state 145
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	expr : IF expr . THEN expr ELSE expr  (111)
+
+	THEN  shift 210
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	.  error
+
+
+146: shift/reduce conflict (shift 83, reduce 31) on IDENTIFIER
+146: shift/reduce conflict (shift 21, reduce 31) on INTEGER
+146: shift/reduce conflict (shift 22, reduce 31) on FLOAT
+146: shift/reduce conflict (shift 23, reduce 31) on STRING
+146: shift/reduce conflict (shift 84, reduce 31) on IF
+146: shift/reduce conflict (shift 37, reduce 31) on TRUE
+146: shift/reduce conflict (shift 38, reduce 31) on FALSE
+146: shift/reduce conflict (shift 39, reduce 31) on NULL
+146: shift/reduce conflict (shift 40, reduce 31) on NOT
+146: shift/reduce conflict (shift 41, reduce 31) on MINUS
+146: shift/reduce conflict (shift 42, reduce 31) on LPAREN
+146: shift/reduce conflict (shift 43, reduce 31) on LBRACE
+146: shift/reduce conflict (shift 44, reduce 31) on LBRACKET
+state 146
+	if_stmt : IF expr THEN . stmt_list END IF  (62)
+	if_stmt : IF expr THEN . stmt_list ELSE stmt_list END IF  (63)
+	if_stmt : IF expr THEN . stmt_list elif_list END IF  (64)
+	expr : IF expr THEN . expr ELSE expr  (111)
+	stmt_list : .  (31)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	END  reduce 31
+	VAR  reduce 31
+	CONST  reduce 31
+	ELSE  reduce 31
+	ELIF  reduce 31
+	WHILE  reduce 31
+	FOR  reduce 31
+	DEFINE  reduce 31
+	IMPORT  reduce 31
+	EXPORT  reduce 31
+	RETURN  reduce 31
+	BREAK  reduce 31
+	CONTINUE  reduce 31
+	TRY  reduce 31
+	THROW  reduce 31
+
+	stmt_list  goto 211
+	expr  goto 212
+	literal  goto 67
+
+
+state 147
+	while_stmt : WHILE expr DO . stmt_list END WHILE  (68)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 213
+
+
+state 148
+	for_stmt : FOR IDENTIFIER IN . expr DO stmt_list END FOR  (70)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 214
+	literal  goto 67
+
+
+state 149
+	for_stmt : FOR EACH IDENTIFIER . IN expr DO stmt_list END FOR  (69)
+
+	IN  shift 215
+	.  error
+
+
+state 150
+	function_def : DEFINE FUNCTION IDENTIFIER . LPAREN params RPAREN return_type BEGIN stmt_list END  (19)
+
+	LPAREN  shift 216
+	.  error
+
+
+state 151
+	class_def : DEFINE CLASS IDENTIFIER . BEGIN class_body END  (139)
+	class_def : DEFINE CLASS IDENTIFIER . EXTENDS IDENTIFIER BEGIN class_body END  (140)
+
+	BEGIN  shift 217
+	EXTENDS  shift 218
+	.  error
+
+
+state 152
+	contract_def : DEFINE CONTRACT IDENTIFIER . BEGIN contract_body END  (147)
+
+	BEGIN  shift 219
+	.  error
+
+
+state 153
+	module_def : DEFINE MODULE IDENTIFIER . BEGIN module_body END  (152)
+
+	BEGIN  shift 220
+	.  error
+
+
+state 154
+	function_def : DEFINE ASYNC FUNCTION . IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (20)
+
+	IDENTIFIER  shift 221
+	.  error
+
+
+state 155
+	export_stmt : EXPORT IDENTIFIER terminator .  (83)
+
+	.  reduce 83
+
+
+state 156
+	export_stmt : EXPORT FUNCTION IDENTIFIER . terminator  (84)
+	terminator : .  (49)
+
+	SEMICOLON  shift 97
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	MINUS  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+	LBRACKET  reduce 49
+
+	terminator  goto 222
+
+
+state 157
+	export_stmt : EXPORT ALL terminator .  (85)
+
+	.  reduce 85
+
+
+state 158
+	return_stmt : RETURN expr terminator .  (71)
+
+	.  reduce 71
+
+
+state 159
+	function_def : DEFINE . FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (19)
+	function_def : DEFINE . ASYNC FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (20)
+
+	FUNCTION  shift 89
+	ASYNC  shift 93
+	.  error
+
+
+state 160
+	catch_list : CATCH . IDENTIFIER stmt_list  (77)
+	catch_list : CATCH . IDENTIFIER stmt_list catch_list  (78)
+
+	IDENTIFIER  shift 223
+	.  error
+
+
+state 161
+	stmt_list : stmt_list stmt .  (32)
+
+	.  reduce 32
+
+
+state 162
+	stmt : function_def .  (40)
+
+	.  reduce 40
+
+
+state 163
+	try_stmt : TRY stmt_list catch_list . finally END TRY  (75)
+	finally : .  (79)
+
+	FINALLY  shift 224
+	END  reduce 79
+
+	finally  goto 225
+
+
+state 164
+	throw_stmt : THROW expr terminator .  (81)
+
+	.  reduce 81
+
+
+state 165
+	expr : LPAREN expr RPAREN .  (104)
+
+	.  reduce 104
+
+
+state 166
+	expr : LPAREN expr_list RPAREN .  (110)
+
+	.  reduce 110
+
+
+state 167
+	expr_list : expr_list COMMA . expr  (114)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 226
+	literal  goto 67
+
+
+state 168
+	map_pair : expr COLON . expr  (118)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 227
+	literal  goto 67
+
+
+state 169
+	expr : LBRACE map_list RBRACE .  (109)
+
+	.  reduce 109
+
+
+state 170
+	map_list : map_list COMMA . map_pair  (117)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 108
+	literal  goto 67
+	map_pair  goto 228
+
+
+state 171
+	expr : LBRACKET expr_list RBRACKET .  (108)
+
+	.  reduce 108
+
+
+172: shift/reduce conflict (shift 127, reduce 100) on LBRACKET
+172: shift/reduce conflict (shift 128, reduce 100) on DOT
+state 172
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr AND expr .  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 100
+	INTEGER  reduce 100
+	FLOAT  reduce 100
+	STRING  reduce 100
+	END  reduce 100
+	VAR  reduce 100
+	CONST  reduce 100
+	IF  reduce 100
+	THEN  reduce 100
+	ELSE  reduce 100
+	ELIF  reduce 100
+	WHILE  reduce 100
+	DO  reduce 100
+	FOR  reduce 100
+	DEFINE  reduce 100
+	IMPORT  reduce 100
+	EXPORT  reduce 100
+	RETURN  reduce 100
+	BREAK  reduce 100
+	CONTINUE  reduce 100
+	TRY  reduce 100
+	CATCH  reduce 100
+	FINALLY  reduce 100
+	THROW  reduce 100
+	TRUE  reduce 100
+	FALSE  reduce 100
+	NULL  reduce 100
+	AND  reduce 100
+	OR  reduce 100
+	NOT  reduce 100
+	LPAREN  reduce 100
+	RPAREN  reduce 100
+	LBRACE  reduce 100
+	RBRACE  reduce 100
+	RBRACKET  reduce 100
+	COMMA  reduce 100
+	COLON  reduce 100
+	SEMICOLON  reduce 100
+
+
+173: shift/reduce conflict (shift 127, reduce 101) on LBRACKET
+173: shift/reduce conflict (shift 128, reduce 101) on DOT
+state 173
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr OR expr .  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	AND  shift 113
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 101
+	INTEGER  reduce 101
+	FLOAT  reduce 101
+	STRING  reduce 101
+	END  reduce 101
+	VAR  reduce 101
+	CONST  reduce 101
+	IF  reduce 101
+	THEN  reduce 101
+	ELSE  reduce 101
+	ELIF  reduce 101
+	WHILE  reduce 101
+	DO  reduce 101
+	FOR  reduce 101
+	DEFINE  reduce 101
+	IMPORT  reduce 101
+	EXPORT  reduce 101
+	RETURN  reduce 101
+	BREAK  reduce 101
+	CONTINUE  reduce 101
+	TRY  reduce 101
+	CATCH  reduce 101
+	FINALLY  reduce 101
+	THROW  reduce 101
+	TRUE  reduce 101
+	FALSE  reduce 101
+	NULL  reduce 101
+	OR  reduce 101
+	NOT  reduce 101
+	LPAREN  reduce 101
+	RPAREN  reduce 101
+	LBRACE  reduce 101
+	RBRACE  reduce 101
+	RBRACKET  reduce 101
+	COMMA  reduce 101
+	COLON  reduce 101
+	SEMICOLON  reduce 101
+
+
+174: shift/reduce conflict (shift 127, reduce 88) on LBRACKET
+174: shift/reduce conflict (shift 128, reduce 88) on DOT
+state 174
+	expr : expr . PLUS expr  (88)
+	expr : expr PLUS expr .  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 88
+	INTEGER  reduce 88
+	FLOAT  reduce 88
+	STRING  reduce 88
+	END  reduce 88
+	VAR  reduce 88
+	CONST  reduce 88
+	IF  reduce 88
+	THEN  reduce 88
+	ELSE  reduce 88
+	ELIF  reduce 88
+	WHILE  reduce 88
+	DO  reduce 88
+	FOR  reduce 88
+	DEFINE  reduce 88
+	IMPORT  reduce 88
+	EXPORT  reduce 88
+	RETURN  reduce 88
+	BREAK  reduce 88
+	CONTINUE  reduce 88
+	TRY  reduce 88
+	CATCH  reduce 88
+	FINALLY  reduce 88
+	THROW  reduce 88
+	TRUE  reduce 88
+	FALSE  reduce 88
+	NULL  reduce 88
+	AND  reduce 88
+	OR  reduce 88
+	NOT  reduce 88
+	PLUS  reduce 88
+	MINUS  reduce 88
+	EQUAL  reduce 88
+	NOTEQUAL  reduce 88
+	LESS  reduce 88
+	GREATER  reduce 88
+	LESSEQUAL  reduce 88
+	GREATEREQUAL  reduce 88
+	LPAREN  reduce 88
+	RPAREN  reduce 88
+	LBRACE  reduce 88
+	RBRACE  reduce 88
+	RBRACKET  reduce 88
+	COMMA  reduce 88
+	COLON  reduce 88
+	SEMICOLON  reduce 88
+
+
+175: shift/reduce conflict (shift 127, reduce 89) on LBRACKET
+175: shift/reduce conflict (shift 128, reduce 89) on DOT
+state 175
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr MINUS expr .  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 89
+	INTEGER  reduce 89
+	FLOAT  reduce 89
+	STRING  reduce 89
+	END  reduce 89
+	VAR  reduce 89
+	CONST  reduce 89
+	IF  reduce 89
+	THEN  reduce 89
+	ELSE  reduce 89
+	ELIF  reduce 89
+	WHILE  reduce 89
+	DO  reduce 89
+	FOR  reduce 89
+	DEFINE  reduce 89
+	IMPORT  reduce 89
+	EXPORT  reduce 89
+	RETURN  reduce 89
+	BREAK  reduce 89
+	CONTINUE  reduce 89
+	TRY  reduce 89
+	CATCH  reduce 89
+	FINALLY  reduce 89
+	THROW  reduce 89
+	TRUE  reduce 89
+	FALSE  reduce 89
+	NULL  reduce 89
+	AND  reduce 89
+	OR  reduce 89
+	NOT  reduce 89
+	PLUS  reduce 89
+	MINUS  reduce 89
+	EQUAL  reduce 89
+	NOTEQUAL  reduce 89
+	LESS  reduce 89
+	GREATER  reduce 89
+	LESSEQUAL  reduce 89
+	GREATEREQUAL  reduce 89
+	LPAREN  reduce 89
+	RPAREN  reduce 89
+	LBRACE  reduce 89
+	RBRACE  reduce 89
+	RBRACKET  reduce 89
+	COMMA  reduce 89
+	COLON  reduce 89
+	SEMICOLON  reduce 89
+
+
+176: shift/reduce conflict (shift 127, reduce 90) on LBRACKET
+176: shift/reduce conflict (shift 128, reduce 90) on DOT
+state 176
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr MULTIPLY expr .  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 90
+	INTEGER  reduce 90
+	FLOAT  reduce 90
+	STRING  reduce 90
+	END  reduce 90
+	VAR  reduce 90
+	CONST  reduce 90
+	IF  reduce 90
+	THEN  reduce 90
+	ELSE  reduce 90
+	ELIF  reduce 90
+	WHILE  reduce 90
+	DO  reduce 90
+	FOR  reduce 90
+	DEFINE  reduce 90
+	IMPORT  reduce 90
+	EXPORT  reduce 90
+	RETURN  reduce 90
+	BREAK  reduce 90
+	CONTINUE  reduce 90
+	TRY  reduce 90
+	CATCH  reduce 90
+	FINALLY  reduce 90
+	THROW  reduce 90
+	TRUE  reduce 90
+	FALSE  reduce 90
+	NULL  reduce 90
+	AND  reduce 90
+	OR  reduce 90
+	NOT  reduce 90
+	PLUS  reduce 90
+	MINUS  reduce 90
+	MULTIPLY  reduce 90
+	DIVIDE  reduce 90
+	MODULO  reduce 90
+	EQUAL  reduce 90
+	NOTEQUAL  reduce 90
+	LESS  reduce 90
+	GREATER  reduce 90
+	LESSEQUAL  reduce 90
+	GREATEREQUAL  reduce 90
+	LPAREN  reduce 90
+	RPAREN  reduce 90
+	LBRACE  reduce 90
+	RBRACE  reduce 90
+	RBRACKET  reduce 90
+	COMMA  reduce 90
+	COLON  reduce 90
+	SEMICOLON  reduce 90
+
+
+177: shift/reduce conflict (shift 127, reduce 91) on LBRACKET
+177: shift/reduce conflict (shift 128, reduce 91) on DOT
+state 177
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr DIVIDE expr .  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 91
+	INTEGER  reduce 91
+	FLOAT  reduce 91
+	STRING  reduce 91
+	END  reduce 91
+	VAR  reduce 91
+	CONST  reduce 91
+	IF  reduce 91
+	THEN  reduce 91
+	ELSE  reduce 91
+	ELIF  reduce 91
+	WHILE  reduce 91
+	DO  reduce 91
+	FOR  reduce 91
+	DEFINE  reduce 91
+	IMPORT  reduce 91
+	EXPORT  reduce 91
+	RETURN  reduce 91
+	BREAK  reduce 91
+	CONTINUE  reduce 91
+	TRY  reduce 91
+	CATCH  reduce 91
+	FINALLY  reduce 91
+	THROW  reduce 91
+	TRUE  reduce 91
+	FALSE  reduce 91
+	NULL  reduce 91
+	AND  reduce 91
+	OR  reduce 91
+	NOT  reduce 91
+	PLUS  reduce 91
+	MINUS  reduce 91
+	MULTIPLY  reduce 91
+	DIVIDE  reduce 91
+	MODULO  reduce 91
+	EQUAL  reduce 91
+	NOTEQUAL  reduce 91
+	LESS  reduce 91
+	GREATER  reduce 91
+	LESSEQUAL  reduce 91
+	GREATEREQUAL  reduce 91
+	LPAREN  reduce 91
+	RPAREN  reduce 91
+	LBRACE  reduce 91
+	RBRACE  reduce 91
+	RBRACKET  reduce 91
+	COMMA  reduce 91
+	COLON  reduce 91
+	SEMICOLON  reduce 91
+
+
+178: shift/reduce conflict (shift 127, reduce 92) on LBRACKET
+178: shift/reduce conflict (shift 128, reduce 92) on DOT
+state 178
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr MODULO expr .  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 92
+	INTEGER  reduce 92
+	FLOAT  reduce 92
+	STRING  reduce 92
+	END  reduce 92
+	VAR  reduce 92
+	CONST  reduce 92
+	IF  reduce 92
+	THEN  reduce 92
+	ELSE  reduce 92
+	ELIF  reduce 92
+	WHILE  reduce 92
+	DO  reduce 92
+	FOR  reduce 92
+	DEFINE  reduce 92
+	IMPORT  reduce 92
+	EXPORT  reduce 92
+	RETURN  reduce 92
+	BREAK  reduce 92
+	CONTINUE  reduce 92
+	TRY  reduce 92
+	CATCH  reduce 92
+	FINALLY  reduce 92
+	THROW  reduce 92
+	TRUE  reduce 92
+	FALSE  reduce 92
+	NULL  reduce 92
+	AND  reduce 92
+	OR  reduce 92
+	NOT  reduce 92
+	PLUS  reduce 92
+	MINUS  reduce 92
+	MULTIPLY  reduce 92
+	DIVIDE  reduce 92
+	MODULO  reduce 92
+	EQUAL  reduce 92
+	NOTEQUAL  reduce 92
+	LESS  reduce 92
+	GREATER  reduce 92
+	LESSEQUAL  reduce 92
+	GREATEREQUAL  reduce 92
+	LPAREN  reduce 92
+	RPAREN  reduce 92
+	LBRACE  reduce 92
+	RBRACE  reduce 92
+	RBRACKET  reduce 92
+	COMMA  reduce 92
+	COLON  reduce 92
+	SEMICOLON  reduce 92
+
+
+179: shift/reduce conflict (shift 127, reduce 93) on LBRACKET
+179: shift/reduce conflict (shift 128, reduce 93) on DOT
+state 179
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr POWER expr .  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 93
+	INTEGER  reduce 93
+	FLOAT  reduce 93
+	STRING  reduce 93
+	END  reduce 93
+	VAR  reduce 93
+	CONST  reduce 93
+	IF  reduce 93
+	THEN  reduce 93
+	ELSE  reduce 93
+	ELIF  reduce 93
+	WHILE  reduce 93
+	DO  reduce 93
+	FOR  reduce 93
+	DEFINE  reduce 93
+	IMPORT  reduce 93
+	EXPORT  reduce 93
+	RETURN  reduce 93
+	BREAK  reduce 93
+	CONTINUE  reduce 93
+	TRY  reduce 93
+	CATCH  reduce 93
+	FINALLY  reduce 93
+	THROW  reduce 93
+	TRUE  reduce 93
+	FALSE  reduce 93
+	NULL  reduce 93
+	AND  reduce 93
+	OR  reduce 93
+	NOT  reduce 93
+	PLUS  reduce 93
+	MINUS  reduce 93
+	MULTIPLY  reduce 93
+	DIVIDE  reduce 93
+	MODULO  reduce 93
+	EQUAL  reduce 93
+	NOTEQUAL  reduce 93
+	LESS  reduce 93
+	GREATER  reduce 93
+	LESSEQUAL  reduce 93
+	GREATEREQUAL  reduce 93
+	LPAREN  reduce 93
+	RPAREN  reduce 93
+	LBRACE  reduce 93
+	RBRACE  reduce 93
+	RBRACKET  reduce 93
+	COMMA  reduce 93
+	COLON  reduce 93
+	SEMICOLON  reduce 93
+
+
+180: shift/reduce conflict (shift 127, reduce 94) on LBRACKET
+180: shift/reduce conflict (shift 128, reduce 94) on DOT
+state 180
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr EQUAL expr .  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 94
+	INTEGER  reduce 94
+	FLOAT  reduce 94
+	STRING  reduce 94
+	END  reduce 94
+	VAR  reduce 94
+	CONST  reduce 94
+	IF  reduce 94
+	THEN  reduce 94
+	ELSE  reduce 94
+	ELIF  reduce 94
+	WHILE  reduce 94
+	DO  reduce 94
+	FOR  reduce 94
+	DEFINE  reduce 94
+	IMPORT  reduce 94
+	EXPORT  reduce 94
+	RETURN  reduce 94
+	BREAK  reduce 94
+	CONTINUE  reduce 94
+	TRY  reduce 94
+	CATCH  reduce 94
+	FINALLY  reduce 94
+	THROW  reduce 94
+	TRUE  reduce 94
+	FALSE  reduce 94
+	NULL  reduce 94
+	AND  reduce 94
+	OR  reduce 94
+	NOT  reduce 94
+	EQUAL  reduce 94
+	NOTEQUAL  reduce 94
+	LPAREN  reduce 94
+	RPAREN  reduce 94
+	LBRACE  reduce 94
+	RBRACE  reduce 94
+	RBRACKET  reduce 94
+	COMMA  reduce 94
+	COLON  reduce 94
+	SEMICOLON  reduce 94
+
+
+181: shift/reduce conflict (shift 127, reduce 95) on LBRACKET
+181: shift/reduce conflict (shift 128, reduce 95) on DOT
+state 181
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr NOTEQUAL expr .  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 95
+	INTEGER  reduce 95
+	FLOAT  reduce 95
+	STRING  reduce 95
+	END  reduce 95
+	VAR  reduce 95
+	CONST  reduce 95
+	IF  reduce 95
+	THEN  reduce 95
+	ELSE  reduce 95
+	ELIF  reduce 95
+	WHILE  reduce 95
+	DO  reduce 95
+	FOR  reduce 95
+	DEFINE  reduce 95
+	IMPORT  reduce 95
+	EXPORT  reduce 95
+	RETURN  reduce 95
+	BREAK  reduce 95
+	CONTINUE  reduce 95
+	TRY  reduce 95
+	CATCH  reduce 95
+	FINALLY  reduce 95
+	THROW  reduce 95
+	TRUE  reduce 95
+	FALSE  reduce 95
+	NULL  reduce 95
+	AND  reduce 95
+	OR  reduce 95
+	NOT  reduce 95
+	EQUAL  reduce 95
+	NOTEQUAL  reduce 95
+	LPAREN  reduce 95
+	RPAREN  reduce 95
+	LBRACE  reduce 95
+	RBRACE  reduce 95
+	RBRACKET  reduce 95
+	COMMA  reduce 95
+	COLON  reduce 95
+	SEMICOLON  reduce 95
+
+
+182: shift/reduce conflict (shift 127, reduce 96) on LBRACKET
+182: shift/reduce conflict (shift 128, reduce 96) on DOT
+state 182
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr LESS expr .  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 96
+	INTEGER  reduce 96
+	FLOAT  reduce 96
+	STRING  reduce 96
+	END  reduce 96
+	VAR  reduce 96
+	CONST  reduce 96
+	IF  reduce 96
+	THEN  reduce 96
+	ELSE  reduce 96
+	ELIF  reduce 96
+	WHILE  reduce 96
+	DO  reduce 96
+	FOR  reduce 96
+	DEFINE  reduce 96
+	IMPORT  reduce 96
+	EXPORT  reduce 96
+	RETURN  reduce 96
+	BREAK  reduce 96
+	CONTINUE  reduce 96
+	TRY  reduce 96
+	CATCH  reduce 96
+	FINALLY  reduce 96
+	THROW  reduce 96
+	TRUE  reduce 96
+	FALSE  reduce 96
+	NULL  reduce 96
+	AND  reduce 96
+	OR  reduce 96
+	NOT  reduce 96
+	EQUAL  reduce 96
+	NOTEQUAL  reduce 96
+	LESS  reduce 96
+	GREATER  reduce 96
+	LESSEQUAL  reduce 96
+	GREATEREQUAL  reduce 96
+	LPAREN  reduce 96
+	RPAREN  reduce 96
+	LBRACE  reduce 96
+	RBRACE  reduce 96
+	RBRACKET  reduce 96
+	COMMA  reduce 96
+	COLON  reduce 96
+	SEMICOLON  reduce 96
+
+
+183: shift/reduce conflict (shift 127, reduce 97) on LBRACKET
+183: shift/reduce conflict (shift 128, reduce 97) on DOT
+state 183
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr GREATER expr .  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 97
+	INTEGER  reduce 97
+	FLOAT  reduce 97
+	STRING  reduce 97
+	END  reduce 97
+	VAR  reduce 97
+	CONST  reduce 97
+	IF  reduce 97
+	THEN  reduce 97
+	ELSE  reduce 97
+	ELIF  reduce 97
+	WHILE  reduce 97
+	DO  reduce 97
+	FOR  reduce 97
+	DEFINE  reduce 97
+	IMPORT  reduce 97
+	EXPORT  reduce 97
+	RETURN  reduce 97
+	BREAK  reduce 97
+	CONTINUE  reduce 97
+	TRY  reduce 97
+	CATCH  reduce 97
+	FINALLY  reduce 97
+	THROW  reduce 97
+	TRUE  reduce 97
+	FALSE  reduce 97
+	NULL  reduce 97
+	AND  reduce 97
+	OR  reduce 97
+	NOT  reduce 97
+	EQUAL  reduce 97
+	NOTEQUAL  reduce 97
+	LESS  reduce 97
+	GREATER  reduce 97
+	LESSEQUAL  reduce 97
+	GREATEREQUAL  reduce 97
+	LPAREN  reduce 97
+	RPAREN  reduce 97
+	LBRACE  reduce 97
+	RBRACE  reduce 97
+	RBRACKET  reduce 97
+	COMMA  reduce 97
+	COLON  reduce 97
+	SEMICOLON  reduce 97
+
+
+184: shift/reduce conflict (shift 127, reduce 98) on LBRACKET
+184: shift/reduce conflict (shift 128, reduce 98) on DOT
+state 184
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr LESSEQUAL expr .  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 98
+	INTEGER  reduce 98
+	FLOAT  reduce 98
+	STRING  reduce 98
+	END  reduce 98
+	VAR  reduce 98
+	CONST  reduce 98
+	IF  reduce 98
+	THEN  reduce 98
+	ELSE  reduce 98
+	ELIF  reduce 98
+	WHILE  reduce 98
+	DO  reduce 98
+	FOR  reduce 98
+	DEFINE  reduce 98
+	IMPORT  reduce 98
+	EXPORT  reduce 98
+	RETURN  reduce 98
+	BREAK  reduce 98
+	CONTINUE  reduce 98
+	TRY  reduce 98
+	CATCH  reduce 98
+	FINALLY  reduce 98
+	THROW  reduce 98
+	TRUE  reduce 98
+	FALSE  reduce 98
+	NULL  reduce 98
+	AND  reduce 98
+	OR  reduce 98
+	NOT  reduce 98
+	EQUAL  reduce 98
+	NOTEQUAL  reduce 98
+	LESS  reduce 98
+	GREATER  reduce 98
+	LESSEQUAL  reduce 98
+	GREATEREQUAL  reduce 98
+	LPAREN  reduce 98
+	RPAREN  reduce 98
+	LBRACE  reduce 98
+	RBRACE  reduce 98
+	RBRACKET  reduce 98
+	COMMA  reduce 98
+	COLON  reduce 98
+	SEMICOLON  reduce 98
+
+
+185: shift/reduce conflict (shift 127, reduce 99) on LBRACKET
+185: shift/reduce conflict (shift 128, reduce 99) on DOT
+state 185
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr GREATEREQUAL expr .  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 99
+	INTEGER  reduce 99
+	FLOAT  reduce 99
+	STRING  reduce 99
+	END  reduce 99
+	VAR  reduce 99
+	CONST  reduce 99
+	IF  reduce 99
+	THEN  reduce 99
+	ELSE  reduce 99
+	ELIF  reduce 99
+	WHILE  reduce 99
+	DO  reduce 99
+	FOR  reduce 99
+	DEFINE  reduce 99
+	IMPORT  reduce 99
+	EXPORT  reduce 99
+	RETURN  reduce 99
+	BREAK  reduce 99
+	CONTINUE  reduce 99
+	TRY  reduce 99
+	CATCH  reduce 99
+	FINALLY  reduce 99
+	THROW  reduce 99
+	TRUE  reduce 99
+	FALSE  reduce 99
+	NULL  reduce 99
+	AND  reduce 99
+	OR  reduce 99
+	NOT  reduce 99
+	EQUAL  reduce 99
+	NOTEQUAL  reduce 99
+	LESS  reduce 99
+	GREATER  reduce 99
+	LESSEQUAL  reduce 99
+	GREATEREQUAL  reduce 99
+	LPAREN  reduce 99
+	RPAREN  reduce 99
+	LBRACE  reduce 99
+	RBRACE  reduce 99
+	RBRACKET  reduce 99
+	COMMA  reduce 99
+	COLON  reduce 99
+	SEMICOLON  reduce 99
+
+
+state 186
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	expr : expr LBRACKET expr . RBRACKET  (107)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	RBRACKET  shift 229
+	DOT  shift 128
+	.  error
+
+
+state 187
+	expr : expr DOT IDENTIFIER .  (106)
+
+	.  reduce 106
+
+
+state 188
+	import_spec : IMPORT LPAREN IDENTIFIER_LIST RPAREN FROM IDENTIFIER .  (9)
+
+	.  reduce 9
+
+
+state 189
+	assign_stmt : IDENTIFIER ASSIGN expr terminator .  (57)
+
+	.  reduce 57
+
+
+state 190
+	assign_stmt : IDENTIFIER PLUSASSIGN expr terminator .  (58)
+
+	.  reduce 58
+
+
+state 191
+	assign_stmt : IDENTIFIER MINUSASSIGN expr terminator .  (59)
+
+	.  reduce 59
+
+
+state 192
+	assign_stmt : IDENTIFIER MULTIPLYASSIGN expr terminator .  (60)
+
+	.  reduce 60
+
+
+state 193
+	assign_stmt : IDENTIFIER DIVIDEASSIGN expr terminator .  (61)
+
+	.  reduce 61
+
+
+state 194
+	expr : IDENTIFIER LPAREN expr_list RPAREN .  (105)
+
+	.  reduce 105
+
+
+195: shift/reduce conflict (shift 116, reduce 49) on MINUS
+195: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 195
+	var_decl : VAR IDENTIFIER ASSIGN expr . terminator  (53)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 230
+
+
+state 196
+	type_expr : IDENTIFIER .  (125)
+
+	.  reduce 125
+
+
+state 197
+	type_expr : INTEGER .  (126)
+
+	.  reduce 126
+
+
+state 198
+	type_expr : FLOAT .  (127)
+
+	.  reduce 127
+
+
+state 199
+	type_expr : STRING .  (128)
+
+	.  reduce 128
+
+
+state 200
+	type_expr : BOOLEAN .  (129)
+
+	.  reduce 129
+
+
+state 201
+	type_expr : FUNCTION . LESS type_expr_list GREATER  (135)
+
+	LESS  shift 231
+	.  error
+
+
+state 202
+	type_expr : NULL .  (130)
+
+	.  reduce 130
+
+
+state 203
+	type_expr : LIST . LESS type_expr GREATER  (131)
+
+	LESS  shift 232
+	.  error
+
+
+state 204
+	type_expr : MAP . LESS type_expr COMMA type_expr GREATER  (132)
+
+	LESS  shift 233
+	.  error
+
+
+state 205
+	type_expr : SET . LESS type_expr GREATER  (133)
+
+	LESS  shift 234
+	.  error
+
+
+state 206
+	type_expr : TUPLE . LESS type_expr_list GREATER  (134)
+
+	LESS  shift 235
+	.  error
+
+
+state 207
+	var_decl : VAR IDENTIFIER COLON type_expr . ASSIGN expr terminator  (51)
+	var_decl : VAR IDENTIFIER COLON type_expr . terminator  (52)
+	type_expr : type_expr . QUESTION  (136)
+	terminator : .  (49)
+
+	ASSIGN  shift 236
+	SEMICOLON  shift 97
+	QUESTION  shift 237
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	MINUS  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+	LBRACKET  reduce 49
+
+	terminator  goto 238
+
+
+208: shift/reduce conflict (shift 116, reduce 49) on MINUS
+208: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 208
+	const_decl : CONST IDENTIFIER ASSIGN expr . terminator  (56)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 239
+
+
+state 209
+	const_decl : CONST IDENTIFIER COLON type_expr . ASSIGN expr terminator  (55)
+	type_expr : type_expr . QUESTION  (136)
+
+	ASSIGN  shift 240
+	QUESTION  shift 237
+	.  error
+
+
+state 210
+	expr : IF expr THEN . expr ELSE expr  (111)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 212
+	literal  goto 67
+
+
+state 211
+	stmt_list : stmt_list . stmt  (32)
+	if_stmt : IF expr THEN stmt_list . END IF  (62)
+	if_stmt : IF expr THEN stmt_list . ELSE stmt_list END IF  (63)
+	if_stmt : IF expr THEN stmt_list . elif_list END IF  (64)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 241
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	ELSE  shift 242
+	ELIF  shift 243
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	elif_list  goto 244
+	literal  goto 67
+
+
+state 212
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	expr : IF expr THEN expr . ELSE expr  (111)
+
+	ELSE  shift 245
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	.  error
+
+
+state 213
+	stmt_list : stmt_list . stmt  (32)
+	while_stmt : WHILE expr DO stmt_list . END WHILE  (68)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 246
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 214
+	for_stmt : FOR IDENTIFIER IN expr . DO stmt_list END FOR  (70)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	DO  shift 247
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	.  error
+
+
+state 215
+	for_stmt : FOR EACH IDENTIFIER IN . expr DO stmt_list END FOR  (69)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 248
+	literal  goto 67
+
+
+state 216
+	function_def : DEFINE FUNCTION IDENTIFIER LPAREN . params RPAREN return_type BEGIN stmt_list END  (19)
+	params : .  (21)
+
+	IDENTIFIER  shift 249
+	RPAREN  reduce 21
+
+	params  goto 250
+	param_list  goto 251
+	param  goto 252
+
+
+state 217
+	class_def : DEFINE CLASS IDENTIFIER BEGIN . class_body END  (139)
+	class_body : .  (141)
+
+	.  reduce 141
+
+	class_body  goto 253
+
+
+state 218
+	class_def : DEFINE CLASS IDENTIFIER EXTENDS . IDENTIFIER BEGIN class_body END  (140)
+
+	IDENTIFIER  shift 254
+	.  error
+
+
+state 219
+	contract_def : DEFINE CONTRACT IDENTIFIER BEGIN . contract_body END  (147)
+	contract_body : .  (148)
+
+	.  reduce 148
+
+	contract_body  goto 255
+
+
+state 220
+	module_def : DEFINE MODULE IDENTIFIER BEGIN . module_body END  (152)
+	module_body : .  (153)
+
+	.  reduce 153
+
+	module_body  goto 256
+
+
+state 221
+	function_def : DEFINE ASYNC FUNCTION IDENTIFIER . LPAREN params RPAREN return_type BEGIN stmt_list END  (20)
+
+	LPAREN  shift 257
+	.  error
+
+
+state 222
+	export_stmt : EXPORT FUNCTION IDENTIFIER terminator .  (84)
+
+	.  reduce 84
+
+
+state 223
+	catch_list : CATCH IDENTIFIER . stmt_list  (77)
+	catch_list : CATCH IDENTIFIER . stmt_list catch_list  (78)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 258
+
+
+state 224
+	finally : FINALLY . stmt_list  (80)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 259
+
+
+state 225
+	try_stmt : TRY stmt_list catch_list finally . END TRY  (75)
+
+	END  shift 260
+	.  error
+
+
+state 226
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	expr_list : expr_list COMMA expr .  (114)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	RPAREN  reduce 114
+	RBRACKET  reduce 114
+	COMMA  reduce 114
+
+
+state 227
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	map_pair : expr COLON expr .  (118)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	RBRACE  reduce 118
+	COMMA  reduce 118
+
+
+state 228
+	map_list : map_list COMMA map_pair .  (117)
+
+	.  reduce 117
+
+
+state 229
+	expr : expr LBRACKET expr RBRACKET .  (107)
+
+	.  reduce 107
+
+
+state 230
+	var_decl : VAR IDENTIFIER ASSIGN expr terminator .  (53)
+
+	.  reduce 53
+
+
+state 231
+	type_expr : FUNCTION LESS . type_expr_list GREATER  (135)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 261
+	type_expr_list  goto 262
+
+
+state 232
+	type_expr : LIST LESS . type_expr GREATER  (131)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 263
+
+
+state 233
+	type_expr : MAP LESS . type_expr COMMA type_expr GREATER  (132)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 264
+
+
+state 234
+	type_expr : SET LESS . type_expr GREATER  (133)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 265
+
+
+state 235
+	type_expr : TUPLE LESS . type_expr_list GREATER  (134)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 261
+	type_expr_list  goto 266
+
+
+state 236
+	var_decl : VAR IDENTIFIER COLON type_expr ASSIGN . expr terminator  (51)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 267
+	literal  goto 67
+
+
+state 237
+	type_expr : type_expr QUESTION .  (136)
+
+	.  reduce 136
+
+
+state 238
+	var_decl : VAR IDENTIFIER COLON type_expr terminator .  (52)
+
+	.  reduce 52
+
+
+state 239
+	const_decl : CONST IDENTIFIER ASSIGN expr terminator .  (56)
+
+	.  reduce 56
+
+
+state 240
+	const_decl : CONST IDENTIFIER COLON type_expr ASSIGN . expr terminator  (55)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 268
+	literal  goto 67
+
+
+state 241
+	if_stmt : IF expr THEN stmt_list END . IF  (62)
+
+	IF  shift 269
+	.  error
+
+
+state 242
+	if_stmt : IF expr THEN stmt_list ELSE . stmt_list END IF  (63)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 270
+
+
+state 243
+	elif_list : ELIF . expr THEN stmt_list  (65)
+	elif_list : ELIF . expr THEN stmt_list ELSE stmt_list  (66)
+	elif_list : ELIF . expr THEN stmt_list elif_list  (67)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 271
+	literal  goto 67
+
+
+state 244
+	if_stmt : IF expr THEN stmt_list elif_list . END IF  (64)
+
+	END  shift 272
+	.  error
+
+
+state 245
+	expr : IF expr THEN expr ELSE . expr  (111)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 273
+	literal  goto 67
+
+
+state 246
+	while_stmt : WHILE expr DO stmt_list END . WHILE  (68)
+
+	WHILE  shift 274
+	.  error
+
+
+state 247
+	for_stmt : FOR IDENTIFIER IN expr DO . stmt_list END FOR  (70)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 275
+
+
+state 248
+	for_stmt : FOR EACH IDENTIFIER IN expr . DO stmt_list END FOR  (69)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	DO  shift 276
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	.  error
+
+
+state 249
+	param : IDENTIFIER . COLON type_expr ASSIGN expr  (25)
+	param : IDENTIFIER . COLON type_expr  (26)
+	param : IDENTIFIER . ASSIGN expr  (27)
+	param : IDENTIFIER .  (28)
+
+	ASSIGN  shift 277
+	COLON  shift 278
+	RPAREN  reduce 28
+	COMMA  reduce 28
+
+
+state 250
+	function_def : DEFINE FUNCTION IDENTIFIER LPAREN params . RPAREN return_type BEGIN stmt_list END  (19)
+
+	RPAREN  shift 279
+	.  error
+
+
+state 251
+	params : param_list .  (22)
+	param_list : param_list . COMMA param  (24)
+
+	COMMA  shift 280
+	RPAREN  reduce 22
+
+
+state 252
+	param_list : param .  (23)
+
+	.  reduce 23
+
+
+state 253
+	class_def : DEFINE CLASS IDENTIFIER BEGIN class_body . END  (139)
+	class_body : class_body . method_def  (142)
+	class_body : class_body . field_def  (143)
+
+	END  shift 281
+	VAR  shift 282
+	DEFINE  shift 283
+	.  error
+
+	method_def  goto 284
+	field_def  goto 285
+
+
+state 254
+	class_def : DEFINE CLASS IDENTIFIER EXTENDS IDENTIFIER . BEGIN class_body END  (140)
+
+	BEGIN  shift 286
+	.  error
+
+
+state 255
+	contract_def : DEFINE CONTRACT IDENTIFIER BEGIN contract_body . END  (147)
+	contract_body : contract_body . method_def  (149)
+	contract_body : contract_body . event_def  (150)
+
+	END  shift 287
+	DEFINE  shift 283
+	EVENT  shift 288
+	.  error
+
+	method_def  goto 289
+	event_def  goto 290
+
+
+state 256
+	module_def : DEFINE MODULE IDENTIFIER BEGIN module_body . END  (152)
+	module_body : module_body . declaration  (154)
+
+	END  shift 291
+	DEFINE  shift 30
+	.  error
+
+	declaration  goto 292
+	function_def  goto 293
+	class_def  goto 49
+	contract_def  goto 50
+	module_def  goto 51
+
+
+state 257
+	function_def : DEFINE ASYNC FUNCTION IDENTIFIER LPAREN . params RPAREN return_type BEGIN stmt_list END  (20)
+	params : .  (21)
+
+	IDENTIFIER  shift 249
+	RPAREN  reduce 21
+
+	params  goto 294
+	param_list  goto 251
+	param  goto 252
+
+
+258: reduce/reduce conflict (reduce 76, reduce 77) on END
+258: reduce/reduce conflict (reduce 76, reduce 77) on FINALLY
+state 258
+	stmt_list : stmt_list . stmt  (32)
+	catch_list : CATCH IDENTIFIER stmt_list .  (77)
+	catch_list : CATCH IDENTIFIER stmt_list . catch_list  (78)
+	catch_list : .  (76)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	CATCH  shift 160
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	END  reduce 76
+	FINALLY  reduce 76
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	catch_list  goto 295
+	literal  goto 67
+
+
+state 259
+	stmt_list : stmt_list . stmt  (32)
+	finally : FINALLY stmt_list .  (80)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	END  reduce 80
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 260
+	try_stmt : TRY stmt_list catch_list finally END . TRY  (75)
+
+	TRY  shift 296
+	.  error
+
+
+state 261
+	type_expr : type_expr . QUESTION  (136)
+	type_expr_list : type_expr .  (137)
+
+	QUESTION  shift 237
+	GREATER  reduce 137
+	COMMA  reduce 137
+
+
+state 262
+	type_expr : FUNCTION LESS type_expr_list . GREATER  (135)
+	type_expr_list : type_expr_list . COMMA type_expr  (138)
+
+	GREATER  shift 297
+	COMMA  shift 298
+	.  error
+
+
+state 263
+	type_expr : LIST LESS type_expr . GREATER  (131)
+	type_expr : type_expr . QUESTION  (136)
+
+	GREATER  shift 299
+	QUESTION  shift 237
+	.  error
+
+
+state 264
+	type_expr : MAP LESS type_expr . COMMA type_expr GREATER  (132)
+	type_expr : type_expr . QUESTION  (136)
+
+	COMMA  shift 300
+	QUESTION  shift 237
+	.  error
+
+
+state 265
+	type_expr : SET LESS type_expr . GREATER  (133)
+	type_expr : type_expr . QUESTION  (136)
+
+	GREATER  shift 301
+	QUESTION  shift 237
+	.  error
+
+
+state 266
+	type_expr : TUPLE LESS type_expr_list . GREATER  (134)
+	type_expr_list : type_expr_list . COMMA type_expr  (138)
+
+	GREATER  shift 302
+	COMMA  shift 298
+	.  error
+
+
+267: shift/reduce conflict (shift 116, reduce 49) on MINUS
+267: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 267
+	var_decl : VAR IDENTIFIER COLON type_expr ASSIGN expr . terminator  (51)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 303
+
+
+268: shift/reduce conflict (shift 116, reduce 49) on MINUS
+268: shift/reduce conflict (shift 127, reduce 49) on LBRACKET
+state 268
+	const_decl : CONST IDENTIFIER COLON type_expr ASSIGN expr . terminator  (55)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	IDENTIFIER  reduce 49
+	INTEGER  reduce 49
+	FLOAT  reduce 49
+	STRING  reduce 49
+	END  reduce 49
+	VAR  reduce 49
+	CONST  reduce 49
+	IF  reduce 49
+	ELSE  reduce 49
+	ELIF  reduce 49
+	WHILE  reduce 49
+	FOR  reduce 49
+	DEFINE  reduce 49
+	IMPORT  reduce 49
+	EXPORT  reduce 49
+	RETURN  reduce 49
+	BREAK  reduce 49
+	CONTINUE  reduce 49
+	TRY  reduce 49
+	CATCH  reduce 49
+	FINALLY  reduce 49
+	THROW  reduce 49
+	TRUE  reduce 49
+	FALSE  reduce 49
+	NULL  reduce 49
+	NOT  reduce 49
+	LPAREN  reduce 49
+	LBRACE  reduce 49
+
+	terminator  goto 304
+
+
+state 269
+	if_stmt : IF expr THEN stmt_list END IF .  (62)
+
+	.  reduce 62
+
+
+state 270
+	stmt_list : stmt_list . stmt  (32)
+	if_stmt : IF expr THEN stmt_list ELSE stmt_list . END IF  (63)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 305
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 271
+	elif_list : ELIF expr . THEN stmt_list  (65)
+	elif_list : ELIF expr . THEN stmt_list ELSE stmt_list  (66)
+	elif_list : ELIF expr . THEN stmt_list elif_list  (67)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	THEN  shift 306
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	.  error
+
+
+state 272
+	if_stmt : IF expr THEN stmt_list elif_list END . IF  (64)
+
+	IF  shift 307
+	.  error
+
+
+273: shift/reduce conflict (shift 113, reduce 111) on AND
+273: shift/reduce conflict (shift 114, reduce 111) on OR
+273: shift/reduce conflict (shift 115, reduce 111) on PLUS
+273: shift/reduce conflict (shift 116, reduce 111) on MINUS
+273: shift/reduce conflict (shift 117, reduce 111) on MULTIPLY
+273: shift/reduce conflict (shift 118, reduce 111) on DIVIDE
+273: shift/reduce conflict (shift 119, reduce 111) on MODULO
+273: shift/reduce conflict (shift 120, reduce 111) on POWER
+273: shift/reduce conflict (shift 121, reduce 111) on EQUAL
+273: shift/reduce conflict (shift 122, reduce 111) on NOTEQUAL
+273: shift/reduce conflict (shift 123, reduce 111) on LESS
+273: shift/reduce conflict (shift 124, reduce 111) on GREATER
+273: shift/reduce conflict (shift 125, reduce 111) on LESSEQUAL
+273: shift/reduce conflict (shift 126, reduce 111) on GREATEREQUAL
+273: shift/reduce conflict (shift 127, reduce 111) on LBRACKET
+273: shift/reduce conflict (shift 128, reduce 111) on DOT
+state 273
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	expr : IF expr THEN expr ELSE expr .  (111)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	IDENTIFIER  reduce 111
+	INTEGER  reduce 111
+	FLOAT  reduce 111
+	STRING  reduce 111
+	END  reduce 111
+	VAR  reduce 111
+	CONST  reduce 111
+	IF  reduce 111
+	THEN  reduce 111
+	ELSE  reduce 111
+	ELIF  reduce 111
+	WHILE  reduce 111
+	DO  reduce 111
+	FOR  reduce 111
+	DEFINE  reduce 111
+	IMPORT  reduce 111
+	EXPORT  reduce 111
+	RETURN  reduce 111
+	BREAK  reduce 111
+	CONTINUE  reduce 111
+	TRY  reduce 111
+	CATCH  reduce 111
+	FINALLY  reduce 111
+	THROW  reduce 111
+	TRUE  reduce 111
+	FALSE  reduce 111
+	NULL  reduce 111
+	NOT  reduce 111
+	LPAREN  reduce 111
+	RPAREN  reduce 111
+	LBRACE  reduce 111
+	RBRACE  reduce 111
+	RBRACKET  reduce 111
+	COMMA  reduce 111
+	COLON  reduce 111
+	SEMICOLON  reduce 111
+
+
+state 274
+	while_stmt : WHILE expr DO stmt_list END WHILE .  (68)
+
+	.  reduce 68
+
+
+state 275
+	stmt_list : stmt_list . stmt  (32)
+	for_stmt : FOR IDENTIFIER IN expr DO stmt_list . END FOR  (70)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 308
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 276
+	for_stmt : FOR EACH IDENTIFIER IN expr DO . stmt_list END FOR  (69)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 309
+
+
+state 277
+	param : IDENTIFIER ASSIGN . expr  (27)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 310
+	literal  goto 67
+
+
+state 278
+	param : IDENTIFIER COLON . type_expr ASSIGN expr  (25)
+	param : IDENTIFIER COLON . type_expr  (26)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 311
+
+
+state 279
+	function_def : DEFINE FUNCTION IDENTIFIER LPAREN params RPAREN . return_type BEGIN stmt_list END  (19)
+	return_type : .  (29)
+
+	COLON  shift 312
+	BEGIN  reduce 29
+
+	return_type  goto 313
+
+
+state 280
+	param_list : param_list COMMA . param  (24)
+
+	IDENTIFIER  shift 249
+	.  error
+
+	param  goto 314
+
+
+state 281
+	class_def : DEFINE CLASS IDENTIFIER BEGIN class_body END .  (139)
+
+	.  reduce 139
+
+
+state 282
+	field_def : VAR . IDENTIFIER COLON type_expr terminator  (145)
+	field_def : VAR . IDENTIFIER COLON type_expr ASSIGN expr terminator  (146)
+
+	IDENTIFIER  shift 315
+	.  error
+
+
+state 283
+	method_def : DEFINE . METHOD IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (144)
+
+	METHOD  shift 316
+	.  error
+
+
+state 284
+	class_body : class_body method_def .  (142)
+
+	.  reduce 142
+
+
+state 285
+	class_body : class_body field_def .  (143)
+
+	.  reduce 143
+
+
+state 286
+	class_def : DEFINE CLASS IDENTIFIER EXTENDS IDENTIFIER BEGIN . class_body END  (140)
+	class_body : .  (141)
+
+	.  reduce 141
+
+	class_body  goto 317
+
+
+state 287
+	contract_def : DEFINE CONTRACT IDENTIFIER BEGIN contract_body END .  (147)
+
+	.  reduce 147
+
+
+state 288
+	event_def : EVENT . IDENTIFIER LPAREN params RPAREN terminator  (151)
+
+	IDENTIFIER  shift 318
+	.  error
+
+
+state 289
+	contract_body : contract_body method_def .  (149)
+
+	.  reduce 149
+
+
+state 290
+	contract_body : contract_body event_def .  (150)
+
+	.  reduce 150
+
+
+state 291
+	module_def : DEFINE MODULE IDENTIFIER BEGIN module_body END .  (152)
+
+	.  reduce 152
+
+
+state 292
+	module_body : module_body declaration .  (154)
+
+	.  reduce 154
+
+
+state 293
+	declaration : function_def .  (15)
+
+	.  reduce 15
+
+
+state 294
+	function_def : DEFINE ASYNC FUNCTION IDENTIFIER LPAREN params . RPAREN return_type BEGIN stmt_list END  (20)
+
+	RPAREN  shift 319
+	.  error
+
+
+state 295
+	catch_list : CATCH IDENTIFIER stmt_list catch_list .  (78)
+
+	.  reduce 78
+
+
+state 296
+	try_stmt : TRY stmt_list catch_list finally END TRY .  (75)
+
+	.  reduce 75
+
+
+state 297
+	type_expr : FUNCTION LESS type_expr_list GREATER .  (135)
+
+	.  reduce 135
+
+
+state 298
+	type_expr_list : type_expr_list COMMA . type_expr  (138)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 320
+
+
+state 299
+	type_expr : LIST LESS type_expr GREATER .  (131)
+
+	.  reduce 131
+
+
+state 300
+	type_expr : MAP LESS type_expr COMMA . type_expr GREATER  (132)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 321
+
+
+state 301
+	type_expr : SET LESS type_expr GREATER .  (133)
+
+	.  reduce 133
+
+
+state 302
+	type_expr : TUPLE LESS type_expr_list GREATER .  (134)
+
+	.  reduce 134
+
+
+state 303
+	var_decl : VAR IDENTIFIER COLON type_expr ASSIGN expr terminator .  (51)
+
+	.  reduce 51
+
+
+state 304
+	const_decl : CONST IDENTIFIER COLON type_expr ASSIGN expr terminator .  (55)
+
+	.  reduce 55
+
+
+state 305
+	if_stmt : IF expr THEN stmt_list ELSE stmt_list END . IF  (63)
+
+	IF  shift 322
+	.  error
+
+
+state 306
+	elif_list : ELIF expr THEN . stmt_list  (65)
+	elif_list : ELIF expr THEN . stmt_list ELSE stmt_list  (66)
+	elif_list : ELIF expr THEN . stmt_list elif_list  (67)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 323
+
+
+state 307
+	if_stmt : IF expr THEN stmt_list elif_list END IF .  (64)
+
+	.  reduce 64
+
+
+state 308
+	for_stmt : FOR IDENTIFIER IN expr DO stmt_list END . FOR  (70)
+
+	FOR  shift 324
+	.  error
+
+
+state 309
+	stmt_list : stmt_list . stmt  (32)
+	for_stmt : FOR EACH IDENTIFIER IN expr DO stmt_list . END FOR  (69)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 325
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 310
+	param : IDENTIFIER ASSIGN expr .  (27)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	RPAREN  reduce 27
+	COMMA  reduce 27
+
+
+state 311
+	param : IDENTIFIER COLON type_expr . ASSIGN expr  (25)
+	param : IDENTIFIER COLON type_expr .  (26)
+	type_expr : type_expr . QUESTION  (136)
+
+	ASSIGN  shift 326
+	QUESTION  shift 237
+	RPAREN  reduce 26
+	COMMA  reduce 26
+
+
+state 312
+	return_type : COLON . type_expr  (30)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 327
+
+
+state 313
+	function_def : DEFINE FUNCTION IDENTIFIER LPAREN params RPAREN return_type . BEGIN stmt_list END  (19)
+
+	BEGIN  shift 328
+	.  error
+
+
+state 314
+	param_list : param_list COMMA param .  (24)
+
+	.  reduce 24
+
+
+state 315
+	field_def : VAR IDENTIFIER . COLON type_expr terminator  (145)
+	field_def : VAR IDENTIFIER . COLON type_expr ASSIGN expr terminator  (146)
+
+	COLON  shift 329
+	.  error
+
+
+state 316
+	method_def : DEFINE METHOD . IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END  (144)
+
+	IDENTIFIER  shift 330
+	.  error
+
+
+state 317
+	class_def : DEFINE CLASS IDENTIFIER EXTENDS IDENTIFIER BEGIN class_body . END  (140)
+	class_body : class_body . method_def  (142)
+	class_body : class_body . field_def  (143)
+
+	END  shift 331
+	VAR  shift 282
+	DEFINE  shift 283
+	.  error
+
+	method_def  goto 284
+	field_def  goto 285
+
+
+state 318
+	event_def : EVENT IDENTIFIER . LPAREN params RPAREN terminator  (151)
+
+	LPAREN  shift 332
+	.  error
+
+
+state 319
+	function_def : DEFINE ASYNC FUNCTION IDENTIFIER LPAREN params RPAREN . return_type BEGIN stmt_list END  (20)
+	return_type : .  (29)
+
+	COLON  shift 312
+	BEGIN  reduce 29
+
+	return_type  goto 333
+
+
+state 320
+	type_expr : type_expr . QUESTION  (136)
+	type_expr_list : type_expr_list COMMA type_expr .  (138)
+
+	QUESTION  shift 237
+	GREATER  reduce 138
+	COMMA  reduce 138
+
+
+state 321
+	type_expr : MAP LESS type_expr COMMA type_expr . GREATER  (132)
+	type_expr : type_expr . QUESTION  (136)
+
+	GREATER  shift 334
+	QUESTION  shift 237
+	.  error
+
+
+state 322
+	if_stmt : IF expr THEN stmt_list ELSE stmt_list END IF .  (63)
+
+	.  reduce 63
+
+
+state 323
+	stmt_list : stmt_list . stmt  (32)
+	elif_list : ELIF expr THEN stmt_list .  (65)
+	elif_list : ELIF expr THEN stmt_list . ELSE stmt_list  (66)
+	elif_list : ELIF expr THEN stmt_list . elif_list  (67)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	ELSE  shift 335
+	ELIF  shift 243
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	END  reduce 65
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	elif_list  goto 336
+	literal  goto 67
+
+
+state 324
+	for_stmt : FOR IDENTIFIER IN expr DO stmt_list END FOR .  (70)
+
+	.  reduce 70
+
+
+state 325
+	for_stmt : FOR EACH IDENTIFIER IN expr DO stmt_list END . FOR  (69)
+
+	FOR  shift 337
+	.  error
+
+
+state 326
+	param : IDENTIFIER COLON type_expr ASSIGN . expr  (25)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 338
+	literal  goto 67
+
+
+state 327
+	return_type : COLON type_expr .  (30)
+	type_expr : type_expr . QUESTION  (136)
+
+	QUESTION  shift 237
+	BEGIN  reduce 30
+
+
+state 328
+	function_def : DEFINE FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN . stmt_list END  (19)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 339
+
+
+state 329
+	field_def : VAR IDENTIFIER COLON . type_expr terminator  (145)
+	field_def : VAR IDENTIFIER COLON . type_expr ASSIGN expr terminator  (146)
+
+	IDENTIFIER  shift 196
+	INTEGER  shift 197
+	FLOAT  shift 198
+	STRING  shift 199
+	BOOLEAN  shift 200
+	FUNCTION  shift 201
+	NULL  shift 202
+	LIST  shift 203
+	MAP  shift 204
+	SET  shift 205
+	TUPLE  shift 206
+	.  error
+
+	type_expr  goto 340
+
+
+state 330
+	method_def : DEFINE METHOD IDENTIFIER . LPAREN params RPAREN return_type BEGIN stmt_list END  (144)
+
+	LPAREN  shift 341
+	.  error
+
+
+state 331
+	class_def : DEFINE CLASS IDENTIFIER EXTENDS IDENTIFIER BEGIN class_body END .  (140)
+
+	.  reduce 140
+
+
+state 332
+	event_def : EVENT IDENTIFIER LPAREN . params RPAREN terminator  (151)
+	params : .  (21)
+
+	IDENTIFIER  shift 249
+	RPAREN  reduce 21
+
+	params  goto 342
+	param_list  goto 251
+	param  goto 252
+
+
+state 333
+	function_def : DEFINE ASYNC FUNCTION IDENTIFIER LPAREN params RPAREN return_type . BEGIN stmt_list END  (20)
+
+	BEGIN  shift 343
+	.  error
+
+
+state 334
+	type_expr : MAP LESS type_expr COMMA type_expr GREATER .  (132)
+
+	.  reduce 132
+
+
+state 335
+	elif_list : ELIF expr THEN stmt_list ELSE . stmt_list  (66)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 344
+
+
+state 336
+	elif_list : ELIF expr THEN stmt_list elif_list .  (67)
+
+	.  reduce 67
+
+
+state 337
+	for_stmt : FOR EACH IDENTIFIER IN expr DO stmt_list END FOR .  (69)
+
+	.  reduce 69
+
+
+state 338
+	param : IDENTIFIER COLON type_expr ASSIGN expr .  (25)
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	DOT  shift 128
+	RPAREN  reduce 25
+	COMMA  reduce 25
+
+
+state 339
+	function_def : DEFINE FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list . END  (19)
+	stmt_list : stmt_list . stmt  (32)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 345
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 340
+	type_expr : type_expr . QUESTION  (136)
+	field_def : VAR IDENTIFIER COLON type_expr . terminator  (145)
+	field_def : VAR IDENTIFIER COLON type_expr . ASSIGN expr terminator  (146)
+	terminator : .  (49)
+
+	ASSIGN  shift 346
+	SEMICOLON  shift 97
+	QUESTION  shift 237
+	END  reduce 49
+	VAR  reduce 49
+	DEFINE  reduce 49
+
+	terminator  goto 347
+
+
+state 341
+	method_def : DEFINE METHOD IDENTIFIER LPAREN . params RPAREN return_type BEGIN stmt_list END  (144)
+	params : .  (21)
+
+	IDENTIFIER  shift 249
+	RPAREN  reduce 21
+
+	params  goto 348
+	param_list  goto 251
+	param  goto 252
+
+
+state 342
+	event_def : EVENT IDENTIFIER LPAREN params . RPAREN terminator  (151)
+
+	RPAREN  shift 349
+	.  error
+
+
+state 343
+	function_def : DEFINE ASYNC FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN . stmt_list END  (20)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 350
+
+
+state 344
+	stmt_list : stmt_list . stmt  (32)
+	elif_list : ELIF expr THEN stmt_list ELSE stmt_list .  (66)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	END  reduce 66
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 345
+	function_def : DEFINE FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END .  (19)
+
+	.  reduce 19
+
+
+state 346
+	field_def : VAR IDENTIFIER COLON type_expr ASSIGN . expr terminator  (146)
+
+	IDENTIFIER  shift 83
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	IF  shift 84
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	expr  goto 351
+	literal  goto 67
+
+
+state 347
+	field_def : VAR IDENTIFIER COLON type_expr terminator .  (145)
+
+	.  reduce 145
+
+
+state 348
+	method_def : DEFINE METHOD IDENTIFIER LPAREN params . RPAREN return_type BEGIN stmt_list END  (144)
+
+	RPAREN  shift 352
+	.  error
+
+
+state 349
+	event_def : EVENT IDENTIFIER LPAREN params RPAREN . terminator  (151)
+	terminator : .  (49)
+
+	SEMICOLON  shift 97
+	END  reduce 49
+	DEFINE  reduce 49
+	EVENT  reduce 49
+
+	terminator  goto 353
+
+
+state 350
+	function_def : DEFINE ASYNC FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list . END  (20)
+	stmt_list : stmt_list . stmt  (32)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 354
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 351
+	expr : expr . PLUS expr  (88)
+	expr : expr . MINUS expr  (89)
+	expr : expr . MULTIPLY expr  (90)
+	expr : expr . DIVIDE expr  (91)
+	expr : expr . MODULO expr  (92)
+	expr : expr . POWER expr  (93)
+	expr : expr . EQUAL expr  (94)
+	expr : expr . NOTEQUAL expr  (95)
+	expr : expr . LESS expr  (96)
+	expr : expr . GREATER expr  (97)
+	expr : expr . LESSEQUAL expr  (98)
+	expr : expr . GREATEREQUAL expr  (99)
+	expr : expr . AND expr  (100)
+	expr : expr . OR expr  (101)
+	expr : expr . DOT IDENTIFIER  (106)
+	expr : expr . LBRACKET expr RBRACKET  (107)
+	field_def : VAR IDENTIFIER COLON type_expr ASSIGN expr . terminator  (146)
+	terminator : .  (49)
+
+	AND  shift 113
+	OR  shift 114
+	PLUS  shift 115
+	MINUS  shift 116
+	MULTIPLY  shift 117
+	DIVIDE  shift 118
+	MODULO  shift 119
+	POWER  shift 120
+	EQUAL  shift 121
+	NOTEQUAL  shift 122
+	LESS  shift 123
+	GREATER  shift 124
+	LESSEQUAL  shift 125
+	GREATEREQUAL  shift 126
+	LBRACKET  shift 127
+	SEMICOLON  shift 97
+	DOT  shift 128
+	END  reduce 49
+	VAR  reduce 49
+	DEFINE  reduce 49
+
+	terminator  goto 355
+
+
+state 352
+	method_def : DEFINE METHOD IDENTIFIER LPAREN params RPAREN . return_type BEGIN stmt_list END  (144)
+	return_type : .  (29)
+
+	COLON  shift 312
+	BEGIN  reduce 29
+
+	return_type  goto 356
+
+
+state 353
+	event_def : EVENT IDENTIFIER LPAREN params RPAREN terminator .  (151)
+
+	.  reduce 151
+
+
+state 354
+	function_def : DEFINE ASYNC FUNCTION IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END .  (20)
+
+	.  reduce 20
+
+
+state 355
+	field_def : VAR IDENTIFIER COLON type_expr ASSIGN expr terminator .  (146)
+
+	.  reduce 146
+
+
+state 356
+	method_def : DEFINE METHOD IDENTIFIER LPAREN params RPAREN return_type . BEGIN stmt_list END  (144)
+
+	BEGIN  shift 357
+	.  error
+
+
+state 357
+	method_def : DEFINE METHOD IDENTIFIER LPAREN params RPAREN return_type BEGIN . stmt_list END  (144)
+	stmt_list : .  (31)
+
+	.  reduce 31
+
+	stmt_list  goto 358
+
+
+state 358
+	stmt_list : stmt_list . stmt  (32)
+	method_def : DEFINE METHOD IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list . END  (144)
+
+	IDENTIFIER  shift 20
+	INTEGER  shift 21
+	FLOAT  shift 22
+	STRING  shift 23
+	END  shift 359
+	VAR  shift 25
+	CONST  shift 26
+	IF  shift 27
+	WHILE  shift 28
+	FOR  shift 29
+	DEFINE  shift 159
+	IMPORT  shift 7
+	EXPORT  shift 31
+	RETURN  shift 32
+	BREAK  shift 33
+	CONTINUE  shift 34
+	TRY  shift 35
+	THROW  shift 36
+	TRUE  shift 37
+	FALSE  shift 38
+	NULL  shift 39
+	NOT  shift 40
+	MINUS  shift 41
+	LPAREN  shift 42
+	LBRACE  shift 43
+	LBRACKET  shift 44
+	.  error
+
+	import_spec  goto 45
+	stmt  goto 161
+	function_def  goto 162
+	expr  goto 52
+	expr_stmt  goto 53
+	var_decl  goto 54
+	const_decl  goto 55
+	assign_stmt  goto 56
+	if_stmt  goto 57
+	while_stmt  goto 58
+	for_stmt  goto 59
+	return_stmt  goto 60
+	break_stmt  goto 61
+	continue_stmt  goto 62
+	try_stmt  goto 63
+	throw_stmt  goto 64
+	import_stmt  goto 65
+	export_stmt  goto 66
+	literal  goto 67
+
+
+state 359
+	method_def : DEFINE METHOD IDENTIFIER LPAREN params RPAREN return_type BEGIN stmt_list END .  (144)
+
+	.  reduce 144
+
+
+Rules never reduced:
+	catch_list : CATCH IDENTIFIER stmt_list  (77)
+
+
+State 20 contains 1 shift/reduce conflict.
+State 32 contains 13 shift/reduce conflicts.
+State 48 contains 26 reduce/reduce conflicts.
+State 52 contains 2 shift/reduce conflicts.
+State 83 contains 1 shift/reduce conflict.
+State 98 contains 2 shift/reduce conflicts.
+State 103 contains 2 shift/reduce conflicts.
+State 104 contains 2 shift/reduce conflicts.
+State 105 contains 2 shift/reduce conflicts.
+State 106 contains 1 shift/reduce conflict.
+State 133 contains 2 shift/reduce conflicts.
+State 134 contains 2 shift/reduce conflicts.
+State 135 contains 2 shift/reduce conflicts.
+State 136 contains 2 shift/reduce conflicts.
+State 137 contains 2 shift/reduce conflicts.
+State 146 contains 13 shift/reduce conflicts.
+State 172 contains 2 shift/reduce conflicts.
+State 173 contains 2 shift/reduce conflicts.
+State 174 contains 2 shift/reduce conflicts.
+State 175 contains 2 shift/reduce conflicts.
+State 176 contains 2 shift/reduce conflicts.
+State 177 contains 2 shift/reduce conflicts.
+State 178 contains 2 shift/reduce conflicts.
+State 179 contains 2 shift/reduce conflicts.
+State 180 contains 2 shift/reduce conflicts.
+State 181 contains 2 shift/reduce conflicts.
+State 182 contains 2 shift/reduce conflicts.
+State 183 contains 2 shift/reduce conflicts.
+State 184 contains 2 shift/reduce conflicts.
+State 185 contains 2 shift/reduce conflicts.
+State 195 contains 2 shift/reduce conflicts.
+State 208 contains 2 shift/reduce conflicts.
+State 258 contains 2 reduce/reduce conflicts.
+State 267 contains 2 shift/reduce conflicts.
+State 268 contains 2 shift/reduce conflicts.
+State 273 contains 16 shift/reduce conflicts.
+
+
+109 terminals, 49 nonterminals
+156 grammar rules, 360 states

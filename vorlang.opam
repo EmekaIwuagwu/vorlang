@@ -1,0 +1,38 @@
+opam-version: "2.0"
+name: "vorlang"
+version: "0.1.0"
+maintainer: "Vorlang Community"
+authors: ["Vorlang Community"]
+license: "MIT"
+homepage: "https://vorlang.org"
+doc: "https://docs.vorlang.org"
+bug-reports: "https://github.com/vorlang/vorlang/issues"
+dev-repo: "git+https://github.com/vorlang/vorlang.git"
+description: "Vorlang programming language compiler and runtime"
+tags: [
+  "compiler"
+  "programming-language"
+  "blockchain"
+  "smart-contracts"
+]
+
+depends: [
+  "ocaml"
+  "ocamlbuild"
+  "menhir"
+  "ounit" {with-test}
+]
+
+build: [
+  ["ocamlbuild" "-use-ocamlfind" "-pkg" "str" "-pkg" "menhirLib" "vorlang.native"]
+]
+
+install: [
+  ["cp" "_build/vorlang.native" "%{bin}%/vorlang"]
+]
+
+remove: [
+  ["rm" "-f" "%{bin}%/vorlang"]
+]
+
+available: [ocaml-version >= "4.08"]

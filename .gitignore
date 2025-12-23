@@ -1,0 +1,15 @@
+# OCaml build artifacts
+_build/
+*.byte
+*.native
+*.cm*
+*.o
+*.a
+
+# Executables
+vorlang.byte
+vorlang.native
+
+# Editor / OS junk
+.DS_Store
+Thumbs.db
