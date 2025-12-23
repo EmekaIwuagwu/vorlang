@@ -52,8 +52,8 @@ let compile_file filename =
       exit 1
     );
     
-    (* Parse the file *)
-    let program = parse_file filename in
+    (* Parse the file with imports resolved *)
+    let program = parse_file_with_imports filename in
     
     (* Semantic analysis *)
     analyze_program program;
@@ -127,7 +127,7 @@ let main () =
   | Compile filename -> 
       let bytecode = compile_file filename in
       (* For debugging, we re-parse for the AST or we could store it *)
-      let program = parse_file filename in
+      let program = parse_file_with_imports filename in
       print_program program;
       print_bytecode bytecode;
       Printf.printf "Compilation successful!\n"

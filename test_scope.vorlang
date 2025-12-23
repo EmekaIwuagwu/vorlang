@@ -1,0 +1,9 @@
+program TestSimple
+begin
+    var x = 1
+    define function f()
+    begin
+        print(x)
+    end
+    f()
+end

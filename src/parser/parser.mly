@@ -18,9 +18,9 @@
 %token <string> STRING
 %token <bool> BOOLEAN
 
-%token PROGRAM BEGIN END VAR CONST
-%token IF THEN ELSE ELIF WHILE DO FOR EACH IN
-%token DEFINE FUNCTION METHOD CLASS CONTRACT
+%token PROGRAM BEGIN END VAR CONST LET
+%token IF THEN ELSE ELIF WHILE DO FOR EACH IN EXTENDS
+%token DEFINE FUNCTION PROCEDURE METHOD CLASS CONTRACT
 %token MODULE IMPORT AS FROM EXPORT ALL
 %token RETURN BREAK CONTINUE YIELD
 %token TRY CATCH FINALLY THROW
@@ -29,8 +29,9 @@
 %token AND OR NOT IS
 %token LIST MAP SET TUPLE
 %token SELF THIS SUPER NEW
-
-%token ENDIF ENDWHILE ENDFOR ENDMODULE ENDFUNCTION ENDCLASS ENDCONTRACT ENDMETHOD ENDTRY
+%token EVENT EMIT DEPLOY TO BUILD CHAIN BASED ON
+%token CONSENSUS CROSSCHAIN CALL WITH OTHERWISE
+%token MACRO MATCH CASE WHEN
 
 %token ENDIF ENDWHILE ENDFOR ENDMODULE ENDFUNCTION ENDCLASS ENDCONTRACT ENDMETHOD ENDTRY
 
@@ -92,6 +93,11 @@ any_id:
   | MAP { "map" }
   | SET { "set" }
   | LIST { "list" }
+  | EVENT { "event" }
+  | TO { "to" }
+  | BUILD { "build" }
+  | CHAIN { "chain" }
+  | CALL { "call" }
 ;
 
 function_def:
@@ -179,9 +185,7 @@ const_decl:
 ;
 
 assign_target:
-  | any_id { Identifier $1 }
-  | expr DOT any_id { MemberAccess($1, $3) }
-  | expr LBRACKET expr RBRACKET { IndexAccess($1, $3) }
+  | postfix_expr { $1 }
 ;
 
 assign_stmt:
@@ -284,9 +288,9 @@ unary_expr:
 
 postfix_expr:
   | primary_expr { $1 }
-  | postfix_expr DOT any_id { MemberAccess($1, $3) }
-  | postfix_expr LBRACKET expr RBRACKET { IndexAccess($1, $3) }
-  | postfix_expr LPAREN expr_list RPAREN { 
+  | postfix_expr DOT any_id %prec DOT { MemberAccess($1, $3) }
+  | postfix_expr LBRACKET expr RBRACKET %prec LBRACKET { IndexAccess($1, $3) }
+  | postfix_expr LPAREN expr_list RPAREN %prec LPAREN { 
       match $1 with
       | Identifier id -> FunctionCall(id, $3)
       | MemberAccess(Identifier modname, funcname) -> FunctionCall(modname ^ "." ^ funcname, $3)
@@ -301,6 +305,7 @@ primary_expr:
   | LBRACKET expr_list RBRACKET { ListLiteral $2 }
   | LBRACE map_list RBRACE { MapLiteral $2 }
   | TUPLE LPAREN expr_list RPAREN { TupleLiteral $3 }
+  | NEW any_id LPAREN expr_list RPAREN { New($2, $4) }
 ;
 
 expr_list:
@@ -350,17 +355,17 @@ type_expr_list:
 
 class_def:
   | DEFINE CLASS any_id BEGIN class_body END
-    { { name = $3; fields = fst $5; methods = snd $5; parent = None } }
+    { { name = $3; fields = (let f, m, e = $5 in f); methods = (let f, m, e = $5 in m); parent = None } }
   | DEFINE CLASS any_id BEGIN class_body ENDCLASS
-    { { name = $3; fields = fst $5; methods = snd $5; parent = None } }
+    { { name = $3; fields = (let f, m, e = $5 in f); methods = (let f, m, e = $5 in m); parent = None } }
   | DEFINE CLASS any_id EXTENDS any_id BEGIN class_body END
-    { { name = $3; fields = fst $7; methods = snd $7; parent = Some $5 } }
+    { { name = $3; fields = (let f, m, e = $7 in f); methods = (let f, m, e = $7 in m); parent = Some $5 } }
 ;
 
 class_body:
-  | /* empty */ { ([], []) }
-  | class_body method_def { (fst $1, (snd $1) @ [$2]) }
-  | class_body field_def { ((fst $1) @ [$2], snd $1) }
+  | /* empty */ { ([], [], []) }
+  | class_body method_def { let f, m, e = $1 in (f, m @ [$2], e) }
+  | class_body field_def { let f, m, e = $1 in (f @ [$2], m, e) }
 ;
 
 method_def:
@@ -377,15 +382,16 @@ field_def:
 
 contract_def:
   | DEFINE CONTRACT any_id BEGIN contract_body END
-    { { name = $3; fields = fst $5; methods = snd $5; events = [] } }
+    { let f, m, e = $5 in { name = $3; fields = f; methods = m; events = e } }
   | DEFINE CONTRACT any_id BEGIN contract_body ENDCONTRACT
-    { { name = $3; fields = fst $5; methods = snd $5; events = [] } }
+    { let f, m, e = $5 in { name = $3; fields = f; methods = m; events = e } }
 ;
 
 contract_body:
-  | /* empty */ { ([], []) }
-  | contract_body method_def { (fst $1, (snd $1) @ [$2]) }
-  | contract_body event_def { $1 }
+  | /* empty */ { ([], [], []) }
+  | contract_body method_def { let f, m, e = $1 in (f, m @ [$2], e) }
+  | contract_body field_def { let f, m, e = $1 in (f @ [$2], m, e) }
+  | contract_body event_def { let f, m, e = $1 in (f, m, e @ [$2]) }
 ;
 
 event_def:

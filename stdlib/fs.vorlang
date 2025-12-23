@@ -18,7 +18,7 @@ end
  */
 define function readLines(path: String) : Array
 begin
-    return string.splitLines(read(path))
+    return String.splitLines(FS.read(path))
 end
 
 /** 
@@ -45,7 +45,7 @@ end
  */
 define function writeLines(path: String, lines: Array)
 begin
-    write(path, string.join(lines, "\n"))
+    FS.write(path, String.join(lines, "\n"))
 end
 
 /** 
@@ -88,7 +88,7 @@ end
  */
 define function copy(src: String, dest: String)
 begin
-    write(dest, read(src))
+    FS.write(dest, FS.read(src))
 end
 
 /** 
@@ -96,7 +96,7 @@ end
  */
 define function move(src: String, dest: String)
 begin
-    rename(src, dest)
+    FS.rename(src, dest)
 end
 
 // File metadata
@@ -171,7 +171,7 @@ end
  */
 define function join(parts: Array) : String
 begin
-    return string.join(parts, "/")
+    return String.join(parts, "/")
 end
 
 /** 
@@ -179,9 +179,9 @@ end
  */
 define function dirname(path: String) : String
 begin
-    var idx = string.lastIndexOf(path, "/")
+    var idx = String.lastIndexOf(path, "/")
     if idx == -1 then return "." end if
-    return string.slice(path, 0, idx)
+    return String.slice(path, 0, idx)
 end
 
 /** 
@@ -189,9 +189,9 @@ end
  */
 define function basename(path: String) : String
 begin
-    var idx = string.lastIndexOf(path, "/")
+    var idx = String.lastIndexOf(path, "/")
     if idx == -1 then return path end if
-    return string.slice(path, idx + 1, length(path))
+    return String.slice(path, idx + 1, String.length(path))
 end
 
 /** 
@@ -199,9 +199,9 @@ end
  */
 define function extension(path: String) : String
 begin
-    var idx = string.lastIndexOf(path, ".")
+    var idx = String.lastIndexOf(path, ".")
     if idx == -1 then return "" end if
-    return string.slice(path, idx + 1, length(path))
+    return String.slice(path, idx + 1, String.length(path))
 end
 
 end module

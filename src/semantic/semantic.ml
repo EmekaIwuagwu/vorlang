@@ -20,9 +20,10 @@ type symbol = {
   kind : symbol_kind;
   typ : type_expr;
   mutable value : expr option;
+  mutable scope : scope option;
 }
 
-type scope = {
+and scope = {
   symbols : (string, symbol) Hashtbl.t;
   parent : scope option;
 }
@@ -55,7 +56,10 @@ let exit_scope env =
 let add_symbol env name kind typ value =
   if Hashtbl.mem env.current_scope.symbols name then
     raise (Semantic_error ("Symbol '" ^ name ^ "' already declared"));
-  Hashtbl.add env.current_scope.symbols name { name; kind; typ; value }
+  Hashtbl.add env.current_scope.symbols name { name; kind; typ; value; scope = None }
+
+let add_builtin env name kind typ value =
+  Hashtbl.replace env.current_scope.symbols name { name; kind; typ; value; scope = None }
 
 (* Lookup a symbol in current scope and parent scopes *)
 let lookup_symbol env name =
@@ -152,12 +156,27 @@ let rec analyze_expr env = function
            rhs_type
        | _ -> raise (Semantic_error "Invalid assignment target"))
   | FunctionCall(name, args) ->
-      (match lookup_symbol env name with
+      let symbol_opt = 
+        if String.contains name '.' then
+          let parts = String.split_on_char '.' name in
+          match parts with
+          | [modname; funcname] ->
+              (match lookup_symbol env modname with
+               | Some mod_sym ->
+                   (match mod_sym.scope with
+                    | Some sc -> Hashtbl.find_opt sc.symbols funcname
+                    | None -> None)
+               | None -> None)
+          | _ -> None
+        else
+          lookup_symbol env name
+      in
+      (match symbol_opt with
        | Some symbol ->
            (match normalize_type symbol.typ with
             | TFunction(param_types, return_type) ->
                 if List.length args != List.length param_types then
-                  raise (Semantic_error ("Argument count mismatch in function call: " ^ name));
+                   raise (Semantic_error ("Argument count mismatch in function call: " ^ name));
                 List.iter2 (fun arg param_type ->
                   let arg_type = analyze_expr env arg in
                   if not (types_compatible param_type arg_type) then
@@ -169,12 +188,31 @@ let rec analyze_expr env = function
                 List.iter (fun arg -> ignore (analyze_expr env arg)) args;
                 TIdentifier "Any"
             | _ -> raise (Semantic_error ("Cannot call non-function: " ^ name)))
-       | None -> raise (Semantic_error ("Undefined function: " ^ name)))
+       | None -> 
+           (* Fallback for system primitives that might not be in symtab yet or are magic *)
+           if List.mem name ["print"; "str"; "typeOf"; "panic"; "toString"; "toInt"; "toFloat"; "toBool"] ||
+              String.starts_with ~prefix:"Sys." name ||
+              String.starts_with ~prefix:"List." name ||
+              String.starts_with ~prefix:"Map." name ||
+              String.starts_with ~prefix:"String." name ||
+              String.starts_with ~prefix:"Maths." name then
+             (List.iter (fun arg -> ignore (analyze_expr env arg)) args; TIdentifier "Any")
+           else
+             raise (Semantic_error ("Undefined function: " ^ name)))
   | MemberAccess(expr, member) ->
-      ignore (analyze_expr env expr);
-      (* For now, we'll assume member access is valid *)
-      (* In a full implementation, we'd check if the member exists *)
-      TIdentifier "Any"
+      let obj_type = analyze_expr env expr in
+      (match obj_type with
+       | TIdentifier id ->
+           (match lookup_symbol env id with
+            | Some symbol ->
+                (match symbol.scope with
+                 | Some sc ->
+                     (match Hashtbl.find_opt sc.symbols member with
+                      | Some s -> s.typ
+                      | None -> TIdentifier "Any")
+                 | None -> TIdentifier "Any")
+            | None -> TIdentifier "Any")
+       | _ -> TIdentifier "Any")
   | IndexAccess(expr, index) ->
       ignore (analyze_expr env expr);
       ignore (analyze_expr env index);
@@ -229,6 +267,12 @@ let rec analyze_expr env = function
       if not (types_compatible t_type f_type) then
         raise (Semantic_error "Conditional branches must have compatible types");
       t_type
+  | New(class_name, args) ->
+      (match lookup_symbol env class_name with
+       | Some symbol when symbol.kind = ClassSymbol ->
+           List.iter (fun arg -> ignore (analyze_expr env arg)) args;
+           TIdentifier class_name
+       | _ -> raise (Semantic_error ("Undefined class: " ^ class_name)))
 
 and analyze_literal = function
   | LInteger _ -> TInteger
@@ -281,9 +325,15 @@ and analyze_binary_op op left_type right_type =
       else 
         TInteger
   | Eq | Ne | Lt | Gt | Le | Ge ->
-      if not (types_compatible left_type right_type) then
-        raise (Semantic_error "Comparison operations require compatible types");
-      TBoolean
+      let left_normalized = normalize_type left_type in
+      let right_normalized = normalize_type right_type in
+      let is_numeric t = types_compatible t TInteger || types_compatible t TFloat in
+      if is_numeric left_normalized && is_numeric right_normalized then
+        TBoolean
+      else if types_compatible left_type right_type then
+        TBoolean
+      else
+        raise (Semantic_error "Comparison operations require compatible types")
   | And | Or ->
       if not (types_compatible left_type TBoolean && types_compatible right_type TBoolean) then
         raise (Semantic_error "Logical operations require boolean types");
@@ -389,20 +439,64 @@ and analyze_function env func =
 and analyze_declaration_body env = function
   | DFunction func -> analyze_function env func
   | DClass class_def ->
+      let parent_scope = env.current_scope in
       enter_scope env;
+      let class_scope = env.current_scope in
+      (match Hashtbl.find_opt parent_scope.symbols class_def.name with
+       | Some s -> s.scope <- Some class_scope
+       | None -> ());
       List.iter (fun (name, typ, init) ->
+        add_symbol env name VarSymbol typ None;
         match init with
         | Some expr -> ignore (analyze_expr env expr)
         | None -> ()
       ) class_def.fields;
+      List.iter (fun (func : function_def) ->
+        let param_types = List.map (fun (_, t, _) -> t) func.params in
+        let ret_type = match func.return_type with Some t -> t | None -> TNull in
+        add_symbol env func.name FunctionSymbol (TFunction(param_types, ret_type)) None
+      ) class_def.methods;
       List.iter (analyze_function env) class_def.methods;
       exit_scope env
   | DContract contract_def ->
+      let parent_scope = env.current_scope in
       enter_scope env;
+      let contract_scope = env.current_scope in
+      (match Hashtbl.find_opt parent_scope.symbols contract_def.name with
+       | Some s -> s.scope <- Some contract_scope
+       | None -> ());
+      List.iter (fun (name, typ, init) ->
+        add_symbol env name VarSymbol typ None;
+        match init with
+        | Some expr -> ignore (analyze_expr env expr)
+        | None -> ()
+      ) contract_def.fields;
+      List.iter (fun (func : function_def) ->
+        let param_types = List.map (fun (_, t, _) -> t) func.params in
+        let ret_type = match func.return_type with Some t -> t | None -> TNull in
+        add_symbol env func.name FunctionSymbol (TFunction(param_types, ret_type)) None
+      ) contract_def.methods;
       List.iter (analyze_function env) contract_def.methods;
       exit_scope env
   | DModule module_def ->
+      let parent_scope = env.current_scope in
       enter_scope env;
+      let module_scope = env.current_scope in
+      (match Hashtbl.find_opt parent_scope.symbols module_def.name with
+       | Some s -> s.scope <- Some module_scope
+       | None -> ());
+      (* Pass 1: Add members *)
+      List.iter (fun decl ->
+        match decl with
+        | DFunction func ->
+            let param_types = List.map (fun (_, t, _) -> t) func.params in
+            let ret_type = match func.return_type with Some t -> t | None -> TNull in
+            add_symbol env func.name FunctionSymbol (TFunction(param_types, ret_type)) None
+        | DClass c -> add_symbol env c.name ClassSymbol (TIdentifier c.name) None
+        | DContract c -> add_symbol env c.name ContractSymbol (TIdentifier c.name) None
+        | DModule m -> add_symbol env m.name ModuleSymbol (TIdentifier m.name) None
+      ) module_def.declarations;
+      (* Pass 2: Analyze bodies *)
       List.iter (analyze_declaration_body env) module_def.declarations;
       exit_scope env
 
@@ -411,17 +505,38 @@ let rec analyze_program program =
   let env = create_environment () in
   
   (* Add built-in functions and types to global scope *)
-  add_symbol env "print" FunctionSymbol (TFunction([TString], TNull)) None;
-  add_symbol env "len" FunctionSymbol (TFunction([TIdentifier "Any"], TInteger)) None;
-  add_symbol env "str" FunctionSymbol (TFunction([TIdentifier "Any"], TString)) None;
-  add_symbol env "Net.get" FunctionSymbol (TFunction([TString], TMap(TString, TIdentifier "Any"))) None;
-  add_symbol env "Net.buildUrl" FunctionSymbol (TFunction([TString; TString; TString], TString)) None;
-  add_symbol env "IO.println" FunctionSymbol (TFunction([TIdentifier "Any"], TNull)) None;
-  add_symbol env "IO.printBanner" FunctionSymbol (TFunction([TString], TNull)) None;
-  add_symbol env "int" FunctionSymbol (TFunction([TIdentifier "Any"], TInteger)) None;
-  add_symbol env "float" FunctionSymbol (TFunction([TIdentifier "Any"], TFloat)) None;
-  add_symbol env "bool" FunctionSymbol (TFunction([TIdentifier "Any"], TBoolean)) None;
-  add_symbol env "length" FunctionSymbol (TFunction([TIdentifier "Any"], TInteger)) None;
+  (* Add built-in primitives to global scope *)
+  add_builtin env "print" FunctionSymbol (TFunction([TIdentifier "Any"], TNull)) None;
+  add_builtin env "str" FunctionSymbol (TFunction([TIdentifier "Any"], TString)) None;
+  add_builtin env "typeOf" FunctionSymbol (TFunction([TIdentifier "Any"], TString)) None;
+  add_builtin env "panic" FunctionSymbol (TFunction([TIdentifier "Any"], TNull)) None;
+  add_builtin env "toString" FunctionSymbol (TFunction([TIdentifier "Any"], TString)) None;
+  add_builtin env "toInt" FunctionSymbol (TFunction([TIdentifier "Any"], TInteger)) None;
+  add_builtin env "toFloat" FunctionSymbol (TFunction([TIdentifier "Any"], TFloat)) None;
+  add_builtin env "toBool" FunctionSymbol (TFunction([TIdentifier "Any"], TBoolean)) None;
+  add_builtin env "Sys.typeOf" FunctionSymbol (TFunction([TIdentifier "Any"], TString)) None;
+  add_builtin env "Sys.panic" FunctionSymbol (TFunction([TIdentifier "Any"], TNull)) None;
+  add_builtin env "Sys.toString" FunctionSymbol (TFunction([TIdentifier "Any"], TString)) None;
+  add_builtin env "Sys.toInt" FunctionSymbol (TFunction([TIdentifier "Any"], TInteger)) None;
+  add_builtin env "Sys.toFloat" FunctionSymbol (TFunction([TIdentifier "Any"], TFloat)) None;
+  add_builtin env "Sys.toBool" FunctionSymbol (TFunction([TIdentifier "Any"], TBoolean)) None;
+  add_builtin env "List.length" FunctionSymbol (TFunction([TIdentifier "Any"], TInteger)) None;
+  add_builtin env "List.append" FunctionSymbol (TFunction([TIdentifier "Any"; TIdentifier "Any"], TNull)) None;
+  add_builtin env "Map.size" FunctionSymbol (TFunction([TIdentifier "Any"], TInteger)) None;
+  add_builtin env "Map.keys" FunctionSymbol (TFunction([TIdentifier "Any"], TList(TString))) None;
+  add_builtin env "Maths.floor" FunctionSymbol (TFunction([TFloat], TInteger)) None;
+  add_builtin env "Maths.ceil" FunctionSymbol (TFunction([TFloat], TInteger)) None;
+  add_builtin env "Maths.sqrt" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.sin" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.cos" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.random" FunctionSymbol (TFunction([], TFloat)) None;
+  add_builtin env "String.length" FunctionSymbol (TFunction([TString], TInteger)) None;
+  add_builtin env "String.slice" FunctionSymbol (TFunction([TString; TInteger; TInteger], TString)) None;
+  add_builtin env "String.split" FunctionSymbol (TFunction([TString; TString], TList(TString))) None;
+  add_builtin env "String.indexOf" FunctionSymbol (TFunction([TString; TString], TInteger)) None;
+  add_builtin env "String.lastIndexOf" FunctionSymbol (TFunction([TString; TString], TInteger)) None;
+  add_builtin env "String.upper" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "String.lower" FunctionSymbol (TFunction([TString], TString)) None;
   
   (* Analyze imports *)
   List.iter (fun _ -> ()) program.imports;
@@ -432,7 +547,18 @@ let rec analyze_program program =
     | DFunction func ->
         let param_types = List.map (fun (_, t, _) -> t) func.params in
         let ret_type = match func.return_type with Some t -> t | None -> TNull in
-        add_symbol env func.name FunctionSymbol (TFunction(param_types, ret_type)) None
+        let name = func.name in
+        let is_primitive = List.mem name [
+          "print"; "str"; "typeOf"; "panic"; "toString"; "toInt"; "toFloat"; "toBool";
+          "Sys.typeOf"; "Sys.panic"; "Sys.toString"; "Sys.toInt"; "Sys.toFloat"; "Sys.toBool";
+          "List.length"; "List.append"; "Map.size"; "Map.keys";
+          "Maths.floor"; "Maths.ceil"; "Maths.sqrt"; "Maths.sin"; "Maths.cos"; "Maths.random";
+          "String.length"; "String.slice"; "String.split"; "String.indexOf"; "String.lastIndexOf"; "String.upper"; "String.lower"
+        ] in
+        if is_primitive then
+          add_builtin env name FunctionSymbol (TFunction(param_types, ret_type)) None
+        else
+          add_symbol env name FunctionSymbol (TFunction(param_types, ret_type)) None
     | DClass c -> add_symbol env c.name ClassSymbol (TIdentifier c.name) None
     | DContract c -> add_symbol env c.name ContractSymbol (TIdentifier c.name) None
     | DModule m -> add_symbol env m.name ModuleSymbol (TIdentifier m.name) None

@@ -74,8 +74,7 @@ end
  */
 define function floor(x: Float) : Integer
 begin
-    // Internal: implementation mapping
-    return 0
+    return Maths.floor(x) // Native VM hook
 end
 
 /** 
@@ -83,8 +82,7 @@ end
  */
 define function ceil(x: Float) : Integer
 begin
-    // Internal: implementation mapping
-    return 0
+    return Maths.ceil(x) // Native VM hook
 end
 
 /** 
@@ -92,8 +90,7 @@ end
  */
 define function round(x: Float) : Integer
 begin
-    // Internal: implementation mapping
-    return 0
+    return Maths.floor(x + 0.5)
 end
 
 // Power & roots
@@ -112,8 +109,7 @@ end
  */
 define function sqrt(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.sqrt(x) // Native VM hook
 end
 
 /** 
@@ -132,8 +128,7 @@ end
  */
 define function sin(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.sin(x) // Native VM hook
 end
 
 /** 
@@ -141,8 +136,7 @@ end
  */
 define function cos(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.cos(x) // Native VM hook
 end
 
 /** 
@@ -226,8 +220,7 @@ end
  */
 define function random() : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.random() // Native VM hook
 end
 
 /** 
@@ -235,8 +228,7 @@ end
  */
 define function randomInt(min: Integer, max: Integer) : Integer
 begin
-    // Internal: implementation mapping
-    return 0
+    return min + toInt(Maths.random() * toFloat(max - min + 1))
 end
 
 /** 
@@ -244,7 +236,7 @@ end
  */
 define function randomRange(min: Float, max: Float) : Float
 begin
-    return min + (random() * (max - min))
+    return min + (Maths.random() * (max - min))
 end
 
 end module

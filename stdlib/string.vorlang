@@ -17,7 +17,7 @@ define function join(parts: Array, separator: String = "") : String
 begin
     var result = ""
     var i = 0
-    var len = length(parts)
+    var len = List.length(parts)
     while i < len do
         result = result + parts[i]
         if i < len - 1 then
@@ -49,8 +49,7 @@ end
  */
 define function length(s: String) : Integer
 begin
-    // Internal: implementation mapping
-    return 0
+    return String.length(s) // Native VM hook (if implemented) or we need to add to primitives
 end
 
 /** 
@@ -58,7 +57,7 @@ end
  */
 define function isEmpty(s: String) : Bool
 begin
-    return length(s) == 0
+    return String.length(s) == 0
 end
 
 /** 
@@ -66,7 +65,7 @@ end
  */
 define function contains(s: String, substr: String) : Bool
 begin
-    return indexOf(s, substr) != -1
+    return String.indexOf(s, substr) != -1
 end
 
 /** 
@@ -74,9 +73,9 @@ end
  */
 define function startsWith(s: String, prefix: String) : Bool
 begin
-    var len = length(prefix)
-    if length(s) < len then return false end if
-    return slice(s, 0, len) == prefix
+    var len = String.length(prefix)
+    if String.length(s) < len then return false end if
+    return String.slice(s, 0, len) == prefix
 end
 
 /** 
@@ -84,10 +83,10 @@ end
  */
 define function endsWith(s: String, suffix: String) : Bool
 begin
-    var len = length(s)
-    var slen = length(suffix)
+    var len = String.length(s)
+    var slen = String.length(suffix)
     if len < slen then return false end if
-    return slice(s, len - slen, len) == suffix
+    return String.slice(s, len - slen, len) == suffix
 end
 
 // Substring operations
@@ -97,8 +96,7 @@ end
  */
 define function slice(s: String, start: Integer, endIdx: Integer) : String
 begin
-    // Internal: implementation mapping
-    return ""
+    return String.slice(s, start, endIdx) // Native VM hook
 end
 
 /** 
@@ -106,7 +104,7 @@ end
  */
 define function substring(s: String, start: Integer, len: Integer) : String
 begin
-    return slice(s, start, start + len)
+    return String.slice(s, start, start + len)
 end
 
 /** 
@@ -114,7 +112,7 @@ end
  */
 define function charAt(s: String, index: Integer) : String
 begin
-    return slice(s, index, index + 1)
+    return String.slice(s, index, index + 1)
 end
 
 // Splitting & joining
@@ -124,8 +122,7 @@ end
  */
 define function split(s: String, separator: String) : Array
 begin
-    // Internal: implementation mapping
-    return []
+    return String.split(s, separator) // Native VM hook
 end
 
 /** 
@@ -133,7 +130,7 @@ end
  */
 define function splitLines(s: String) : Array
 begin
-    return split(s, "\n")
+    return String.split(s, "\n")
 end
 
 // Search & replace
@@ -143,8 +140,7 @@ end
  */
 define function indexOf(s: String, substr: String) : Integer
 begin
-    // Internal: implementation mapping
-    return -1
+    return String.indexOf(s, substr) // Native VM hook
 end
 
 /** 
@@ -152,8 +148,7 @@ end
  */
 define function lastIndexOf(s: String, substr: String) : Integer
 begin
-    // Internal: implementation mapping
-    return -1
+    return String.lastIndexOf(s, substr) // Native VM hook
 end
 
 /** 
@@ -161,9 +156,9 @@ end
  */
 define function replace(s: String, target: String, replacement: String) : String
 begin
-    var idx = indexOf(s, target)
+    var idx = String.indexOf(s, target)
     if idx == -1 then return s end if
-    return slice(s, 0, idx) + replacement + slice(s, idx + length(target), length(s))
+    return String.slice(s, 0, idx) + replacement + String.slice(s, idx + String.length(target), String.length(s))
 end
 
 /** 
@@ -172,10 +167,10 @@ end
 define function replaceAll(s: String, target: String, replacement: String) : String
 begin
     var result = s
-    var idx = indexOf(result, target)
+    var idx = String.indexOf(result, target)
     while idx != -1 do
-        result = slice(result, 0, idx) + replacement + slice(result, idx + length(target), length(result))
-        idx = indexOf(result, target)
+        result = String.slice(result, 0, idx) + replacement + String.slice(result, idx + String.length(target), String.length(result))
+        idx = String.indexOf(result, target)
     end while
     return result
 end
@@ -187,8 +182,7 @@ end
  */
 define function upper(s: String) : String
 begin
-    // Internal: implementation mapping
-    return ""
+    return String.upper(s) // Native VM hook
 end
 
 /** 
@@ -196,8 +190,7 @@ end
  */
 define function lower(s: String) : String
 begin
-    // Internal: implementation mapping
-    return ""
+    return String.lower(s) // Native VM hook
 end
 
 /** 
@@ -205,8 +198,8 @@ end
  */
 define function capitalize(s: String) : String
 begin
-    if isEmpty(s) then return s end if
-    return upper(charAt(s, 0)) + lower(slice(s, 1, length(s)))
+    if String.isEmpty(s) then return s end if
+    return String.upper(String.charAt(s, 0)) + String.lower(String.slice(s, 1, String.length(s)))
 end
 
 // Whitespace
@@ -224,7 +217,7 @@ end
  */
 define function trim(s: String) : String
 begin
-    return trimStart(trimEnd(s))
+    return String.trimStart(String.trimEnd(s))
 end
 
 /** 
@@ -233,11 +226,11 @@ end
 define function trimStart(s: String) : String
 begin
     var i = 0
-    var len = length(s)
-    while i < len and isWhitespace(charAt(s, i)) do
+    var len = String.length(s)
+    while i < len and String.isWhitespace(String.charAt(s, i)) do
         i = i + 1
     end while
-    return slice(s, i, len)
+    return String.slice(s, i, len)
 end
 
 /** 
@@ -245,11 +238,11 @@ end
  */
 define function trimEnd(s: String) : String
 begin
-    var i = length(s) - 1
-    while i >= 0 and isWhitespace(charAt(s, i)) do
+    var i = String.length(s) - 1
+    while i >= 0 and String.isWhitespace(String.charAt(s, i)) do
         i = i - 1
     end while
-    return slice(s, 0, i + 1)
+    return String.slice(s, 0, i + 1)
 end
 
 end module

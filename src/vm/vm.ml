@@ -145,6 +145,102 @@ let handle_builtin state name argc =
            let keys = Hashtbl.fold (fun k _ acc -> VString k :: acc) m [] in
            push state (VList (ref (Array.of_list keys)))
        | _ -> raise (Runtime_error "Map.keys expects a map"))
+  | "typeOf", 1 | "Sys.typeOf", 1 ->
+      let v = pop state in
+      let t = match v with
+        | VInt _ -> "Integer" | VFloat _ -> "Float"
+        | VString _ -> "String" | VBool _ -> "Bool"
+        | VNull -> "Null" | VMap _ -> "Map" | VList _ -> "Array"
+      in
+      push state (VString t)
+  | "panic", 1 | "Sys.panic", 1 ->
+      let v = pop state in
+      raise (Runtime_error (string_of_value v))
+  | "toString", 1 | "Sys.toString", 1 ->
+      let v = pop state in
+      push state (VString (string_of_value v))
+  | "toInt", 1 | "Sys.toInt", 1 ->
+      let v = pop state in
+      (match v with
+       | VInt n -> push state (VInt n)
+       | VFloat f -> push state (VInt (int_of_float f))
+       | VString s -> (try push state (VInt (int_of_string s)) with _ -> raise (Runtime_error "Cannot convert to Int"))
+       | _ -> raise (Runtime_error "Cannot convert to Int"))
+  | "toFloat", 1 | "Sys.toFloat", 1 ->
+      let v = pop state in
+      (match v with
+       | VInt n -> push state (VFloat (float_of_int n))
+       | VFloat f -> push state (VFloat f)
+       | VString s -> (try push state (VFloat (float_of_string s)) with _ -> raise (Runtime_error "Cannot convert to Float"))
+       | _ -> raise (Runtime_error "Cannot convert to Float"))
+  | "toBool", 1 | "Sys.toBool", 1 ->
+      let v = pop state in
+      (match v with
+       | VBool b -> push state (VBool b)
+       | VInt n -> push state (VBool (n <> 0))
+       | VNull -> push state (VBool false)
+       | _ -> push state (VBool true))
+  | "Maths.floor", 1 -> let v = pop state in (match v with VFloat f -> push state (VInt (int_of_float (floor f))) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.ceil", 1 -> let v = pop state in (match v with VFloat f -> push state (VInt (int_of_float (ceil f))) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.sqrt", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (sqrt f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.sin", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (sin f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.cos", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (cos f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.random", 0 -> push state (VFloat (Random.float 1.0))
+  | "String.length", 1 ->
+      let v = pop state in
+      (match v with
+       | VString s -> push state (VInt (String.length s))
+       | _ -> raise (Runtime_error "String.length expects a string"))
+  | "String.slice", 3 ->
+      let endIdx = pop state in
+      let start = pop state in
+      let s = pop state in
+      (match s, start, endIdx with
+       | VString s, VInt st, VInt en ->
+           let len = String.length s in
+           let st = max 0 (min len st) in
+           let en = max st (min len en) in
+           push state (VString (String.sub s st (en - st)))
+       | _ -> raise (Runtime_error "String.slice expects (string, int, int)"))
+  | "String.split", 2 ->
+      let sep = pop state in
+      let s = pop state in
+      (match s, sep with
+       | VString s, VString sep ->
+           let parts = if sep = "" then
+                         List.init (String.length s) (fun i -> VString (String.make 1 s.[i]))
+                       else
+                         let re = Str.regexp_string sep in
+                         List.map (fun p -> VString p) (Str.split re s)
+           in
+           push state (VList (ref (Array.of_list parts)))
+       | _ -> raise (Runtime_error "String.split expects two strings"))
+  | "String.indexOf", 2 ->
+      let sub = pop state in
+      let s = pop state in
+      (match s, sub with
+       | VString s, VString sub ->
+           (try push state (VInt (Str.search_forward (Str.regexp_string sub) s 0))
+            with Not_found -> push state (VInt (-1)))
+       | _ -> raise (Runtime_error "String.indexOf expects two strings"))
+  | "String.lastIndexOf", 2 ->
+      let sub = pop state in
+      let s = pop state in
+      (match s, sub with
+       | VString s, VString sub ->
+           (try push state (VInt (Str.search_backward (Str.regexp_string sub) s (String.length s - 1)))
+            with Not_found -> push state (VInt (-1)))
+       | _ -> raise (Runtime_error "String.lastIndexOf expects two strings"))
+  | "String.upper", 1 ->
+      let v = pop state in
+      (match v with
+       | VString s -> push state (VString (String.uppercase_ascii s))
+       | _ -> raise (Runtime_error "String.upper expects a string"))
+  | "String.lower", 1 ->
+      let v = pop state in
+      (match v with
+       | VString s -> push state (VString (String.lowercase_ascii s))
+       | _ -> raise (Runtime_error "String.lower expects a string"))
   | _ -> raise (Runtime_error ("Unknown builtin: " ^ name))
 
 let rec run state =
@@ -166,8 +262,11 @@ and execute_instr state = function
        | Some v -> push state v
        | None -> 
            if name = "Net.get" || name = "print" || name = "str" || 
+              name = "typeOf" || name = "panic" || name = "toString" ||
+              name = "toInt" || name = "toFloat" || name = "toBool" ||
               String.starts_with ~prefix:"List." name || 
-              String.starts_with ~prefix:"Map." name then
+              String.starts_with ~prefix:"Map." name ||
+              String.starts_with ~prefix:"Maths." name then
               () (* Handled by ICall *)
            else
               raise (Runtime_error ("Undefined variable: " ^ name)))
@@ -215,8 +314,11 @@ and execute_instr state = function
       
   | ICall (name, argc) ->
       if name = "print" || name = "str" || name = "Net.get" ||
+         name = "typeOf" || name = "panic" || name = "toString" ||
+         name = "toInt" || name = "toFloat" || name = "toBool" ||
          String.starts_with ~prefix:"List." name || 
-         String.starts_with ~prefix:"Map." name then
+         String.starts_with ~prefix:"Map." name ||
+         String.starts_with ~prefix:"Maths." name then
         handle_builtin state name argc
       else
         (match Hashtbl.find_opt state.labels name with
@@ -272,6 +374,17 @@ and execute_instr state = function
       if v <> VBool false && v <> VNull then
         state.ip <- Hashtbl.find state.labels label
         
+  | INew(class_name, argc) ->
+      (* Pop constructor arguments *)
+      let _args = ref [] in
+      for _ = 1 to argc do
+        _args := pop state :: !_args
+      done;
+      (* Create a new instance as a map for now *)
+      let instance = Hashtbl.create 10 in
+      Hashtbl.add instance "__type__" (VString class_name);
+      push state (VMap instance)
+        
   | IPushScope ->
       state.scopes <- Hashtbl.create 10 :: state.scopes
       
@@ -307,23 +420,56 @@ and execute_instr state = function
 and apply_binop op v1 v2 =
   match op, v1, v2 with
   | Add, VInt a, VInt b -> VInt (a + b)
+  | Add, VFloat a, VFloat b -> VFloat (a +. b)
+  | Add, VInt a, VFloat b -> VFloat (float_of_int a +. b)
+  | Add, VFloat a, VInt b -> VFloat (a +. float_of_int b)
   | Add, VString a, VString b -> VString (a ^ b)
   | Add, VString a, v -> VString (a ^ string_of_value v)
   | Add, v, VString b -> VString (string_of_value v ^ b)
   | Sub, VInt a, VInt b -> VInt (a - b)
+  | Sub, VFloat a, VFloat b -> VFloat (a -. b)
+  | Sub, VInt a, VFloat b -> VFloat (float_of_int a -. b)
+  | Sub, VFloat a, VInt b -> VFloat (a -. float_of_int b)
   | Mul, VInt a, VInt b -> VInt (a * b)
+  | Mul, VFloat a, VFloat b -> VFloat (a *. b)
+  | Mul, VInt a, VFloat b -> VFloat (float_of_int a *. b)
+  | Mul, VFloat a, VInt b -> VFloat (a *. float_of_int b)
   | Div, VInt a, VInt b -> VInt (if b <> 0 then a / b else raise (Runtime_error "Div by zero"))
+  | Div, VFloat a, VFloat b -> VFloat (a /. b)
   | Eq, _, _ -> VBool (v1 = v2)
   | Ne, _, _ -> VBool (v1 <> v2)
   | Lt, VInt a, VInt b -> VBool (a < b)
+  | Lt, VFloat a, VFloat b -> VBool (a < b)
   | Gt, VInt a, VInt b -> VBool (a > b)
+  | Gt, VFloat a, VFloat b -> VBool (a > b)
   | Le, VInt a, VInt b -> VBool (a <= b)
+  | Le, VFloat a, VFloat b -> VBool (a <= b)
   | Ge, VInt a, VInt b -> VBool (a >= b)
+  | Ge, VFloat a, VFloat b -> VBool (a >= b)
   | Mod, VInt a, VInt b -> VInt (if b <> 0 then a mod b else raise (Runtime_error "Mod by zero"))
-  | _ -> raise (Runtime_error "Operation not supported")
+  | Pow, VInt a, VInt b -> VInt (int_of_float (float_of_int a ** float_of_int b))
+  | Pow, VFloat a, VFloat b -> VFloat (a ** b)
+  | And, VBool a, VBool b -> VBool (a && b)
+  | Or, VBool a, VBool b -> VBool (a || b)
+  | _ -> 
+      let op_str = match op with 
+        | Add -> "+" | Sub -> "-" | Mul -> "*" | Div -> "/" | Mod -> "%" | Pow -> "**"
+        | Eq -> "==" | Ne -> "!=" | Lt -> "<" | Gt -> ">" | Le -> "<=" | Ge -> ">="
+        | And -> "and" | Or -> "or"
+      in
+      let msg = Printf.sprintf "Operation not supported: binop %s on %s and %s" 
+                  op_str (string_of_value v1) (string_of_value v2)
+      in
+      raise (Runtime_error msg)
 
 and apply_unop op v =
   match op, v with
   | Neg, VInt n -> VInt (-n)
+  | Neg, VFloat f -> VFloat (-.f)
   | Not, VBool b -> VBool (not b)
-  | _ -> raise (Runtime_error "Operation not supported")
+  | _ -> 
+      let msg = Printf.sprintf "Operation not supported: unop %s on %s"
+                  (match op with Neg -> "-" | Not -> "not")
+                  (string_of_value v)
+      in
+      raise (Runtime_error msg)

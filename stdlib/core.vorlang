@@ -7,7 +7,7 @@ module Core
  */
 define function typeOf(value: Any) : String
 begin
-    // Internal: compiler-intrinsic to return type name
+    return Sys.typeOf(value)
 end
 
 /** 
@@ -15,7 +15,7 @@ end
  */
 define function isNumber(value: Any) : Bool
 begin
-    return typeOf(value) == "Integer" or typeOf(value) == "Float"
+    return Sys.typeOf(value) == "Integer" or Sys.typeOf(value) == "Float"
 end
 
 /** 
@@ -23,7 +23,7 @@ end
  */
 define function isString(value: Any) : Bool
 begin
-    return typeOf(value) == "String"
+    return Sys.typeOf(value) == "String"
 end
 
 /** 
@@ -31,7 +31,7 @@ end
  */
 define function isBool(value: Any) : Bool
 begin
-    return typeOf(value) == "Bool"
+    return Sys.typeOf(value) == "Bool"
 end
 
 /** 
@@ -39,7 +39,7 @@ end
  */
 define function isArray(value: Any) : Bool
 begin
-    return typeOf(value) == "Array"
+    return Sys.typeOf(value) == "Array"
 end
 
 /** 
@@ -47,7 +47,7 @@ end
  */
 define function isMap(value: Any) : Bool
 begin
-    return typeOf(value) == "Map"
+    return Sys.typeOf(value) == "Map"
 end
 
 // Type conversions
@@ -57,7 +57,7 @@ end
  */
 define function toString(value: Any) : String
 begin
-    // Internal: built-in conversion
+    return Sys.toString(value)
 end
 
 /** 
@@ -65,7 +65,7 @@ end
  */
 define function toInt(value: Any) : Integer
 begin
-    // Internal: built-in conversion
+    return Sys.toInt(value)
 end
 
 /** 
@@ -73,7 +73,7 @@ end
  */
 define function toFloat(value: Any) : Float
 begin
-    // Internal: built-in conversion
+    return Sys.toFloat(value)
 end
 
 /** 
@@ -81,7 +81,9 @@ end
  */
 define function toBool(value: Any) : Bool
 begin
-    // Internal: built-in conversion
+    if value == null then return false end if
+    if Sys.typeOf(value) == "Bool" then return value end if
+    return true
 end
 
 // Null/option helpers 
@@ -141,7 +143,7 @@ end
  */
 define function panic(message: String)
 begin
-    // Internal: compiler-intrinsic to halt execution
+    Sys.panic(message)
 end
 
 /** 

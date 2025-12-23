@@ -104,7 +104,7 @@ let newline = '\n' | '\r' '\n'
 
 let integer = '-'? digit+
 let float = '-'? digit+ '.' digit+
-let string = '"' [^ '"' '\n']* '"'
+let string = '"' (('\\' _) | [^ '"' '\\' '\n'])* '"'
 
 rule token = parse
   | whitespace { token lexbuf }

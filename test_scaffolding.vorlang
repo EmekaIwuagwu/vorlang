@@ -1,0 +1,31 @@
+program TestScaffolding
+begin
+    print("Testing Class Scaffolding...")
+    var c = new MyClass()
+    c.myField = 10
+    print("Class field: " + str(c.myField))
+
+    print("Testing Contract Scaffolding...")
+    
+    define class MyClass
+    begin
+        var myField: Integer = 0
+        
+        define method setField(val: Integer)
+        begin
+            myField = val
+        end
+    end
+
+    define contract MyContract
+    begin
+        var stateVar: String = "init"
+        
+        event Updated(val: Integer)
+        
+        define method update(val: Integer)
+        begin
+            print("Updating contract...")
+        end
+    end
+end

@@ -33,6 +33,7 @@ type expr =
   | TupleLiteral of expr list
   | Lambda of string list * expr
   | Conditional of expr * expr * expr  (* if cond then true_expr else false_expr *)
+  | New of string * expr list
 
 and literal =
   | LInteger of int

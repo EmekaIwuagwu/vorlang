@@ -1,0 +1,26 @@
+import core
+import maths
+import json
+import collections
+
+program TestStdLib
+begin
+    print("Testing Core...")
+    var x = 10
+    print("x is " + typeOf(x))
+    
+    print("Testing Maths...")
+    var f = 3.14
+    print("floor(3.14) = " + str(Maths.floor(f)))
+    
+    print("Testing JSON...")
+    var data = { "name": "Vorlang", "version": 1, "active": true }
+    var s = JSON.stringify(data)
+    print("JSON: " + s)
+
+    // print("Testing Collections...")
+    // var list = [1, 2, 3]
+    // Collections.push(list, 4)
+    // print("list[3] = " + str(list[3]))
+    // print("Collections.first(list) = " + str(Collections.first(list)))
+end

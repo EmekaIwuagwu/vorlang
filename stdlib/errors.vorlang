@@ -11,7 +11,7 @@ begin
         "message": message,
         "code": code,
         "context": context,
-        "stack": getStackTrace()
+        "stack": [] 
     }
 end
 
@@ -108,8 +108,7 @@ end
  */
 define function getStackTrace() : Array
 begin
-    // Internal: implementation mapping
-    return []
+    return [] // Currently no VM support for auto stack trace
 end
 
 /** 
@@ -117,7 +116,7 @@ end
  */
 define function printStackTrace(err: Map)
 begin
-    // Internal: implementation mapping
+    print("Stack trace: (not yet implemented)\n")
 end
 
 end module

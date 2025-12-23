@@ -28,6 +28,7 @@ type instruction =
   | IJump of string
   | IJumpIfFalse of string
   | IJumpIfTrue of string
+  | INew of string * int
   | IPushScope
   | IPopScope
   | ILabel of string
@@ -143,6 +144,9 @@ let rec generate_expr state = function
       add_instruction state (ILabel else_label);
       generate_expr state f;
       add_instruction state (ILabel end_label)
+  | New(class_name, args) ->
+      List.iter (generate_expr state) args;
+      add_instruction state (INew(class_name, List.length args))
 
 and generate_store state lhs rhs =
   match lhs with
@@ -321,43 +325,7 @@ and generate_builtin_functions state =
   add_instruction state IReturn;
   add_instruction state IPopScope;
 
-  (* Built-in Net.get function *)
-  ignore (add_function state "Net.get");
-  add_instruction state (ILabel "Net.get");
-  add_instruction state IPushScope;
-  add_instruction state (ILoad "url");
-  (* For now, just return a mock IP string *)
-  add_instruction state (IConstString "192.168.1.1");
-  add_instruction state IReturn;
-  add_instruction state IPopScope;
-
-  (* Built-in Net.buildUrl implementation *)
-  ignore (add_function state "Net.buildUrl");
-  add_instruction state (ILabel "Net.buildUrl");
-  add_instruction state IPushScope;
-  add_instruction state (ILoad "protocol");
-  add_instruction state (IConstString "://");
-  add_instruction state (IBinOp Add);
-  add_instruction state (ILoad "host");
-  add_instruction state (IBinOp Add);
-  add_instruction state (IConstString "/");
-  add_instruction state (IBinOp Add);
-  add_instruction state (ILoad "path");
-  add_instruction state (IBinOp Add);
-  add_instruction state IReturn;
-  add_instruction state IPopScope;
-
-  (* Built-in IO.println implementation *)
-  ignore (add_function state "IO.println");
-  add_instruction state (ILabel "IO.println");
-  add_instruction state IPushScope;
-  add_instruction state (ILoad "message");
-  add_instruction state (ICall ("print", 1));
-  add_instruction state (IConstString "\n");
-  add_instruction state (ICall ("print", 1));
-  add_instruction state (IConstNull);
-  add_instruction state IReturn;
-  add_instruction state IPopScope
+  ()
 
 (* Print bytecode for debugging *)
 let rec print_bytecode (bytecode : bytecode) =
