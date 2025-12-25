@@ -26,6 +26,7 @@ type state = {
   mutable call_stack : frame list;
   labels : (string, int) Hashtbl.t;
   mutable halted : bool;
+  mutable sockets : (int, Unix.file_descr) Hashtbl.t;
 }
 
 let create_state (bytecode : Codegen.bytecode) : state =
@@ -47,6 +48,7 @@ let create_state (bytecode : Codegen.bytecode) : state =
     call_stack = [];
     labels = labels;
     halted = false;
+    sockets = Hashtbl.create 10;
   }
 
 let push state v = state.stack <- v :: state.stack
@@ -119,6 +121,61 @@ let handle_builtin state name argc =
       let m = Hashtbl.create 1 in
       Hashtbl.add m "body" (VString (String.trim body));
       push state (VMap m)
+  | "Net.listen", 1 ->
+      let port_val = pop state in
+      (match port_val with
+       | VInt port ->
+           let s = Unix.socket Unix.PF_INET Unix.SOCK_STREAM 0 in
+           Unix.setsockopt s Unix.SO_REUSEADDR true;
+           let addr = Unix.ADDR_INET (Unix.inet_addr_any, port) in
+           Unix.bind s addr;
+           Unix.listen s 10;
+           let handle = Random.int 1000000 in
+           Hashtbl.add state.sockets handle s;
+           push state (VInt handle)
+       | _ -> raise (Runtime_error "Net.listen expects integer port"))
+  | "Net.accept", 1 ->
+      let handle_val = pop state in
+      (match handle_val with
+       | VInt h ->
+           let s = Hashtbl.find state.sockets h in
+           let (client_sock, _) = Unix.accept s in
+           let client_h = Random.int 1000000 in
+           Hashtbl.add state.sockets client_h client_sock;
+           push state (VInt client_h)
+       | _ -> raise (Runtime_error "Invalid socket handle"))
+  | "Net.readRequest", 1 ->
+      let h_val = pop state in
+      (match h_val with
+       | VInt h ->
+           let s = Hashtbl.find state.sockets h in
+           let buf = Bytes.create 4096 in
+           let len = Unix.read s buf 0 4096 in
+           let raw = Bytes.sub_string buf 0 len in
+           (* Initial simple parsing: Method Path HTTP/...\r\n... *)
+           let parts = Str.split (Str.regexp "[ \r\n]+") raw in
+           let method_ = if List.length parts > 0 then List.nth parts 0 else "GET" in
+           let path = if List.length parts > 1 then List.nth parts 1 else "/" in
+           let m = Hashtbl.create 5 in
+           Hashtbl.add m "method" (VString method_);
+           Hashtbl.add m "path" (VString path);
+           Hashtbl.add m "body" (VString ""); 
+           push state (VMap m)
+       | _ -> raise (Runtime_error "Net.readRequest expects socket handle"))
+  | "Net.sendResponse", 2 ->
+      let res_val = pop state in
+      let h_val = pop state in
+      (match h_val, res_val with
+       | VInt h, VMap m ->
+           let s = Hashtbl.find state.sockets h in
+           let status = match Hashtbl.find_opt m "status" with Some(VInt i) -> i | _ -> 200 in
+           let body = match Hashtbl.find_opt m "body" with Some(VString s) -> s | _ -> "" in
+           let response = Printf.sprintf "HTTP/1.1 %d OK\r\nContent-Type: application/json\r\nContent-Length: %d\r\nConnection: close\r\n\r\n%s" status (String.length body) body in
+           let _ = Unix.write_substring s response 0 (String.length response) in
+           Unix.close s; (* Close connection after sending *)
+           Hashtbl.remove state.sockets h;
+           push state VNull
+       | _ -> raise (Runtime_error "Net.sendResponse expects (handle, responseMap)"))
   | "List.length", 1 ->
       let v = pop state in
       (match v with
@@ -298,6 +355,23 @@ let handle_builtin state name argc =
       let hash = input_line ic in
       let _ = Unix.close_process_in ic in
       push state (VString (String.trim hash))
+  | "Sys.call", 2 ->
+      let args_val = pop state in
+      let name_val = pop state in
+      (match name_val, args_val with
+       | VString name, VList arg_vals_ref ->
+           (match Hashtbl.find_opt state.labels name with
+            | Some target ->
+                 (* Push args onto stack in order so they are popped correctly by callee (last arg on top) *)
+                 let arg_vals = !arg_vals_ref in
+                 Array.iter (push state) arg_vals;
+                 
+                 (* Create stack frame and jump *)
+                 let frame = { return_ip = state.ip; saved_scopes = state.scopes } in
+                 state.call_stack <- frame :: state.call_stack;
+                 state.ip <- target
+            | None -> raise (Runtime_error ("Function not found: " ^ name)))
+       | _ -> raise (Runtime_error "Sys.call expects (functionName: String, args: List)"))
   | "Sys.randomBytes", 1 ->
       let v = pop state in
       (match v with
@@ -344,6 +418,7 @@ and execute_instr state = function
               name = "typeOf" || name = "panic" || name = "toString" ||
               name = "toInt" || name = "toFloat" || name = "toBool" ||
               String.starts_with ~prefix:"Sys." name ||
+              String.starts_with ~prefix:"Net." name ||
               String.starts_with ~prefix:"List." name || 
               String.starts_with ~prefix:"Map." name ||
               String.starts_with ~prefix:"String." name ||
@@ -395,9 +470,9 @@ and execute_instr state = function
       
   | ICall (name, argc) ->
       if name = "print" || name = "str" || name = "Net.get" ||
-         name = "typeOf" || name = "panic" || name = "toString" ||
-         name = "toInt" || name = "toFloat" || name = "toBool" ||
+         name = "toString" || name = "toInt" || name = "toFloat" || name = "toBool" ||
          String.starts_with ~prefix:"Sys." name ||
+         String.starts_with ~prefix:"Net." name ||
          String.starts_with ~prefix:"List." name || 
          String.starts_with ~prefix:"Map." name ||
          String.starts_with ~prefix:"String." name ||

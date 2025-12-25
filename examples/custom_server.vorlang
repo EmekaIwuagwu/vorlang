@@ -1,0 +1,66 @@
+import http_server
+import io
+import json
+
+program CustomServer
+begin
+    IO.println("=== Custom REST API Server Demo ===")
+    IO.println("")
+    
+    // Custom Handlers defined INSIDE the program block
+    define function handleRoot(req: Map) : Map
+    begin
+        return {
+            "status": 200,
+            "body": "Welcome to my custom API!"
+        }
+    end
+
+    define function handleUsers(req: Map) : Map
+    begin
+        var users = ["Alice", "Bob", "Charlie"]
+        return {
+            "status": 200,
+            "body": JSON.stringify(users)
+        }
+    end
+    
+    // 1. Create Router
+    var app = HttpServer.create()
+    
+    // 2. Register Routes
+    // Register by FUNCTION NAME
+    HttpServer.get(app, "/", "handleRoot")
+    HttpServer.get(app, "/users", "handleUsers")
+    IO.println("Routes registered: GET /, GET /users")
+    IO.println("")
+    
+    // 3. Simulate Request to Root
+    IO.println("Client: GET /")
+    var req1 = {"method": "GET", "path": "/"}
+    var res1 = HttpServer.dispatch(app, req1)
+    IO.println("Server: " + str(res1["status"]) + " " + res1["body"])
+    IO.println("")
+    
+    // 4. Simulate Request to Users
+    IO.println("Client: GET /users")
+    var req2 = {"method": "GET", "path": "/users"}
+    var res2 = HttpServer.dispatch(app, req2)
+    IO.println("Server: " + str(res2["status"]) + " " + res2["body"])
+    IO.println("")
+    
+    // 5. Simulate 404
+    IO.println("Client: GET /unknown")
+    var req3 = {"method": "GET", "path": "/unknown"}
+    var res3 = HttpServer.dispatch(app, req3)
+    IO.println("Server: " + str(res3["status"]) + " " + res3["body"])
+    IO.println("")
+    
+    IO.println("✓ Custom Server Logic Verify Complete")
+    
+    // ==========================================
+    // REAL SERVER EXECUTION
+    // ==========================================
+    // Uncomment the following line to start a real TCP server on port 8080
+    // HttpServer.start(app, 8080)
+end

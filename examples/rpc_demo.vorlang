@@ -2,8 +2,15 @@ import io
 import rpc
 import json
 
+
+
 program RPCDemo
 begin
+    // Handler function for RPC
+    define function add(a: Integer, b: Integer) : Integer
+    begin
+        return a + b
+    end
     IO.println("=== JSON-RPC 2.0 Demo ===")
     IO.println("")
     
@@ -98,4 +105,26 @@ begin
     IO.println("  - Blockchain node RPC")
     IO.println("  - Distributed systems")
     IO.println("  - API integrations")
+    
+    IO.println("")
+    IO.println("9. Server-side Handling (Dynamic Call):")
+    var handlers = {"math.add": "add"}
+    var serverParams = [10, 20]
+    var serverReq = RPC.createRequest("math.add", serverParams, 99)
+    
+    IO.println("   Request: " + JSON.stringify(serverReq))
+    IO.println("   Handlers: " + JSON.stringify(handlers))
+    
+    var serverRes = RPC.handleRequest(serverReq, handlers)
+    IO.println("   Response: " + JSON.stringify(serverRes))
+    
+    // Verify result
+    if serverRes["result"] == 30 then
+        IO.println("   ✓ Dynamic call succeeded (10 + 20 = 30)")
+    else
+        IO.println("   ✗ Dynamic call failed")
+    end if
+    
+    IO.println("")
+    IO.println("✓ RPC Demo Complete!")
 end

@@ -1,0 +1,112 @@
+
+import net
+
+module HttpServer
+
+// Creates a new router
+define function create() : Map
+begin
+    // Structure: router["GET"] = {"/path": "functionName"}
+    return {
+        "GET": {},
+        "POST": {},
+        "PUT": {},
+        "DELETE": {}
+    }
+end
+
+// Registers a GET handler
+define function get(router: Map, path: String, handlerName: String) : Void
+begin
+    var routes = router["GET"]
+    routes[path] = handlerName
+    router["GET"] = routes // Update map
+end
+
+define function post(router: Map, path: String, handlerName: String) : Void
+begin
+    var routes = router["POST"]
+    routes[path] = handlerName
+    router["POST"] = routes
+end
+
+define function put(router: Map, path: String, handlerName: String) : Void
+begin
+    var routes = router["PUT"]
+    routes[path] = handlerName
+    router["PUT"] = routes
+end
+
+define function delete(router: Map, path: String, handlerName: String) : Void
+begin
+    var routes = router["DELETE"]
+    routes[path] = handlerName
+    router["DELETE"] = routes
+end
+
+// Dispatches a request to a handler
+define function dispatch(router: Map, request: Map) : Map
+begin
+    var reqMethod = request["method"]
+    var path = request["path"]
+    
+    // Logic to handle missing method keys safely?
+    // Vorlang map access returns null if missing?
+    // Let's assume initialized structure handles standard methods.
+    
+    var routes = router[reqMethod]
+    if routes == null then
+         return {
+            "status": 405,
+            "body": "Method Not Allowed"
+        }
+    end if
+    
+    // Check if path exists using Map iteration
+    var keys = Map.keys(routes)
+    var found = false
+    var handler = ""
+    
+    for each key in keys do
+        if key == path then
+            handler = routes[key]
+            found = true
+            break
+        end if
+    end for
+    
+    if found then
+        // Call handler(request)
+        // Wraps execution in try-catch logic (simulated by Sys.call allowing exceptions to propagate)
+        // Handler should signature: function handler(req: Map) : Map
+        return Sys.call(handler, [request])
+    else
+        return {
+            "status": 404,
+            "body": "Not Found"
+        }
+    end if
+end
+
+// Starts the server
+define function start(router: Map, port: Integer) : Void
+begin
+    IO.println("Server listening on port " + str(port))
+    // Note: Net module must be imported by user program or transitively? 
+    // HttpServer uses Net. But module HttpServer imports? 
+    // I need to add 'import net' to `http_server.vorlang`!
+    var server = Net.listen(port)
+    
+    while true do
+        var client = Net.accept(server)
+        
+        var request = Net.readRequest(client)
+        IO.println("Request: " + request["method"] + " " + request["path"])
+        
+        var response = dispatch(router, request)
+        
+        Net.sendResponse(client, response)
+    end while
+end
+
+end module

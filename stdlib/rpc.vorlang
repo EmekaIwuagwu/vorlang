@@ -119,10 +119,12 @@ begin
     // Check if method exists in handlers
     var keys = Map.keys(handlers)
     var found = false
+    var handlerName = ""
     
     for each key in keys do
         if key == reqMethod then
             found = true
+            handlerName = handlers[key]
             break
         end if
     end for
@@ -135,8 +137,15 @@ begin
         )
     end if
     
-    // In a full implementation, call the handler function
-    var result = {"success": true}
+    // Call the handler dynamically
+    // Ensure params is a List. If Map (named params), wrap it as single argument?
+    // Or if primitive/null?
+    var callArgs = params
+    if typeOf(params) != "Array" then
+        callArgs = [params]
+    end if
+    
+    var result = Sys.call(handlerName, callArgs)
     return createResponse(result, id)
 end
 
