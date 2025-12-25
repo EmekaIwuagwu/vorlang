@@ -1,0 +1,46 @@
+import io
+import core
+
+program BankingSimple
+begin
+    IO.println("=== Simple Banking Demo ===")
+    
+    // Create account as a map
+    var account = {
+        "owner": "Alice",
+        "balance": 1000
+    }
+    
+    IO.println("Account created for " + account["owner"])
+    IO.println("Initial balance: $" + str(account["balance"]))
+    IO.println("")
+    
+    // Deposit
+    var depositAmount = 500
+    account["balance"] = account["balance"] + depositAmount
+    IO.println("Deposited: $" + str(depositAmount))
+    IO.println("New balance: $" + str(account["balance"]))
+    IO.println("")
+    
+    // Withdraw
+    var withdrawAmount = 200
+    if account["balance"] >= withdrawAmount then
+        account["balance"] = account["balance"] - withdrawAmount
+        IO.println("Withdrew: $" + str(withdrawAmount))
+        IO.println("New balance: $" + str(account["balance"]))
+    else
+        IO.println("Insufficient funds!")
+    end if
+    IO.println("")
+    
+    // Failed withdrawal
+    var largeWithdraw = 2000
+    if account["balance"] >= largeWithdraw then
+        account["balance"] = account["balance"] - largeWithdraw
+        IO.println("Withdrew: $" + str(largeWithdraw))
+    else
+        IO.println("Cannot withdraw $" + str(largeWithdraw) + " - insufficient funds")
+    end if
+    
+    IO.println("Final balance: $" + str(account["balance"]))
+end

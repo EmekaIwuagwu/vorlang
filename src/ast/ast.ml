@@ -22,6 +22,9 @@ type type_expr =
 type expr =
   | Literal of literal
   | Identifier of string
+  | Self
+  | This
+  | Super
   | BinaryOp of binary_op * expr * expr
   | UnaryOp of unary_op * expr
   | Assignment of expr * expr

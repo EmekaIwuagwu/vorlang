@@ -1,0 +1,38 @@
+import io
+
+program GuessingGame
+begin
+    IO.println("=== Guess the Number Game ===")
+    IO.println("I'm thinking of a number between 1 and 100.")
+    
+    // Generate random number
+    var secret = Maths.floor(Maths.random() * 100) + 1
+    var guess = 0
+    var attempts = 0
+    var maxAttempts = 5
+    
+    // Simulate game loop (since we can't read stdin interactively easily in tests)
+    // We'll simulate a "smart" player
+    
+    // Mocking guesses for demonstration
+    var guesses = [50, 75, 25, secret] 
+    
+    for each g in guesses do
+        attempts = attempts + 1
+        IO.println("Attempt " + str(attempts) + ": guessing " + str(g))
+        
+        if g == secret then
+            IO.println("Congratulations! You guessed it!")
+            break
+        elif g < secret then
+            IO.println("Too low!")
+        else
+            IO.println("Too high!")
+        end if
+        
+        if attempts >= maxAttempts then
+            IO.println("Game Over! The number was " + str(secret))
+            break
+        end if
+    end for
+end

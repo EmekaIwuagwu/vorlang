@@ -1,0 +1,37 @@
+import io
+import core
+import string
+
+program Palindrome
+begin
+    IO.println("=== Palindrome Checker ===")
+    
+    var testWords = ["racecar", "hello", "madam", "world", "level", "vorlang", "noon"]
+    
+    for each word in testWords do
+        var isPalindrome = true
+        var len = String.length(word)
+        var i = 0
+        
+        while i < (len / 2) do
+            var leftChar = String.slice(word, i, i + 1)
+            var rightChar = String.slice(word, len - i - 1, len - i)
+            
+            if leftChar != rightChar then
+                isPalindrome = false
+                break
+            end if
+            
+            i = i + 1
+        end while
+        
+        if isPalindrome then
+            IO.println("✓ '" + word + "' is a palindrome")
+        else
+            IO.println("✗ '" + word + "' is NOT a palindrome")
+        end if
+    end for
+    
+    IO.println("")
+    IO.println("Palindrome check complete!")
+end

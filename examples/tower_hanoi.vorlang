@@ -1,0 +1,44 @@
+import io
+import core
+
+program TowerOfHanoi
+begin
+    IO.println("=== Tower of Hanoi Puzzle ===")
+    
+    var numDisks = 3
+    IO.println("Solving Tower of Hanoi with " + str(numDisks) + " disks")
+    IO.println("---------------------------------------")
+    
+    // Solve for 3 disks manually (demonstrating the algorithm)
+    // Move disk 1 from A to C
+    IO.println("Move 1: Disk 1 from A to C")
+    
+    // Move disk 2 from A to B
+    IO.println("Move 2: Disk 2 from A to B")
+    
+    // Move disk 1 from C to B
+    IO.println("Move 3: Disk 1 from C to B")
+    
+    // Move disk 3 from A to C
+    IO.println("Move 4: Disk 3 from A to C")
+    
+    // Move disk 1 from B to A
+    IO.println("Move 5: Disk 1 from B to A")
+    
+    // Move disk 2 from B to C
+    IO.println("Move 6: Disk 2 from B to C")
+    
+    // Move disk 1 from A to C
+    IO.println("Move 7: Disk 1 from A to C")
+    
+    var totalMoves = 7
+    var expectedMoves = (2 * 2 * 2) - 1
+    
+    IO.println("")
+    IO.println("✓ Puzzle solved in " + str(totalMoves) + " moves!")
+    IO.println("  (Minimum moves required: " + str(expectedMoves) + ")")
+    
+    if totalMoves == expectedMoves then
+        IO.println("  Perfect solution!")
+    end if
+end

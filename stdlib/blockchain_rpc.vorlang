@@ -1,0 +1,263 @@
+import json
+import blockchain
+import crypto
+
+module BlockchainRPC
+
+// Standard blockchain RPC methods
+
+// Get blockchain information
+define function getBlockchainInfo(chain: Map) : Map
+begin
+    var latestBlock = Blockchain.getLatestBlock(chain)
+    var info = {
+        "chain": "vorlang",
+        "blocks": latestBlock["index"],
+        "bestblockhash": latestBlock["hash"],
+        "difficulty": 2,
+        "networktype": "mainnet"
+    }
+    return info
+end
+
+// Get block by hash
+define function getBlock(chain: Map, blockHash: String) : Map
+begin
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        if block["hash"] == blockHash then
+            return block
+        end if
+    end for
+    
+    var errorResult = {"error": "Block not found"}
+    return errorResult
+end
+
+// Get block by height/index
+define function getBlockByNumber(chain: Map, blockNumber: Integer) : Map
+begin
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        if block["index"] == blockNumber then
+            return block
+        end if
+    end for
+    
+    var errorResult = {"error": "Block not found"}
+    return errorResult
+end
+
+// Get transaction by hash
+define function getTransaction(chain: Map, txHash: String) : Map
+begin
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        var transactions = block["transactions"]
+        for each tx in transactions do
+            if tx["hash"] == txHash then
+                return tx
+            end if
+        end for
+    end for
+    
+    var errorResult = {"error": "Transaction not found"}
+    return errorResult
+end
+
+// Get account balance
+define function getBalance(chain: Map, address: String) : Integer
+begin
+    // Calculate balance by iterating through all transactions
+    var balance = 0
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        var transactions = block["transactions"]
+        for each tx in transactions do
+            if tx["recipient"] == address then
+                balance = balance + tx["amount"]
+            end if
+            if tx["sender"] == address then
+                balance = balance - tx["amount"]
+            end if
+        end for
+    end for
+    
+    return balance
+end
+
+// Get transaction count for address
+define function getTransactionCount(chain: Map, address: String) : Integer
+begin
+    var count = 0
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        var transactions = block["transactions"]
+        for each tx in transactions do
+            if tx["sender"] == address then
+                count = count + 1
+            end if
+        end for
+    end for
+    
+    return count
+end
+
+// Send raw transaction
+define function sendRawTransaction(chain: Map, signedTx: Map) : String
+begin
+    // Validate transaction
+    if not Blockchain.validateTransaction(signedTx) then
+        return "error"
+    end if
+    
+    // Add to pending transactions (in real implementation)
+    var txHash = signedTx["hash"]
+    return txHash
+end
+
+// Get pending transactions
+define function getPendingTransactions(pendingPool: Array) : Array
+begin
+    return pendingPool
+end
+
+// Create RPC request handler
+define function handleRPCRequest(rpcMethod: String, params: Array, chain: Map) : Map
+begin
+    if rpcMethod == "getBlockchainInfo" then
+        return getBlockchainInfo(chain)
+    elif rpcMethod == "getBlock" then
+        var blockHash = params[0]
+        return getBlock(chain, blockHash)
+    elif rpcMethod == "getBlockByNumber" then
+        var blockNum = params[0]
+        return getBlockByNumber(chain, blockNum)
+    elif rpcMethod == "getTransaction" then
+        var txHash = params[0]
+        return getTransaction(chain, txHash)
+    elif rpcMethod == "getBalance" then
+        var address = params[0]
+        var balance = getBalance(chain, address)
+        return {"balance": balance}
+    elif rpcMethod == "getTransactionCount" then
+        var address = params[0]
+        var count = getTransactionCount(chain, address)
+        return {"count": count}
+    else
+        var error = {"error": "Method not found: " + rpcMethod}
+        return error
+    end if
+end
+
+// Format RPC response
+define function createRPCResponse(id: Integer, result: Map) : Map
+begin
+    var response = {
+        "jsonrpc": "2.0",
+        "id": id,
+        "result": result
+    }
+    return response
+end
+
+// Format RPC error
+define function createRPCError(id: Integer, code: Integer, message: String) : Map
+begin
+    var error = {
+        "code": code,
+        "message": message
+    }
+    var response = {
+        "jsonrpc": "2.0",
+        "id": id,
+        "error": error
+    }
+    return response
+end
+
+// Web3-compatible methods
+define function web3_clientVersion() : String
+begin
+    return "Vorlang/v1.0.0"
+end
+
+define function web3_sha3(data: String) : String
+begin
+    return Crypto.keccak256(data)
+end
+
+define function net_version() : String
+begin
+    return "1"  // Mainnet
+end
+
+define function net_listening() : Boolean
+begin
+    return true
+end
+
+define function net_peerCount() : Integer
+begin
+    return 5  // Number of connected peers
+end
+
+define function eth_blockNumber(chain: Map) : Integer
+begin
+    var latest = Blockchain.getLatestBlock(chain)
+    return latest["index"]
+end
+
+define function eth_getBlockByHash(chain: Map, hash: String, fullTx: Boolean) : Map
+begin
+    return getBlock(chain, hash)
+end
+
+define function eth_getBlockByNumber(chain: Map, number: Integer, fullTx: Boolean) : Map
+begin
+    return getBlockByNumber(chain, number)
+end
+
+define function eth_getBalance(chain: Map, address: String, block: String) : Integer
+begin
+    return getBalance(chain, address)
+end
+
+define function eth_getTransactionByHash(chain: Map, hash: String) : Map
+begin
+    return getTransaction(chain, hash)
+end
+
+define function eth_getTransactionCount(chain: Map, address: String, block: String) : Integer
+begin
+    return getTransactionCount(chain, address)
+end
+
+define function eth_sendRawTransaction(chain: Map, signedTx: String) : String
+begin
+    // Parse and send transaction
+    return "0x" + Crypto.sha256(signedTx)
+end
+
+define function eth_call(chain: Map, transaction: Map, block: String) : String
+begin
+    // Execute read-only call
+    return "0x"
+end
+
+define function eth_estimateGas(transaction: Map) : Integer
+begin
+    return 21000  // Base gas cost
+end
+
+define function eth_gasPrice() : Integer
+begin
+    return 1000000000  // 1 Gwei
+end
+
+end module

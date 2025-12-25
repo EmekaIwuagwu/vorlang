@@ -1,0 +1,50 @@
+import io
+import core
+import json
+
+program JSONProcessor
+begin
+    IO.println("=== JSON Data Processor ===")
+    
+    // Create a complex nested data structure
+    var users = [
+        {"name": "Alice", "age": 30, "active": true},
+        {"name": "Bob", "age": 25, "active": false},
+        {"name": "Charlie", "age": 35, "active": true}
+    ]
+    
+    IO.println("User Database:")
+    IO.println("-------------")
+    
+    for each user in users do
+        var jsonStr = JSON.stringify(user)
+        IO.println(jsonStr)
+    end for
+    
+    IO.println("")
+    IO.println("Active Users:")
+    IO.println("-------------")
+    
+    for each user in users do
+        if user["active"] then
+            IO.println("✓ " + user["name"] + " (age: " + str(user["age"]) + ")")
+        end if
+    end for
+    
+    IO.println("")
+    
+    // Calculate average age
+    var totalAge = 0
+    var count = 0
+    
+    for each user in users do
+        totalAge = totalAge + user["age"]
+        count = count + 1
+    end for
+    
+    var avgAge = totalAge / count
+    IO.println("Average age: " + str(avgAge))
+    
+    IO.println("")
+    IO.println("✓ JSON processing complete!")
+end

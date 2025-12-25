@@ -1,0 +1,134 @@
+import io
+import blockchain
+import blockchain_rpc
+import json
+
+program BlockchainRPCServer
+begin
+    IO.println("=== Blockchain RPC Server Demo ===")
+    IO.println("JSON-RPC 2.0 for Blockchain Node Communication")
+    IO.println("")
+    
+    // Initialize blockchain
+    IO.println("Initializing blockchain...")
+    var chain = Blockchain.createBlockchain()
+    
+    // Create some sample blocks
+    var wallet1 = Blockchain.createWallet()
+    var wallet2 = Blockchain.createWallet()
+    
+    var tx1 = Blockchain.createTransaction(wallet1["address"], wallet2["address"], 100, 0)
+    var signedTx1 = Blockchain.signTransaction(wallet1, tx1)
+    
+    var block1 = Blockchain.createBlock(1, chain["blocks"][0]["hash"], [signedTx1])
+    var minedBlock1 = Blockchain.mineBlock(block1, 2)
+    Blockchain.addBlock(chain, minedBlock1)
+    
+    IO.println("✓ Blockchain initialized with " + str(List.length(chain["blocks"])) + " blocks")
+    IO.println("")
+    
+    // Simulate RPC requests
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("RPC Method Examples:")
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("")
+    
+    // 1. getBlockchainInfo
+    IO.println("1. getBlockchainInfo")
+    var info = BlockchainRPC.getBlockchainInfo(chain)
+    IO.println("   " + JSON.stringify(info))
+    IO.println("")
+    
+    // 2. getBlockByNumber
+    IO.println("2. eth_getBlockByNumber(1)")
+    var block = BlockchainRPC.eth_getBlockByNumber(chain, 1, true)
+    IO.println("   Block hash: " + block["hash"])
+    IO.println("   Transactions: " + str(List.length(block["transactions"])))
+    IO.println("")
+    
+    // 3. getBalance
+    IO.println("3. eth_getBalance(address)")
+    var balance = BlockchainRPC.eth_getBalance(chain, wallet2["address"], "latest")
+    IO.println("   Address: " + wallet2["address"])
+    IO.println("   Balance: " + str(balance))
+    IO.println("")
+    
+    // 4. getTransactionCount
+    IO.println("4. eth_getTransactionCount(address)")
+    var txCount = BlockchainRPC.eth_getTransactionCount(chain, wallet1["address"], "latest")
+    IO.println("   Address: " + wallet1["address"])
+    IO.println("   TX Count: " + str(txCount))
+    IO.println("")
+    
+    // 5. Web3 methods
+    IO.println("5. web3_clientVersion()")
+    var version = BlockchainRPC.web3_clientVersion()
+    IO.println("   " + version)
+    IO.println("")
+    
+    IO.println("6. net_version()")
+    var netVer = BlockchainRPC.net_version()
+    IO.println("   Network: " + netVer)
+    IO.println("")
+    
+    IO.println("7. eth_blockNumber()")
+    var blockNum = BlockchainRPC.eth_blockNumber(chain)
+    IO.println("   Latest block: " + str(blockNum))
+    IO.println("")
+    
+    IO.println("8. eth_gasPrice()")
+    var gasPrice = BlockchainRPC.eth_gasPrice()
+    IO.println("   Gas price: " + str(gasPrice) + " wei")
+    IO.println("")
+    
+    // Simulate JSON-RPC request/response
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("JSON-RPC 2.0 Request/Response Example:")
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("")
+    
+    IO.println("Request:")
+    var rpcRequest = {
+        "jsonrpc": "2.0",
+        "method": "eth_blockNumber",
+        "params": [],
+        "id": 1
+    }
+    IO.println(JSON.stringify(rpcRequest))
+    IO.println("")
+    
+    IO.println("Response:")
+    var result = {"blockNumber": blockNum}
+    var rpcResponse = BlockchainRPC.createRPCResponse(1, result)
+    IO.println(JSON.stringify(rpcResponse))
+    IO.println("")
+    
+    // Compatible with
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("✓ RPC Server Ready!")
+    IO.println("")
+    IO.println("Compatible with:")
+    IO.println("  • MetaMask")
+    IO.println("  • Web3.js")
+    IO.println("  • Ethers.js")
+    IO.println("  • Blockchain Explorers")
+    IO.println("  • Chrome Extensions")
+    IO.println("  • Mobile Wallets")
+    IO.println("")
+    IO.println("Supported Methods:")
+    IO.println("  • eth_blockNumber")
+    IO.println("  • eth_getBalance")
+    IO.println("  • eth_getBlockByNumber")
+    IO.println("  • eth_getBlockByHash")
+    IO.println("  • eth_getTransactionByHash")
+    IO.println("  • eth_getTransactionCount")
+    IO.println("  • eth_sendRawTransaction")
+    IO.println("  • eth_call")
+    IO.println("  • eth_estimateGas")
+    IO.println("  • eth_gasPrice")
+    IO.println("  • web3_clientVersion")
+    IO.println("  • web3_sha3")
+    IO.println("  • net_version")
+    IO.println("  • net_listening")
+    IO.println("  • net_peerCount")
+end

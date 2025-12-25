@@ -1,0 +1,53 @@
+import io
+import math
+
+program PrimeSieve
+begin
+    IO.println("=== Prime Number Sieve (Sieve of Eratosthenes) ===")
+    
+    var limit = 50
+    IO.println("Finding primes up to " + str(limit))
+    
+    // Initialize array of true
+    // In Vorlang, we'll use 1 for true, 0 for false for simplicity if boolean arrays act up, 
+    // but booleans should work.
+    
+    var isPrime = []
+    
+    var k = 0
+    while k <= limit do
+        List.append(isPrime, true)
+        k = k + 1
+    end while
+    
+    // 0 and 1 are not prime
+    isPrime[0] = false
+    isPrime[1] = false
+    
+    // Sieve
+    var p = 2
+    while (p * p) <= limit do
+        if isPrime[p] then
+            // Update all multiples of p
+            var i = p * p
+            while i <= limit do
+                isPrime[i] = false
+                i = i + p
+            end while
+        end if
+        p = p + 1
+    end while
+    
+    // Collect primes
+    var primes = []
+    var n = 0
+    while n <= limit do
+        if isPrime[n] then
+            List.append(primes, n)
+        end if
+        n = n + 1
+    end while
+    
+    IO.println("Primes found: " + str(primes))
+    IO.println("Count: " + str(List.length(primes)))
+end

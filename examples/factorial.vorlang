@@ -1,0 +1,32 @@
+import io
+import core
+
+program FactorialRecursive
+begin
+    IO.println("=== Factorial Calculator (Recursive) ===")
+    
+    define function factorial(n: Integer) : Integer
+    begin
+        if n <= 1 then
+            return 1
+        else
+            return n * factorial(n - 1)
+        end if
+    end
+    
+    // Calculate factorials for numbers 0-10
+    var i = 0
+    while i <= 10 do
+        var result = factorial(i)
+        IO.println(str(i) + "! = " + str(result))
+        i = i + 1
+    end while
+    
+    IO.println("")
+    IO.println("Testing larger values:")
+    IO.println("12! = " + str(factorial(12)))
+    IO.println("15! = " + str(factorial(15)))
+    
+    IO.println("")
+    IO.println("✓ Factorial calculations complete!")
+end

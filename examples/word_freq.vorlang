@@ -1,0 +1,43 @@
+import io
+import core
+import string
+
+program FrequencyAnalysis
+begin
+    IO.println("=== Word Frequency Analysis ===")
+    
+    var text = "hello world hello vorlang world code code code"
+    IO.println("Text: " + text)
+    
+    // Split into words
+    var words = String.split(text, " ")
+    
+    // Count frequencies
+    var freqs = {}
+    
+    // Helper to check key
+    define function hasKey(m: Map, k: String) : Bool
+    begin
+        var keys = Map.keys(m)
+        for each key in keys do
+            if key == k then return true end if
+        end for
+        return false
+    end
+
+    for each word in words do
+        var current = 0
+        if hasKey(freqs, word) then
+            current = freqs[word]
+        end if
+        freqs[word] = current + 1
+    end for
+    
+    // Display results
+    IO.println("Frequencies:")
+    var distinctWords = Map.keys(freqs)
+    
+    for each w in distinctWords do
+        IO.println(w + ": " + str(freqs[w]))
+    end for
+end

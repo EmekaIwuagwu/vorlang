@@ -1,0 +1,70 @@
+import io
+import http
+import json
+
+program RESTClientDemo
+begin
+    IO.println("=== REST API Client Demo ===")
+    IO.println("")
+    
+    // Example 1: Simple GET request
+    IO.println("1. Fetching data from API...")
+    IO.println("   GET https://api.github.com/zen")
+    
+    var response = HTTP.get("https://api.github.com/zen")
+    IO.println("   Response: " + response["body"])
+    IO.println("")
+    
+    // Example 2: GET with query parameters
+    IO.println("2. Building query string...")
+    var params = {
+        "q": "vorlang",
+        "sort": "stars",
+        "order": "desc"
+    }
+    var queryString = HTTP.buildQueryString(params)
+    IO.println("   Query: " + queryString)
+    IO.println("")
+    
+    // Example 3: POST request with JSON
+    IO.println("3. Sending POST request...")
+    var postData = {
+        "name": "Vorlang User",
+        "email": "user@vorlang.dev",
+        "message": "Hello from Vorlang!"
+    }
+    
+    var jsonData = JSON.stringify(postData)
+    IO.println("   Data: " + jsonData)
+    IO.println("")
+    
+    // Example 4: Building custom request
+    IO.println("4. Creating custom HTTP request...")
+    var headers = {
+        "Content-Type": "application/json",
+        "Authorization": "Bearer token123"
+    }
+    
+    var request = HTTP.createRequest("POST", "https://api.example.com/data", headers, jsonData)
+    IO.println("   Method: " + request["method"])
+    IO.println("   URL: " + request["url"])
+    IO.println("")
+    
+    // Example 5: URL encoding
+    IO.println("5. URL Encoding...")
+    var text = "Hello World! #vorlang"
+    var encoded = HTTP.encodeURL(text)
+    IO.println("   Original: " + text)
+    IO.println("   Encoded: " + encoded)
+    IO.println("")
+    
+    // Example 6: RESTful CRUD operations
+    IO.println("6. RESTful CRUD Pattern:")
+    IO.println("   CREATE: POST /api/users")
+    IO.println("   READ:   GET /api/users/123")
+    IO.println("   UPDATE: PUT /api/users/123")
+    IO.println("   DELETE: DELETE /api/users/123")
+    IO.println("")
+    
+    IO.println("✓ REST Client Demo Complete!")
+end

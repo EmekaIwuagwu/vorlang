@@ -1,0 +1,66 @@
+import io
+import core
+import maths
+
+program Statistics
+begin
+    IO.println("=== Statistical Analysis ===")
+    
+    var data = [23, 45, 67, 12, 89, 34, 56, 78, 90, 21]
+    
+    IO.println("Dataset:")
+    for each num in data do
+        IO.println("  " + str(num))
+    end for
+    
+    // Calculate sum
+    var sum = 0
+    for each num in data do
+        sum = sum + num
+    end for
+    
+    // Calculate mean
+    var count = List.length(data)
+    var mean = sum / count
+    
+    IO.println("")
+    IO.println("Statistics:")
+    IO.println("-----------")
+    IO.println("Count: " + str(count))
+    IO.println("Sum:   " + str(sum))
+    IO.println("Mean:  " + str(mean))
+    
+    // Find min and max
+    var min = data[0]
+    var max = data[0]
+    
+    for each num in data do
+        if num < min then
+            min = num
+        end if
+        if num > max then
+            max = num
+        end if
+    end for
+    
+    IO.println("Min:   " + str(min))
+    IO.println("Max:   " + str(max))
+    IO.println("Range: " + str(max - min))
+    
+    // Calculate variance
+    var variance = 0
+    for each num in data do
+        var diff = num - mean
+        variance = variance + (diff * diff)
+    end for
+    variance = variance / count
+    
+    IO.println("Variance: " + str(variance))
+    
+    // Standard deviation (approximate using Maths.sqrt on float)
+    var stdDev = Maths.sqrt(Sys.toFloat(variance))
+    IO.println("Std Dev:  " + str(stdDev))
+    
+    IO.println("")
+    IO.println("✓ Statistical analysis complete!")
+end

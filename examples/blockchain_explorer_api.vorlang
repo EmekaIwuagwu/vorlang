@@ -1,0 +1,136 @@
+import io
+import blockchain
+import blockchain_api
+import json
+
+program BlockchainExplorerAPI
+begin
+    IO.println("=== Blockchain Explorer REST API Demo ===")
+    IO.println("RESTful API for Blockchain Data Access")
+    IO.println("")
+    
+    // Initialize blockchain with sample data
+    IO.println("Setting up blockchain...")
+    var chain = Blockchain.createBlockchain()
+    
+    // Create wallets
+    var alice = Blockchain.createWallet()
+    var bob = Blockchain.createWallet()
+    var charlie = Blockchain.createWallet()
+    
+    // Create transactions
+    var tx1 = Blockchain.createTransaction(alice["address"], bob["address"], 50, 0)
+    var signedTx1 = Blockchain.signTransaction(alice, tx1)
+    
+    var tx2 = Blockchain.createTransaction(bob["address"], charlie["address"], 25, 0)
+    var signedTx2 = Blockchain.signTransaction(bob, tx2)
+    
+    // Mine blocks
+    var block1 = Blockchain.createBlock(1, chain["blocks"][0]["hash"], [signedTx1])
+    var minedBlock1 = Blockchain.mineBlock(block1, 2)
+    Blockchain.addBlock(chain, minedBlock1)
+    
+    var block2 = Blockchain.createBlock(2, minedBlock1["hash"], [signedTx2])
+    var minedBlock2 = Blockchain.mineBlock(block2, 2)
+    Blockchain.addBlock(chain, minedBlock2)
+    
+    IO.println("✓ Blockchain ready with " + str(List.length(chain["blocks"])) + " blocks")
+    IO.println("")
+    
+    // REST API Endpoints Demo
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("REST API Endpoints:")
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("")
+    
+    // 1. GET /api/stats
+    IO.println("GET /api/stats")
+    var stats = BlockchainAPI.getStats(chain)
+    IO.println("Response:")
+    IO.println(JSON.stringify(stats))
+    IO.println("")
+    
+    // 2. GET /api/blocks
+    IO.println("GET /api/blocks?limit=10&offset=0")
+    var blocks = BlockchainAPI.getBlocks(chain, 10, 0)
+    IO.println("Response: " + str(List.length(blocks)) + " blocks")
+    IO.println("")
+    
+    // 3. GET /api/blocks/:number
+    IO.println("GET /api/blocks/1")
+    var block = BlockchainAPI.getBlockByNumber(chain, 1)
+    IO.println("Response:")
+    IO.println("  Hash: " + block["hash"])
+    IO.println("  Index: " + str(block["index"]))
+    IO.println("  Transactions: " + str(List.length(block["transactions"])))
+    IO.println("")
+    
+    // 4. GET /api/transactions
+    IO.println("GET /api/transactions?limit=10&offset=0")
+    var txs = BlockchainAPI.getTransactions(chain, 10, 0)
+    IO.println("Response: " + str(List.length(txs)) + " transactions")
+    IO.println("")
+    
+    // 5. GET /api/transactions/:hash
+    IO.println("GET /api/transactions/" + signedTx1["hash"])
+    var tx = BlockchainAPI.getTransactionByHash(chain, signedTx1["hash"])
+    IO.println("Response:")
+    IO.println("  From: " + tx["sender"])
+    IO.println("  To: " + tx["recipient"])
+    IO.println("  Amount: " + str(tx["amount"]))
+    IO.println("  Block: " + str(tx["blockNumber"]))
+    IO.println("")
+    
+    // 6. GET /api/address/:address
+    IO.println("GET /api/address/" + bob["address"])
+    var addressInfo = BlockchainAPI.getAddressInfo(chain, bob["address"])
+    IO.println("Response:")
+    IO.println("  Address: " + addressInfo["address"])
+    IO.println("  Balance: " + str(addressInfo["balance"]))
+    IO.println("  TX Count: " + str(addressInfo["transactionCount"]))
+    IO.println("")
+    
+    // 7. GET /api/address/:address/balance
+    IO.println("GET /api/address/" + bob["address"] + "/balance")
+    var balanceInfo = BlockchainAPI.getAddressBalance(chain, bob["address"])
+    IO.println("Response:")
+    IO.println(JSON.stringify(balanceInfo))
+    IO.println("")
+    
+    // 8. GET /api/address/:address/transactions
+    IO.println("GET /api/address/" + bob["address"] + "/transactions")
+    var addressTxs = BlockchainAPI.getAddressTransactions(chain, bob["address"])
+    IO.println("Response: " + str(List.length(addressTxs)) + " transactions")
+    IO.println("")
+    
+    // 9. GET /api/search/:query
+    IO.println("GET /api/search/" + signedTx1["hash"])
+    var searchResult = BlockchainAPI.search(chain, signedTx1["hash"])
+    IO.println("Response:")
+    IO.println("  Type: " + searchResult["type"])
+    IO.println("")
+    
+    // Summary
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("✓ REST API Ready!")
+    IO.println("")
+    IO.println("Available Endpoints:")
+    IO.println("  GET  /api/stats")
+    IO.println("  GET  /api/blocks")
+    IO.println("  GET  /api/blocks/:hash")
+    IO.println("  GET  /api/blocks/:number")
+    IO.println("  GET  /api/transactions")
+    IO.println("  GET  /api/transactions/:hash")
+    IO.println("  GET  /api/address/:address")
+    IO.println("  GET  /api/address/:address/balance")
+    IO.println("  GET  /api/address/:address/transactions")
+    IO.println("  GET  /api/search/:query")
+    IO.println("  POST /api/transactions")
+    IO.println("")
+    IO.println("Perfect for:")
+    IO.println("  • Blockchain Explorers")
+    IO.println("  • Analytics Dashboards")
+    IO.println("  • Mobile Apps")
+    IO.println("  • Web Interfaces")
+    IO.println("  • Data Aggregators")
+end

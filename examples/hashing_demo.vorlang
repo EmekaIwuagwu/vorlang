@@ -1,0 +1,47 @@
+import io
+import core
+import crypto
+
+program HashingDemo
+begin
+    IO.println("=== Cryptographic Hashing Demo ===")
+    
+    var messages = [
+        "Hello, World!",
+        "Vorlang is awesome",
+        "Blockchain technology",
+        "Merry Christmas 2025"
+    ]
+    
+    IO.println("SHA-256 Hashes:")
+    IO.println("---------------")
+    
+    for each msg in messages do
+        var hash = Crypto.sha256(msg)
+        IO.println("Message: " + msg)
+        IO.println("Hash:    " + hash)
+        IO.println("")
+    end for
+    
+    IO.println("Testing Hash Consistency:")
+    IO.println("-------------------------")
+    var testMsg = "consistency test"
+    var hash1 = Crypto.sha256(testMsg)
+    var hash2 = Crypto.sha256(testMsg)
+    
+    if hash1 == hash2 then
+        IO.println("✓ Hashes are consistent!")
+        IO.println("  Hash: " + hash1)
+    else
+        IO.println("✗ Hash mismatch detected!")
+    end if
+    
+    IO.println("")
+    IO.println("Keccak-256 Example:")
+    IO.println("-------------------")
+    var keccakHash = Crypto.keccak256("Ethereum style hash")
+    IO.println("Keccak-256: " + keccakHash)
+    
+    IO.println("")
+    IO.println("✓ Hashing demo complete!")
+end

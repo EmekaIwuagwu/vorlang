@@ -309,6 +309,9 @@ primary_expr:
   | LBRACKET expr_list RBRACKET { ListLiteral $2 }
   | LBRACE map_list RBRACE { MapLiteral $2 }
   | TUPLE LPAREN expr_list RPAREN { TupleLiteral $3 }
+  | SELF { Self }
+  | THIS { This }
+  | SUPER { Super }
   | NEW any_id LPAREN expr_list RPAREN { New($2, $4) }
 ;
 

@@ -132,89 +132,97 @@ let rec prefix_declarations prefix names decls =
         DModule { name = full_name; declarations = prefix_declarations full_name inner_names m.declarations }
   ) decls
 
-let rec resolve_imports (p : Ast.program) : Ast.program =
+let resolve_imports (p : Ast.program) : Ast.program =
   let stdlib_path = "stdlib/" in
-  let resolved_declarations = ref p.declarations in
-  let loaded_modules = ref [p.name] in
   
-  let core_names = ref [] in
+  (* Track globally visited modules (lowercase) to prevent diamond dependency duplication *)
+  let visited = ref [String.lowercase_ascii p.name] in
   
-  let rec load_import spec =
-    let modname = (match spec with
-      | ImportAll m -> m
-      | ImportFrom(m, _) -> m
-      | ImportAs(m, _) -> m)
-    in
-    if List.mem modname !loaded_modules then ()
-    else (
-      loaded_modules := modname :: !loaded_modules;
-      Printf.printf "Loading import: %s\n" modname;
-      let filename = stdlib_path ^ String.lowercase_ascii modname ^ ".vorlang" in
-      if Sys.file_exists filename then (
-        let imported_program = parse_file filename in
-        let resolved_imported = resolve_imports imported_program in
-        let actual_modname = resolved_imported.name in
-        
-        let names = get_declaration_names resolved_imported.declarations in
-        (* Prefix declarations, except for the 'core' module which we want global *)
-        let prefixed = if String.lowercase_ascii actual_modname = "core" then (
-                         Printf.printf "Flattening core module\n";
-                         (* Extract declarations from the module wrapper *)
-                         let core_decls = List.concat (List.map (fun d -> 
-                           match d with 
-                           | DModule m -> m.declarations 
-                           | _ -> [d]
-                         ) resolved_imported.declarations) in
-                         
-                         let core_inner_names = get_declaration_names core_decls in
-                         core_names := !core_names @ core_inner_names;
-                         
-                         core_decls
-                       ) else (
-                         Printf.printf "Prefixing module %s\n" actual_modname;
-                         prefix_declarations actual_modname names resolved_imported.declarations
-                       )
-        in
-        resolved_declarations := !resolved_declarations @ prefixed
-      ) else (
-        Printf.printf "Warning: Import file %s not found\n" filename
+  let rec resolve_rec (prog : Ast.program) : Ast.program =
+    let resolved_declarations = ref prog.declarations in
+    let loaded_modules = ref [] in (* Only for local tracking if needed, but visited is global *)
+    
+    let core_names = ref [] in
+    
+    let load_import spec =
+      let modname = (match spec with
+        | ImportAll m -> m
+        | ImportFrom(m, _) -> m
+        | ImportAs(m, _) -> m)
+      in
+      let lower_name = String.lowercase_ascii modname in
+      
+      (* Check global visited set *)
+      if List.mem lower_name !visited then ()
+      else (
+        visited := lower_name :: !visited;
+        Printf.printf "Loading import: %s\n" modname;
+        let filename = stdlib_path ^ lower_name ^ ".vorlang" in
+        if Sys.file_exists filename then (
+          let imported_program = parse_file filename in
+          (* Recurse using the same visited ref *)
+          let resolved_imported = resolve_rec imported_program in
+          let actual_modname = resolved_imported.name in
+          
+          let names = get_declaration_names resolved_imported.declarations in
+          
+          let prefixed = if String.lowercase_ascii actual_modname = "core" then (
+                           Printf.printf "Flattening core module\n";
+                           let core_decls = List.concat (List.map (fun d -> 
+                             match d with 
+                             | DModule m -> m.declarations 
+                             | _ -> [d]
+                           ) resolved_imported.declarations) in
+                           
+                           let core_inner_names = get_declaration_names core_decls in
+                           core_names := !core_names @ core_inner_names;
+                           
+                           core_decls
+                         ) else (
+                           Printf.printf "Prefixing module %s\n" actual_modname;
+                           prefix_declarations actual_modname names resolved_imported.declarations
+                         )
+          in
+          resolved_declarations := !resolved_declarations @ prefixed
+        ) else (
+          Printf.printf "Warning: Import file %s not found\n" filename
+        )
       )
-    )
+    in
+    List.iter load_import prog.imports;
+    
+    (* Process local declarations *)
+    let all_names = get_declaration_names !resolved_declarations in
+    
+    let is_stdlib_module = String.lowercase_ascii prog.name = "core" || 
+                            String.lowercase_ascii prog.name = "io" ||
+                            String.lowercase_ascii prog.name = "collections" in
+    
+    let names_to_prefix = 
+      if String.lowercase_ascii prog.name = "core" then []
+      else if is_stdlib_module then List.filter (fun n -> not (List.mem n !core_names)) all_names
+      else [] 
+    in
+    
+    let local_prefixed = List.map (fun decl ->
+      match decl with
+      | DModule m -> 
+          if String.lowercase_ascii m.name = "core" then decl
+          else
+          let inner_names = get_declaration_names m.declarations in
+          DModule { m with declarations = prefix_declarations m.name inner_names m.declarations }
+      | DFunction f ->
+          let params = List.map (fun (n, _, _) -> n) f.params in
+          DFunction { f with body = List.map (prefix_calls_in_stmt prog.name names_to_prefix params) f.body }
+      | _ -> decl
+    ) !resolved_declarations in
+    
+    let body_prefixed = List.map (prefix_calls_in_stmt prog.name names_to_prefix []) prog.body in
+    
+    { prog with declarations = local_prefixed; body = body_prefixed }
   in
-  List.iter load_import p.imports;
   
-  (* Process local declarations to prefix internal modules/classes if they are nested *)
-  let all_names = get_declaration_names !resolved_declarations in
-  (* Exclude core names from prefixing check so they stay global *)
-  (* Also if this program IS core, don't prefix anything *)
-  (* For regular programs (not stdlib modules), don't prefix local declarations *)
-  let is_stdlib_module = String.lowercase_ascii p.name = "core" || 
-                          String.lowercase_ascii p.name = "io" ||
-                          String.lowercase_ascii p.name = "collections" in
-  
-  let names_to_prefix = 
-    if String.lowercase_ascii p.name = "core" then []
-    else if is_stdlib_module then List.filter (fun n -> not (List.mem n !core_names)) all_names
-    else [] (* Don't prefix local declarations in regular programs *)
-  in
-  
-  let local_prefixed = List.map (fun decl ->
-    match decl with
-    | DModule m -> 
-        if String.lowercase_ascii m.name = "core" then decl
-        else
-        let inner_names = get_declaration_names m.declarations in
-        DModule { m with declarations = prefix_declarations m.name inner_names m.declarations }
-    | DFunction f ->
-        let params = List.map (fun (n, _, _) -> n) f.params in
-        DFunction { f with body = List.map (prefix_calls_in_stmt p.name names_to_prefix params) f.body }
-    | _ -> decl
-  ) !resolved_declarations in
-  
-  let body_prefixed = List.map (prefix_calls_in_stmt p.name names_to_prefix []) p.body in
-  
-  { p with declarations = local_prefixed; body = body_prefixed }
-
+  resolve_rec p
 
 let parse_file_with_imports filename =
   let p = parse_file filename in

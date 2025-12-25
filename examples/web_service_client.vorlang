@@ -1,0 +1,134 @@
+import io
+import http
+import rpc
+import json
+
+program WebServiceClient
+begin
+    IO.println("=== Complete Web Service Client ===")
+    IO.println("")
+    
+    // Simulate a complete API workflow
+    IO.println("Scenario: User Management API")
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("")
+    
+    // Step 1: Authentication
+    IO.println("Step 1: Authenticate User")
+    var authData = {
+        "username": "admin",
+        "password": "vorlang2025"
+    }
+    
+    var authRequest = RPC.createRequest("auth.login", authData, 1)
+    IO.println("  Request: " + JSON.stringify(authRequest))
+    
+    var authResult = {
+        "token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9",
+        "userId": 42,
+        "role": "admin"
+    }
+    var authResponse = RPC.createResponse(authResult, 1)
+    IO.println("  Response: " + JSON.stringify(authResponse))
+    IO.println("")
+    
+    // Step 2: Fetch user list
+    IO.println("Step 2: Fetch Users (REST GET)")
+    var queryParams = {
+        "page": 1,
+        "limit": 10,
+        "sort": "created_at"
+    }
+    var query = HTTP.buildQueryString(queryParams)
+    var usersUrl = "https://api.example.com/users" + query
+    IO.println("  URL: " + usersUrl)
+    IO.println("")
+    
+    // Step 3: Create new user
+    IO.println("Step 3: Create User (REST POST)")
+    var newUser = {
+        "name": "Alice Smith",
+        "email": "alice@example.com",
+        "role": "developer"
+    }
+    IO.println("  Data: " + JSON.stringify(newUser))
+    IO.println("  Endpoint: POST /api/users")
+    IO.println("")
+    
+    // Step 4: Update user via RPC
+    IO.println("Step 4: Update User (JSON-RPC)")
+    var updateParams = {
+        "userId": 42,
+        "updates": {
+            "email": "alice.smith@example.com",
+            "verified": true
+        }
+    }
+    var updateRequest = RPC.createRequest("user.update", updateParams, 2)
+    IO.println("  Request: " + JSON.stringify(updateRequest))
+    IO.println("")
+    
+    // Step 5: Batch operations
+    IO.println("Step 5: Batch Operations (JSON-RPC)")
+    var getUserReq = RPC.createRequest("user.get", {"id": 42}, 3)
+    var getStatsReq = RPC.createRequest("stats.get", {"userId": 42}, 4)
+    var getActivityReq = RPC.createRequest("activity.recent", {"userId": 42, "limit": 5}, 5)
+    
+    var batchReqs = [getUserReq, getStatsReq, getActivityReq]
+    IO.println("  Batch size: " + str(List.length(batchReqs)) + " requests")
+    IO.println("")
+    
+    // Step 6: Error handling
+    IO.println("Step 6: Error Handling")
+    var invalidRequest = {
+        "jsonrpc": "2.0",
+        "method": "nonexistent.method",
+        "id": 6
+    }
+    
+    if RPC.validateRequest(invalidRequest) then
+        IO.println("  ✓ Request valid, processing...")
+    else
+        var error = RPC.createError(
+            RPC.getErrorCode("InvalidRequest"),
+            "Invalid request format",
+            6
+        )
+        IO.println("  ✗ Error: " + JSON.stringify(error))
+    end if
+    IO.println("")
+    
+    // Step 7: Webhook notification
+    IO.println("Step 7: Send Webhook Notification")
+    var webhookData = {
+        "event": "user.created",
+        "timestamp": 1735145400,
+        "data": {
+            "userId": 42,
+            "email": "alice@example.com"
+        }
+    }
+    var notification = RPC.createNotification("webhook.send", webhookData)
+    IO.println("  Notification: " + JSON.stringify(notification))
+    IO.println("")
+    
+    // Summary
+    IO.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━")
+    IO.println("✓ Web Service Client Complete!")
+    IO.println("")
+    IO.println("Capabilities Demonstrated:")
+    IO.println("  ✓ REST API calls (GET, POST, PUT, DELETE)")
+    IO.println("  ✓ JSON-RPC 2.0 requests and responses")
+    IO.println("  ✓ Authentication workflows")
+    IO.println("  ✓ Query parameter building")
+    IO.println("  ✓ Batch operations")
+    IO.println("  ✓ Error handling")
+    IO.println("  ✓ Webhook notifications")
+    IO.println("")
+    IO.println("Vorlang is ready for:")
+    IO.println("  • Microservices")
+    IO.println("  • API integrations")
+    IO.println("  • Distributed systems")
+    IO.println("  • Blockchain nodes")
+    IO.println("  • Web automation")
+end

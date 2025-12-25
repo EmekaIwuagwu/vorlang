@@ -231,6 +231,26 @@ let handle_builtin state name argc =
            (try push state (VInt (Str.search_backward (Str.regexp_string sub) s (String.length s - 1)))
             with Not_found -> push state (VInt (-1)))
        | _ -> raise (Runtime_error "String.lastIndexOf expects two strings"))
+  | "String.replace", 3 ->
+      let replacement = pop state in
+      let target = pop state in
+      let s = pop state in
+      (match s, target, replacement with
+       | VString s, VString t, VString r ->
+           let re = Str.regexp_string t in
+           let res = try Str.replace_first re r s with Not_found -> s in
+           push state (VString res)
+       | _ -> raise (Runtime_error "String.replace expects three strings"))
+  | "String.replaceAll", 3 ->
+      let replacement = pop state in
+      let target = pop state in
+      let s = pop state in
+      (match s, target, replacement with
+       | VString s, VString t, VString r ->
+           let re = Str.regexp_string t in
+           let res = try Str.global_replace re r s with Not_found -> s in
+           push state (VString res)
+       | _ -> raise (Runtime_error "String.replaceAll expects three strings"))
   | "String.upper", 1 ->
       let v = pop state in
       (match v with

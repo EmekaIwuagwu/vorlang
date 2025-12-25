@@ -173,6 +173,7 @@ let rec analyze_expr env = function
       (match lookup_symbol env id with
        | Some symbol -> symbol.typ
        | None -> raise (Semantic_error ("Undefined identifier: " ^ id)))
+  | Self | This | Super -> TIdentifier "Any"
   | BinaryOp(op, left, right) ->
       let left_type = analyze_expr env left in
       let right_type = analyze_expr env right in

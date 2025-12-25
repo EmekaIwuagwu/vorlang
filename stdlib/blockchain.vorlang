@@ -252,7 +252,7 @@ begin
     var genesis = createGenesisBlock()
     
     return {
-        "chain": [genesis],
+        "blocks": [genesis],
         "pendingTransactions": [],
         "difficulty": 4,
         "miningReward": 100
@@ -264,7 +264,7 @@ end
  */
 define function addBlock(blockchain: Map, block: Map) : Bool
 begin
-    var chain = blockchain["chain"]
+    var chain = blockchain["blocks"]
     var lastBlock = chain[List.length(chain) - 1]
     
     if validateBlock(block, lastBlock) then
@@ -280,7 +280,7 @@ end
  */
 define function getLatestBlock(blockchain: Map) : Map
 begin
-    var chain = blockchain["chain"]
+    var chain = blockchain["blocks"]
     return chain[List.length(chain) - 1]
 end
 
@@ -289,7 +289,7 @@ end
  */
 define function validateChain(blockchain: Map) : Bool
 begin
-    var chain = blockchain["chain"]
+    var chain = blockchain["blocks"]
     var chainLength = List.length(chain)
     
     // Start from index 1 (skip genesis)
@@ -318,6 +318,25 @@ begin
     end if
     
     return String.length(address) == 42
+end
+
+
+/**
+ * Validates a transaction.
+ */
+define function validateTransaction(tx: Map) : Bool
+begin
+    // Check if amount is positive
+    if tx["amount"] <= 0 then
+        return false
+    end if
+    
+    // Check if sender/recipient exist (simplified check)
+    if String.length(tx["sender"]) == 0 or String.length(tx["recipient"]) == 0 then
+        return false
+    end if
+    
+    return true
 end
 
 end module

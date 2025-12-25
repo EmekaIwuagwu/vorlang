@@ -1,7 +1,7 @@
-import blockchain
-// import crypto <-- removed to fix collision
-import io
 import core
+import blockchain
+// import crypto
+import io
 
 program TestBlockchain
 begin
@@ -146,11 +146,11 @@ begin
     var addResult = Blockchain.addBlock(blockchain, minedBlock)
     
     IO.println("Block Added: " + str(addResult))
-    IO.println("Chain Length: " + str(List.length(blockchain["chain"])))
+    IO.println("Chain Length: " + str(List.length(blockchain["blocks"])))
     IO.println("")
     
     assert(addResult == true, "Block should be added successfully")
-    assert(List.length(blockchain["chain"]) == 2, "Chain should have 2 blocks")
+    assert(List.length(blockchain["blocks"]) == 2, "Chain should have 2 blocks")
     IO.println("✓ Block added to blockchain")
     IO.println("")
     
@@ -171,7 +171,7 @@ begin
     IO.println("Test 8: Final Blockchain State...")
     IO.println("-------------------------------------------")
     
-    IO.println("Total Blocks: " + str(List.length(blockchain["chain"])))
+    IO.println("Total Blocks: " + str(List.length(blockchain["blocks"])))
     IO.println("Total Transactions: " + str(List.length(transactions)))
     IO.println("")
     

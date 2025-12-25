@@ -64,16 +64,35 @@ let compile_file filename =
     
   with
   | Parse_error msg ->
-      Printf.eprintf "Parse error: %s\n" msg;
+      Printf.eprintf "\n❌ Parse Error\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+      Printf.eprintf "File: %s\n" filename;
+      Printf.eprintf "Error: %s\n" msg;
+      Printf.eprintf "\n💡 Tip: Check for missing 'end', 'endif', or 'endwhile' keywords\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
       exit 1
   | Semantic_error msg ->
-      Printf.eprintf "Semantic error: %s\n" msg;
+      Printf.eprintf "\n❌ Semantic Error\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+      Printf.eprintf "File: %s\n" filename;
+      Printf.eprintf "Error: %s\n" msg;
+      Printf.eprintf "\n💡 Tip: Check variable declarations and function signatures\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
       exit 1
   | Lexer.Lexing_error msg ->
-      Printf.eprintf "Lexing error: %s\n" msg;
+      Printf.eprintf "\n❌ Lexing Error\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+      Printf.eprintf "File: %s\n" filename;
+      Printf.eprintf "Error: %s\n" msg;
+      Printf.eprintf "\n💡 Tip: Check for invalid characters or malformed tokens\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
       exit 1
   | Sys_error msg ->
-      Printf.eprintf "File error: %s\n" msg;
+      Printf.eprintf "\n❌ File Error\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+      Printf.eprintf "File: %s\n" filename;
+      Printf.eprintf "Error: %s\n" msg;
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
       exit 1
 
 (* Run a file (compile and execute) *)
@@ -85,10 +104,20 @@ let run_file filename =
     
   with
   | Vm.Runtime_error msg ->
-      Printf.eprintf "Runtime error: %s\n" msg;
+      Printf.eprintf "\n❌ Runtime Error\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+      Printf.eprintf "File: %s\n" filename;
+      Printf.eprintf "Error: %s\n" msg;
+      Printf.eprintf "\n💡 Tip: Check array bounds, map keys, and function calls\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
       exit 1
   | exn ->
-      Printf.eprintf "Unexpected error: %s\n" (Printexc.to_string exn);
+      Printf.eprintf "\n❌ Unexpected Error\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
+      Printf.eprintf "File: %s\n" filename;
+      Printf.eprintf "Error: %s\n" (Printexc.to_string exn);
+      Printf.eprintf "\n💡 This might be a compiler bug. Please report it!\n";
+      Printf.eprintf "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n";
       exit 1
 
 (* Start the REPL *)

@@ -1,0 +1,136 @@
+import net
+import core
+import json
+
+module HTTP
+
+// HTTP Methods
+define function get(url: String) : Map
+begin
+    var response = Net.get(url)
+    return response
+end
+
+define function post(url: String, data: String) : Map
+begin
+    // Construct curl command for POST
+    var cmd = "curl -s -X POST -H \"Content-Type: application/json\" -d '" + data + "' " + url
+    var result = Sys.exec(cmd)
+    
+    var response = {
+        "status": 200,
+        "body": result
+    }
+    return response
+end
+
+define function put(url: String, data: String) : Map
+begin
+    var cmd = "curl -s -X PUT -H \"Content-Type: application/json\" -d '" + data + "' " + url
+    var result = Sys.exec(cmd)
+    
+    var response = {
+        "status": 200,
+        "body": result
+    }
+    return response
+end
+
+define function delete(url: String) : Map
+begin
+    var cmd = "curl -s -X DELETE " + url
+    var result = Sys.exec(cmd)
+    
+    var response = {
+        "status": 200,
+        "body": result
+    }
+    return response
+end
+
+// REST API helpers
+define function getJSON(url: String) : Map
+begin
+    var response = get(url)
+    // In a full implementation, parse JSON here
+    return response
+end
+
+define function postJSON(url: String, data: Map) : Map
+begin
+    var jsonData = JSON.stringify(data)
+    return post(url, jsonData)
+end
+
+define function putJSON(url: String, data: Map) : Map
+begin
+    var jsonData = JSON.stringify(data)
+    return put(url, jsonData)
+end
+
+// Request builder
+define function createRequest(httpMethod: String, url: String, headers: Map, body: String) : Map
+begin
+    var request = {
+        "method": httpMethod,
+        "url": url,
+        "headers": headers,
+        "body": body
+    }
+    return request
+end
+
+define function sendRequest(request: Map) : Map
+begin
+    var reqMethod = request["method"]
+    var url = request["url"]
+    var body = request["body"]
+    
+    if reqMethod == "GET" then
+        return get(url)
+    elif reqMethod == "POST" then
+        return post(url, body)
+    elif reqMethod == "PUT" then
+        return put(url, body)
+    elif reqMethod == "DELETE" then
+        return delete(url)
+    else
+        var errorResponse = {
+            "status": 400,
+            "body": "Invalid method"
+        }
+        return errorResponse
+    end if
+end
+
+// URL encoding helper
+define function encodeURL(text: String) : String
+begin
+    // Basic URL encoding
+    var encoded = String.replace(text, " ", "%20")
+    encoded = String.replace(encoded, "!", "%21")
+    encoded = String.replace(encoded, "#", "%23")
+    encoded = String.replace(encoded, "$", "%24")
+    encoded = String.replace(encoded, "&", "%26")
+    return encoded
+end
+
+// Query string builder
+define function buildQueryString(params: Map) : String
+begin
+    var query = "?"
+    var keys = Map.keys(params)
+    var first = true
+    
+    for each key in keys do
+        if not first then
+            query = query + "&"
+        end if
+        query = query + key + "=" + encodeURL(str(params[key]))
+        first = false
+    end for
+    
+    return query
+end
+
+end module

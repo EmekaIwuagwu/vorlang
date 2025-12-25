@@ -1,0 +1,318 @@
+import json
+import blockchain
+import crypto
+
+module BlockchainAPI
+
+// REST API Endpoints
+
+// GET /api/blocks - Get all blocks
+define function getBlocks(chain: Map, limit: Integer, offset: Integer) : Array
+begin
+    var blocks = chain["blocks"]
+    var result = []
+    var start = offset
+    var endIdx = offset + limit
+    var total = List.length(blocks)
+    
+    if endIdx > total then
+        endIdx = total
+    end if
+    
+    var i = start
+    while i < endIdx do
+        List.append(result, blocks[i])
+        i = i + 1
+    end while
+    
+    return result
+end
+
+// GET /api/blocks/:hash - Get block by hash
+define function getBlockByHash(chain: Map, hash: String) : Map
+begin
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        if block["hash"] == hash then
+            return block
+        end if
+    end for
+    
+    var notFound = {
+        "error": "Block not found",
+        "hash": hash
+    }
+    return notFound
+end
+
+// GET /api/blocks/:number - Get block by number
+define function getBlockByNumber(chain: Map, number: Integer) : Map
+begin
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        if block["index"] == number then
+            return block
+        end if
+    end for
+    
+    var notFound = {
+        "error": "Block not found",
+        "number": number
+    }
+    return notFound
+end
+
+// GET /api/transactions - Get all transactions
+define function getTransactions(chain: Map, limit: Integer, offset: Integer) : Array
+begin
+    var allTxs = []
+    var blocks = chain["blocks"]
+    
+    // Collect all transactions
+    for each block in blocks do
+        var txs = block["transactions"]
+        for each tx in txs do
+            List.append(allTxs, tx)
+        end for
+    end for
+    
+    // Apply pagination
+    var result = []
+    var start = offset
+    var endIdx = offset + limit
+    var total = List.length(allTxs)
+    
+    if endIdx > total then
+        endIdx = total
+    end if
+    
+    var i = start
+    while i < endIdx do
+        List.append(result, allTxs[i])
+        i = i + 1
+    end while
+    
+    return result
+end
+
+// GET /api/transactions/:hash - Get transaction by hash
+define function getTransactionByHash(chain: Map, hash: String) : Map
+begin
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        var txs = block["transactions"]
+        for each tx in txs do
+            if tx["hash"] == hash then
+                // Add block info
+                var enrichedTx = tx
+                enrichedTx["blockHash"] = block["hash"]
+                enrichedTx["blockNumber"] = block["index"]
+                enrichedTx["timestamp"] = block["timestamp"]
+                return enrichedTx
+            end if
+        end for
+    end for
+    
+    var notFound = {
+        "error": "Transaction not found",
+        "hash": hash
+    }
+    return notFound
+end
+
+// GET /api/address/:address - Get address info
+define function getAddressInfo(chain: Map, address: String) : Map
+begin
+    var balance = 0
+    var txCount = 0
+    var transactions = []
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        var txs = block["transactions"]
+        for each tx in txs do
+            if tx["sender"] == address or tx["recipient"] == address then
+                List.append(transactions, tx)
+                
+                if tx["sender"] == address then
+                    balance = balance - tx["amount"]
+                    txCount = txCount + 1
+                end if
+                
+                if tx["recipient"] == address then
+                    balance = balance + tx["amount"]
+                end if
+            end if
+        end for
+    end for
+    
+    var info = {
+        "address": address,
+        "balance": balance,
+        "transactionCount": txCount,
+        "transactions": transactions
+    }
+    return info
+end
+
+// GET /api/address/:address/balance - Get address balance
+define function getAddressBalance(chain: Map, address: String) : Map
+begin
+    var balance = 0
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        var txs = block["transactions"]
+        for each tx in txs do
+            if tx["recipient"] == address then
+                balance = balance + tx["amount"]
+            end if
+            if tx["sender"] == address then
+                balance = balance - tx["amount"]
+            end if
+        end for
+    end for
+    
+    var result = {
+        "address": address,
+        "balance": balance
+    }
+    return result
+end
+
+// GET /api/address/:address/transactions - Get address transactions
+define function getAddressTransactions(chain: Map, address: String) : Array
+begin
+    var transactions = []
+    var blocks = chain["blocks"]
+    
+    for each block in blocks do
+        var txs = block["transactions"]
+        for each tx in txs do
+            if tx["sender"] == address or tx["recipient"] == address then
+                var enrichedTx = tx
+                enrichedTx["blockHash"] = block["hash"]
+                enrichedTx["blockNumber"] = block["index"]
+                List.append(transactions, enrichedTx)
+            end if
+        end for
+    end for
+    
+    return transactions
+end
+
+// GET /api/stats - Get blockchain statistics
+define function getStats(chain: Map) : Map
+begin
+    var blocks = chain["blocks"]
+    var totalBlocks = List.length(blocks)
+    var totalTxs = 0
+    var totalVolume = 0
+    
+    for each block in blocks do
+        var txs = block["transactions"]
+        totalTxs = totalTxs + List.length(txs)
+        
+        for each tx in txs do
+            totalVolume = totalVolume + tx["amount"]
+        end for
+    end for
+    
+    var latest = Blockchain.getLatestBlock(chain)
+    
+    var stats = {
+        "totalBlocks": totalBlocks,
+        "totalTransactions": totalTxs,
+        "totalVolume": totalVolume,
+        "latestBlock": latest["index"],
+        "latestBlockHash": latest["hash"],
+        "difficulty": 2
+    }
+    return stats
+end
+
+// POST /api/transactions - Submit new transaction
+define function submitTransaction(chain: Map, transaction: Map) : Map
+begin
+    // Validate transaction
+    if not Blockchain.validateTransaction(transaction) then
+        var error = {
+            "success": false,
+            "error": "Invalid transaction"
+        }
+        return error
+    end if
+    
+    // In real implementation, add to mempool
+    var response = {
+        "success": true,
+        "hash": transaction["hash"],
+        "message": "Transaction submitted successfully"
+    }
+    return response
+end
+
+// GET /api/search/:query - Search blocks, transactions, addresses
+define function search(chain: Map, query: String) : Map
+begin
+    // Try as block hash
+    var block = getBlockByHash(chain, query)
+    var blockKeys = Map.keys(block)
+    var hasError = false
+    
+    for each key in blockKeys do
+        if key == "error" then
+            hasError = true
+            break
+        end if
+    end for
+    
+    if not hasError then
+        var result = {
+            "type": "block",
+            "data": block
+        }
+        return result
+    end if
+    
+    // Try as transaction hash
+    var tx = getTransactionByHash(chain, query)
+    var txKeys = Map.keys(tx)
+    hasError = false
+    
+    for each key in txKeys do
+        if key == "error" then
+            hasError = true
+            break
+        end if
+    end for
+    
+    if not hasError then
+        var result = {
+            "type": "transaction",
+            "data": tx
+        }
+        return result
+    end if
+    
+    // Try as address
+    if Blockchain.isValidAddress(query) then
+        var addressInfo = getAddressInfo(chain, query)
+        var result = {
+            "type": "address",
+            "data": addressInfo
+        }
+        return result
+    end if
+    
+    var notFound = {
+        "error": "No results found",
+        "query": query
+    }
+    return notFound
+end
+
+end module

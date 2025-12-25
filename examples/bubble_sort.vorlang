@@ -1,0 +1,48 @@
+import io
+import core
+
+program BubbleSort
+begin
+    IO.println("=== Bubble Sort Algorithm ===")
+    
+    // Create unsorted array
+    var arr = [64, 34, 25, 12, 22, 11, 90, 88, 45, 50]
+    
+    IO.println("Original array:")
+    var i = 0
+    while i < List.length(arr) do
+        IO.println("  [" + str(i) + "] = " + str(arr[i]))
+        i = i + 1
+    end while
+    
+    // Bubble sort algorithm
+    var n = List.length(arr)
+    var swapped = true
+    
+    while swapped do
+        swapped = false
+        var j = 0
+        while j < (n - 1) do
+            if arr[j] > arr[j + 1] then
+                // Swap elements
+                var temp = arr[j]
+                arr[j] = arr[j + 1]
+                arr[j + 1] = temp
+                swapped = true
+            end if
+            j = j + 1
+        end while
+        n = n - 1
+    end while
+    
+    IO.println("")
+    IO.println("Sorted array:")
+    var k = 0
+    while k < List.length(arr) do
+        IO.println("  [" + str(k) + "] = " + str(arr[k]))
+        k = k + 1
+    end while
+    
+    IO.println("")
+    IO.println("✓ Sorting complete!")
+end

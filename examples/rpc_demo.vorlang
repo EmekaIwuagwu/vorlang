@@ -1,0 +1,101 @@
+import io
+import rpc
+import json
+
+program RPCDemo
+begin
+    IO.println("=== JSON-RPC 2.0 Demo ===")
+    IO.println("")
+    
+    // Example 1: Create RPC request
+    IO.println("1. Creating JSON-RPC Request...")
+    var params = {
+        "username": "alice",
+        "password": "secret123"
+    }
+    var request = RPC.createRequest("user.login", params, 1)
+    var requestJson = JSON.stringify(request)
+    IO.println("   " + requestJson)
+    IO.println("")
+    
+    // Example 2: Create notification (no response)
+    IO.println("2. Creating JSON-RPC Notification...")
+    var notifyParams = {
+        "event": "user_logged_in",
+        "userId": 123
+    }
+    var notification = RPC.createNotification("log.event", notifyParams)
+    var notificationJson = JSON.stringify(notification)
+    IO.println("   " + notificationJson)
+    IO.println("")
+    
+    // Example 3: Create success response
+    IO.println("3. Creating Success Response...")
+    var result = {
+        "token": "abc123xyz",
+        "expiresIn": 3600
+    }
+    var response = RPC.createResponse(result, 1)
+    var responseJson = JSON.stringify(response)
+    IO.println("   " + responseJson)
+    IO.println("")
+    
+    // Example 4: Create error response
+    IO.println("4. Creating Error Response...")
+    var errorCode = RPC.getErrorCode("MethodNotFound")
+    var errorResponse = RPC.createError(errorCode, "Method not found", 1)
+    var errorJson = JSON.stringify(errorResponse)
+    IO.println("   " + errorJson)
+    IO.println("")
+    
+    // Example 5: RPC Client
+    IO.println("5. Using RPC Client...")
+    var client = RPC.createClient("https://api.example.com/rpc")
+    IO.println("   Client URL: " + client["url"])
+    IO.println("   Request ID: " + str(client["requestId"]))
+    IO.println("")
+    
+    // Example 6: Validate request
+    IO.println("6. Validating JSON-RPC Request...")
+    var validRequest = {
+        "jsonrpc": "2.0",
+        "method": "subtract",
+        "params": {"a": 42, "b": 23},
+        "id": 1
+    }
+    
+    if RPC.validateRequest(validRequest) then
+        IO.println("   ✓ Request is valid")
+    else
+        IO.println("   ✗ Request is invalid")
+    end if
+    IO.println("")
+    
+    // Example 7: Error codes reference
+    IO.println("7. Standard JSON-RPC Error Codes:")
+    IO.println("   Parse Error:      " + str(RPC.getErrorCode("ParseError")))
+    IO.println("   Invalid Request:  " + str(RPC.getErrorCode("InvalidRequest")))
+    IO.println("   Method Not Found: " + str(RPC.getErrorCode("MethodNotFound")))
+    IO.println("   Invalid Params:   " + str(RPC.getErrorCode("InvalidParams")))
+    IO.println("   Internal Error:   " + str(RPC.getErrorCode("InternalError")))
+    IO.println("")
+    
+    // Example 8: Batch requests
+    IO.println("8. Creating Batch Request...")
+    var req1 = RPC.createRequest("sum", {"a": 1, "b": 2}, 1)
+    var req2 = RPC.createRequest("subtract", {"a": 10, "b": 5}, 2)
+    var req3 = RPC.createRequest("multiply", {"a": 3, "b": 4}, 3)
+    
+    var batchRequests = [req1, req2, req3]
+    var batchJson = JSON.stringify(batchRequests)
+    IO.println("   Batch size: " + str(List.length(batchRequests)))
+    IO.println("")
+    
+    IO.println("✓ JSON-RPC Demo Complete!")
+    IO.println("")
+    IO.println("Use Cases:")
+    IO.println("  - Microservices communication")
+    IO.println("  - Blockchain node RPC")
+    IO.println("  - Distributed systems")
+    IO.println("  - API integrations")
+end

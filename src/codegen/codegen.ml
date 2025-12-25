@@ -98,6 +98,9 @@ let new_label state =
 let rec generate_expr state = function
   | Literal lit -> generate_literal state lit
   | Identifier id -> add_instruction state (ILoad id)
+  | Self -> add_instruction state (ILoad "self")
+  | This -> add_instruction state (ILoad "this")
+  | Super -> add_instruction state (ILoad "super")
   | BinaryOp(op, left, right) ->
       generate_expr state left;
       generate_expr state right;

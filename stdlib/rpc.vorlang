@@ -1,0 +1,172 @@
+import json
+import http
+
+module RPC
+
+// Create JSON-RPC 2.0 request
+define function createRequest(rpcMethod: String, params: Map, id: Integer) : Map
+begin
+    var request = {
+        "jsonrpc": "2.0",
+        "method": rpcMethod,
+        "params": params,
+        "id": id
+    }
+    return request
+end
+
+// Create JSON-RPC 2.0 notification (no response expected)
+define function createNotification(rpcMethod: String, params: Map) : Map
+begin
+    var notification = {
+        "jsonrpc": "2.0",
+        "method": rpcMethod,
+        "params": params
+    }
+    return notification
+end
+
+// Create success response
+define function createResponse(result: Map, id: Integer) : Map
+begin
+    var response = {
+        "jsonrpc": "2.0",
+        "result": result,
+        "id": id
+    }
+    return response
+end
+
+// Create error response
+define function createError(code: Integer, message: String, id: Integer) : Map
+begin
+    var errorObj = {
+        "code": code,
+        "message": message
+    }
+    
+    var response = {
+        "jsonrpc": "2.0",
+        "error": errorObj,
+        "id": id
+    }
+    return response
+end
+
+// Call remote procedure
+define function call(url: String, rpcMethod: String, params: Map, id: Integer) : Map
+begin
+    var request = createRequest(rpcMethod, params, id)
+    var jsonRequest = JSON.stringify(request)
+    
+    var httpResponse = HTTP.post(url, jsonRequest)
+    
+    // In a full implementation, parse JSON response
+    return httpResponse
+end
+
+// Batch call (multiple requests)
+define function batchCall(url: String, requests: Array) : Map
+begin
+    var jsonRequests = JSON.stringify(requests)
+    var httpResponse = HTTP.post(url, jsonRequests)
+    return httpResponse
+end
+
+// Standard JSON-RPC error codes
+define function getErrorCode(errorType: String) : Integer
+begin
+    if errorType == "ParseError" then
+        return -32700
+    elif errorType == "InvalidRequest" then
+        return -32600
+    elif errorType == "MethodNotFound" then
+        return -32601
+    elif errorType == "InvalidParams" then
+        return -32602
+    elif errorType == "InternalError" then
+        return -32603
+    else
+        return -32000  // Server error
+    end if
+end
+
+// RPC Client class (using maps)
+define function createClient(url: String) : Map
+begin
+    var client = {
+        "url": url,
+        "requestId": 0
+    }
+    return client
+end
+
+define function clientCall(client: Map, rpcMethod: String, params: Map) : Map
+begin
+    var id = client["requestId"]
+    client["requestId"] = id + 1
+    
+    return call(client["url"], rpcMethod, params, id)
+end
+
+// RPC Server helpers
+define function handleRequest(request: Map, handlers: Map) : Map
+begin
+    var reqMethod = request["method"]
+    var params = request["params"]
+    var id = request["id"]
+    
+    // Check if method exists in handlers
+    var keys = Map.keys(handlers)
+    var found = false
+    
+    for each key in keys do
+        if key == reqMethod then
+            found = true
+            break
+        end if
+    end for
+    
+    if not found then
+        return createError(
+            getErrorCode("MethodNotFound"),
+            "Method not found: " + reqMethod,
+            id
+        )
+    end if
+    
+    // In a full implementation, call the handler function
+    var result = {"success": true}
+    return createResponse(result, id)
+end
+
+// Validate JSON-RPC request
+define function validateRequest(request: Map) : Boolean
+begin
+    // Check for required fields
+    var keys = Map.keys(request)
+    var hasJsonrpc = false
+    var hasMethod = false
+    
+    for each key in keys do
+        if key == "jsonrpc" then
+            hasJsonrpc = true
+        end if
+        if key == "method" then
+            hasMethod = true
+        end if
+    end for
+    
+    if not hasJsonrpc or not hasMethod then
+        return false
+    end if
+    
+    // Check version
+    if request["jsonrpc"] != "2.0" then
+        return false
+    end if
+    
+    return true
+end
+
+end module
