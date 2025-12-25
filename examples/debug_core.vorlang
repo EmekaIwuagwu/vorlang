@@ -3,24 +3,24 @@ import io
 
 program DebugCore
 begin
-    io.println("Checking isNumber...")
+    IO.println("Checking isNumber...")
     if isNumber(10) then
-        io.println("isNumber found and returned true")
+        IO.println("isNumber found and returned true")
     else
-        io.println("isNumber found and returned false")
+        IO.println("isNumber found and returned false")
     end if
 
-    io.println("Checking toBool...")
+    IO.println("Checking toBool...")
     if toBool(null) then
-        io.println("toBool found")
+        IO.println("toBool found")
     else
-        io.println("toBool found (false)")
+        IO.println("toBool found (false)")
     end if
     
-    io.println("Checking isNull...")
+    IO.println("Checking isNull...")
     if isNull(null) then
-       io.println("isNull found (true)")
+       IO.println("isNull found (true)")
     else
-       io.println("isNull found (false)")
+       IO.println("isNull found (false)")
     end if
 end
