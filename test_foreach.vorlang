@@ -1,0 +1,30 @@
+import io
+import core
+
+program TestForEach
+begin
+    IO.println("Testing for-each loops...")
+    
+    var numbers = [1, 2, 3, 4, 5]
+    var sum = 0
+    
+    // Test for-each loop
+    for each num in numbers do
+        sum = sum + num
+    end for
+    
+    IO.println("Sum: " + str(sum))
+    assert(sum == 15, "Sum should be 15")
+    
+    // Test for-each with range (using array)
+    var range = [0, 1, 2, 3, 4]
+    var count = 0
+    for i in range do
+        count = count + 1
+    end for
+    
+    IO.println("Count: " + str(count))
+    assert(count == 5, "Count should be 5")
+    
+    IO.println("For-each tests passed!")
+end

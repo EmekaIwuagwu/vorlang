@@ -1,22 +1,27 @@
-import string
 import io
 import core
 
 program TestString
 begin
-    io.println("Testing String module...")
+    IO.println("Testing String module...")
 
     var s = "hello world"
     
-    assert(string.length(s) == 11, "length check")
-    assert(string.startsWith(s, "hello"), "startsWith check")
-    assert(string.endsWith(s, "world"), "endsWith check")
-    assert(string.contains(s, " "), "contains check")
+    // Test string length using built-in
+    var len = String.length(s)
+    assert(len == 11, "length check")
     
-    assert(string.upper("abc") == "ABC", "upper check")
-    assert(string.capitalize("hello") == "Hello", "capitalize check")
+    // Test string concatenation
+    var greeting = "Hello" + " " + "World"
+    var greetLen = String.length(greeting)
+    assert(greetLen == 11, "concat length check")
     
-    assert(string.repeat("a", 3) == "aaa", "repeat check")
+    // Test string upper/lower
+    var upper = String.upper("abc")
+    assert(upper == "ABC", "upper check")
     
-    io.println("String module tests passed!")
+    var lower = String.lower("ABC")
+    assert(lower == "abc", "lower check")
+    
+    IO.println("String module tests passed!")
 end

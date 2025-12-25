@@ -1,16 +1,30 @@
 import crypto
+import core
 
 module Blockchain
 
-// Application-Level (Building on Blockchains)
+// Wallet Management
 
 /** 
- * Creates a new wallet.
+ * Creates a new wallet with private key and address.
  */
 define function createWallet() : Map
 begin
-    // Internal: implementation mapping for secure key gen
-    return {}
+    // Generate a random private key (32 bytes)
+    var privateKeyBytes = Crypto.randomBytes(32)
+    var privateKey = Crypto.hexEncode(privateKeyBytes)
+    
+    // Derive public key (simplified - using hash of private key)
+    var publicKey = Crypto.sha256(privateKey)
+    
+    // Derive address from public key (last 20 bytes of keccak256)
+    var address = Crypto.publicKeyToAddress(publicKey)
+    
+    return {
+        "privateKey": privateKey,
+        "publicKey": publicKey,
+        "address": address
+    }
 end
 
 /** 
@@ -18,314 +32,292 @@ end
  */
 define function importWallet(privateKey: String) : Map
 begin
+    // Derive public key from private key
+    var publicKey = Crypto.sha256(privateKey)
+    
+    // Derive address
+    var address = Crypto.publicKeyToAddress(publicKey)
+    
     return {
         "privateKey": privateKey,
-        "address": "0x" // mapping derived address from key
+        "publicKey": publicKey,
+        "address": address
     }
 end
 
 /** 
  * Returns the address of a wallet.
  */
-define function exportWallet(wallet: Map) : String
+define function getAddress(wallet: Map) : String
 begin
-    return get(wallet, "address", "")
+    return wallet["address"]
 end
 
 /** 
- * Returns the balance of an address.
+ * Signs a message with a wallet's private key.
  */
-define function getBalance(address: String) : Integer
+define function signMessage(wallet: Map, message: String) : String
 begin
-    // Internal: mapping
-    return 0
+    var privateKey = wallet["privateKey"]
+    return Crypto.sign(message, privateKey)
 end
 
 /** 
- * Returns the transaction nonce.
+ * Verifies a signature.
  */
-define function getNonce(address: String) : Integer
+define function verifySignature(message: String, signature: String, address: String) : Bool
 begin
-    // Internal: mapping
-    return 0
+    // Simplified verification
+    return Crypto.verify(message, signature, address)
 end
 
+// Transaction Management
+
 /** 
- * Creates a raw transaction object.
+ * Creates a transaction.
  */
-define function createTransaction(params: Map) : Map
+define function createTransaction(sender: String, recipient: String, amount: Integer, nonce: Integer) : Map
 begin
-    var tx = {
-        "to": get(params, "to", ""),
-        "value": get(params, "value", 0),
-        "data": get(params, "data", "0x"),
-        "nonce": get(params, "nonce", 0),
-        "gasLimit": get(params, "gasLimit", 21000),
-        "gasPrice": get(params, "gasPrice", 0),
-        "chainId": get(params, "chainId", 1)
+    return {
+        "from": sender,
+        "to": recipient,
+        "amount": amount,
+        "nonce": nonce,
+        "timestamp": 0,  // Would use Time.now() in production
+        "signature": ""
     }
+end
+
+/** 
+ * Signs a transaction.
+ */
+define function signTransaction(wallet: Map, tx: Map) : Map
+begin
+    // Create transaction hash
+    var txData = tx["from"] + tx["to"] + str(tx["amount"]) + str(tx["nonce"])
+    var txHash = Crypto.sha256(txData)
+    
+    // Sign the hash
+    var signature = signMessage(wallet, txHash)
+    
+    // Add signature to transaction
+    tx["signature"] = signature
+    tx["hash"] = txHash
+    
     return tx
 end
 
+// Block Management
+
 /** 
- * Signs a transaction with a private key.
+ * Creates a new block.
  */
-define function signTransaction(tx: Map, privateKey: String) : String
+define function createBlock(index: Integer, previousHash: String, transactions: Array) : Map
 begin
-    // Internal: mapping
-    return ""
+    var timestamp = 0  // Would use Time.now()
+    
+    // Calculate transactions hash
+    var txHashes = ""
+    for each tx in transactions do
+        txHashes = txHashes + tx["hash"]
+    end for
+    
+    var transactionsHash = Crypto.sha256(txHashes)
+    
+    // Create block
+    var block = {
+        "index": index,
+        "timestamp": timestamp,
+        "previousHash": previousHash,
+        "transactionsHash": transactionsHash,
+        "transactions": transactions,
+        "nonce": 0,
+        "hash": ""
+    }
+    
+    return block
 end
 
 /** 
- * Sends a signed transaction.
+ * Calculates block hash.
  */
-define function sendTransaction(signedTx: String) : String
+define function calculateBlockHash(block: Map) : String
 begin
-    // Internal: mapping
-    return ""
+    var data = str(block["index"]) + 
+               str(block["timestamp"]) + 
+               block["previousHash"] + 
+               block["transactionsHash"] + 
+               str(block["nonce"])
+    
+    return Crypto.sha256(data)
 end
 
 /** 
- * Calls a smart contract function (read-only).
+ * Internal helper: check if string starts with prefix
  */
-define function call(contract: String, method: String, params: Array) : Any
+define function startsWith(s: String, prefix: String) : Bool
 begin
-    // Internal: mapping
-    return null
+    var len = String.length(prefix)
+    if String.length(s) < len then return false end if
+    return String.slice(s, 0, len) == prefix
 end
 
 /** 
- * Sends a transaction to a smart contract.
+ * Internal helper: repeat string
  */
-define function send(contract: String, method: String, params: Array, options: Map = {}) : String
+define function repeatString(s: String, count: Integer) : String
 begin
-    // Internal: mapping
-    return ""
+    var res = ""
+    var i = 0
+    while i < count do
+        res = res + s
+        i = i + 1
+    end while
+    return res
 end
 
 /** 
- * Deploys a smart contract.
+ * Mines a block (simplified Proof of Work).
  */
-define function deploy(bytecode: String, abi: Array, params: Array) : String
+define function mineBlock(block: Map, difficulty: Integer) : Map
 begin
-    // Internal: mapping
-    return ""
+    var target = repeatString("0", difficulty)
+    var nonce = 0
+    var hash = ""
+    
+    // Simple mining loop (limited iterations for demo)
+    var maxIterations = 100000
+    var iterations = 0
+    
+    while iterations < maxIterations do
+        block["nonce"] = nonce
+        hash = calculateBlockHash(block)
+        
+        // Check if hash meets difficulty (starts with target)
+        if startsWith(hash, target) then
+            block["hash"] = hash
+            return block
+        end if
+        
+        nonce = nonce + 1
+        iterations = iterations + 1
+    end while
+    
+    // If we didn't find a valid hash, just use the last one
+    block["hash"] = hash
+    return block
 end
 
 /** 
- * Encodes a function call.
+ * Validates a block.
  */
-define function encodeCall(method: String, params: Array) : String
+define function validateBlock(block: Map, previousBlock: Map) : Bool
 begin
-    // Internal: mapping
-    return ""
+    // Check index
+    if block["index"] != previousBlock["index"] + 1 then
+        return false
+    end if
+    
+    // Check previous hash
+    if block["previousHash"] != previousBlock["hash"] then
+        return false
+    end if
+    
+    // Recalculate and verify hash
+    var calculatedHash = calculateBlockHash(block)
+    if block["hash"] != calculatedHash then
+        return false
+    end if
+    
+    return true
+end
+
+// Blockchain Management
+
+/** 
+ * Creates a genesis block.
+ */
+define function createGenesisBlock() : Map
+begin
+    var genesisBlock = createBlock(0, "0", [])
+    genesisBlock["hash"] = calculateBlockHash(genesisBlock)
+    return genesisBlock
 end
 
 /** 
- * Returns a block.
+ * Creates a new blockchain.
  */
-define function getBlock(id: Any) : Map
+define function createBlockchain() : Map
 begin
-    // Internal: mapping
-    return {}
+    var genesis = createGenesisBlock()
+    
+    return {
+        "chain": [genesis],
+        "pendingTransactions": [],
+        "difficulty": 4,
+        "miningReward": 100
+    }
 end
 
 /** 
- * Returns a transaction.
+ * Adds a block to the blockchain.
  */
-define function getTransaction(hash: String) : Map
+define function addBlock(blockchain: Map, block: Map) : Bool
 begin
-    // Internal: mapping
-    return {}
+    var chain = blockchain["chain"]
+    var lastBlock = chain[List.length(chain) - 1]
+    
+    if validateBlock(block, lastBlock) then
+        List.append(chain, block)
+        return true
+    end if
+    
+    return false
 end
 
 /** 
- * Returns logs matching the filter.
+ * Gets the latest block.
  */
-define function getLogs(filter: Map) : Array
+define function getLatestBlock(blockchain: Map) : Map
 begin
-    // Internal: mapping
-    return []
+    var chain = blockchain["chain"]
+    return chain[List.length(chain) - 1]
 end
 
 /** 
- * Subscribes to events.
+ * Validates the entire blockchain.
  */
-define function subscribeEvents(filter: Map, callback: Function) : String
+define function validateChain(blockchain: Map) : Bool
 begin
-    // Internal: mapping
-    return ""
+    var chain = blockchain["chain"]
+    var chainLength = List.length(chain)
+    
+    // Start from index 1 (skip genesis)
+    var i = 1
+    while i < chainLength do
+        var currentBlock = chain[i]
+        var previousBlock = chain[i - 1]
+        
+        if not validateBlock(currentBlock, previousBlock) then
+            return false
+        end if
+        
+        i = i + 1
+    end while
+    
+    return true
 end
 
 /** 
- * Estimates the gas required.
- */
-define function estimateGas(tx: Map) : Integer
-begin
-    // Internal: mapping
-    return 0
-end
-
-/** 
- * Returns the current gas price.
- */
-define function getGasPrice() : Integer
-begin
-    // Internal: mapping
-    return 0
-end
-
-/** 
- * Validates a blockchain address (Hex format).
+ * Validates an address format.
  */
 define function isValidAddress(address: String) : Bool
 begin
-    if not string.startsWith(address, "0x") then return false end if
-    return length(address) == 42
-end
-
-/** 
- * Returns the checksum version.
- */
-define function checksumAddress(address: String) : String
-begin
-    return address
-end
-
-// Protocol-Level (Building Blockchains)
-
-const PoS = "pos"
-const PoW = "pow"
-const BFT = "bft"
-
-/** 
- * Creates a custom blockchain configuration.
- */
-define function createChain(config: Map) : Map
-begin
-    return {
-        "name": get(config, "name", "VorlangChain"),
-        "consensus": get(config, "consensus", PoS),
-        "genesis": get(config, "genesis", {}),
-        "reward": get(config, "reward", 100)
-    }
-end
-
-/** 
- * Performs standard block validation.
- */
-define function validateBlock(block: Map, rules: Map) : Bool
-begin
-    // Basic structural validation
-    if not has(block, "header") then return false end if
-    if not has(block, "transactions") then return false end if
+    if not startsWith(address, "0x") then 
+        return false 
+    end if
     
-    // Internal: cryptographic validation mapping
-    return true
-end
-
-/** 
- * Proposes a new block.
- */
-define function proposeBlock(block: Map)
-begin
-    // Internal: mapping
-end
-
-/** 
- * Applies a transaction to the state.
- */
-define function applyTransaction(tx: Map, state: Map) : Map
-begin
-    // Simplified logic: adjust balance
-    var from = get(tx, "from")
-    var to = get(tx, "to")
-    var value = get(tx, "value")
-    
-    state[from] = state[from] - value
-    state[to] = state[to] + value
-    
-    return state
-end
-
-/** 
- * Reverts a state change.
- */
-define function revertState(state: Map) : Map
-begin
-    // Internal: mapping
-    return state
-end
-
-/** 
- * Verifies a Merkle proof.
- */
-define function merkleProof(leaf: String, root: String, proof: Array) : Bool
-begin
-    var current = leaf
-    for element in proof do
-        // Simplified: concatenate and hash (order depends on implementation)
-        current = crypto.sha256(current + element)
-    end for
-    return current == root
-end
-
-/** 
- * Starts a P2P node.
- */
-define function Node(config: Map) : Map
-begin
-    return {
-        "id": crypto.sha256(toString(time.now())),
-        "peers": [],
-        "mempool": [],
-        "config": config
-    }
-end
-
-/** 
- * Broadcasts a message.
- */
-define function broadcast(msg: Any)
-begin
-    // Internal: mapping
-end
-
-/** 
- * Gossips a message.
- */
-define function gossip(msg: Any)
-begin
-    // Internal: mapping
-end
-
-/** 
- * Adds a transaction to the mempool.
- */
-define function addToMempool(node: Map, tx: Map) : Bool
-begin
-    push(node.mempool, tx)
-    return true
-end
-
-/** 
- * Finalizes a block.
- */
-define function finalizeBlock(block: Map)
-begin
-    // Internal: mapping
-end
-
-// Staking/Validator operations
-
-define function stake(amount: Integer)
-begin
-    // Logic: emit staking event
-end
-
-define function reward(validator: String, amount: Integer)
-begin
-    // Logic: adjust balance
+    return String.length(address) == 42
 end
 
 end module

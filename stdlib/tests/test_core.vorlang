@@ -3,27 +3,27 @@ import io
 
 program TestCore
 begin
-    io.println("Testing Core module...")
+    IO.println("Testing Core module...")
 
     // Type utilities
-    assert(core.isNumber(10), "10 should be a number")
-    assert(core.isNumber(10.5), "10.5 should be a number")
-    assert(core.isString("hello"), "'hello' should be a string")
-    assert(core.isBool(true), "true should be a bool")
-    assert(core.isArray([1, 2]), "array should be detected")
-    assert(core.isMap({"a": 1}), "map should be detected")
+    assert(isNumber(10), "10 should be a number")
+    assert(isNumber(10.5), "10.5 should be a number")
+    assert(isString("hello"), "'hello' should be a string")
+    assert(isBool(true), "true should be a bool")
+    assert(isArray([1, 2]), "array should be detected")
+    assert(isMap({"a": 1}), "map should be detected")
 
     // Null helpers
     var x = null
-    assert(core.isNull(x), "x should be null")
-    assert(core.isSome(10), "10 should be some")
+    assert(isNull(x), "x should be null")
+    assert(isSome(10), "10 should be some")
     
-    var y = core.unwrapOr(x, "default")
+    var y = unwrapOr(x, "default")
     assert(y == "default", "unwrapOr failed")
 
     // Equality
-    assert(core.shallowEqual(10, 10), "10 == 10")
-    assert(not core.shallowEqual(10, 20), "10 != 20")
+    assert(shallowEqual(10, 10), "10 == 10")
+    assert(not shallowEqual(10, 20), "10 != 20")
 
-    io.println("Core module tests passed!")
+    IO.println("Core module tests passed!")
 end

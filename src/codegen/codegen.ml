@@ -132,8 +132,16 @@ let rec generate_expr state = function
       List.iter (generate_expr state) exprs;
       add_instruction state (ITuple (List.length exprs))
   | Lambda(params, body) ->
-      (* For now, lambdas are not fully implemented *)
-      ()
+      (* Generate anonymous function:
+         For now, we'll create a simple function reference
+         Full closure support would require capturing environment
+      *)
+      let lambda_name = "__lambda_" ^ string_of_int state.next_label in
+      state.next_label <- state.next_label + 1;
+      
+      (* Store lambda for later - for now just push a placeholder *)
+      (* In a full implementation, we'd generate the function code here *)
+      add_instruction state (IConstString lambda_name)
   | Conditional(cond, t, f) ->
       let else_label = new_label state in
       let end_label = new_label state in
@@ -233,16 +241,105 @@ let rec generate_stmt state = function
 
 and generate_for_loop state = function
   | ForEach(var, expr, body) ->
+      (* Generate code for: 
+         var __iter = expr
+         var __i = 0
+         while __i < List.length(__iter) do
+           var = __iter[__i]
+           body
+           __i = __i + 1
+         end while
+      *)
+      let iter_var = "__iter_" ^ var in
+      let index_var = "__i_" ^ var in
+      let start_label = new_label state in
+      let end_label = new_label state in
+      
+      (* var __iter = expr *)
       generate_expr state expr;
-      (* For now, just generate the expression *)
-      (* In a full implementation, we'd handle iteration *)
-      generate_stmt state body
+      add_instruction state (IDefine iter_var);
+      
+      (* var __i = 0 *)
+      add_instruction state (IConstInt 0);
+      add_instruction state (IDefine index_var);
+      
+      (* Loop start *)
+      add_instruction state (ILabel start_label);
+      
+      (* Check: __i < List.length(__iter) *)
+      add_instruction state (ILoad index_var);
+      add_instruction state (ILoad iter_var);
+      add_instruction state (ICall("List.length", 1));
+      add_instruction state (IBinOp Lt);
+      add_instruction state (IJumpIfFalse end_label);
+      
+      (* var = __iter[__i] *)
+      add_instruction state IPushScope;
+      add_instruction state (ILoad iter_var);
+      add_instruction state (ILoad index_var);
+      add_instruction state ILoadIndex;
+      add_instruction state (IDefine var);
+      
+      (* Execute body *)
+      generate_stmt state body;
+      
+      (* __i = __i + 1 *)
+      add_instruction state (ILoad index_var);
+      add_instruction state (IConstInt 1);
+      add_instruction state (IBinOp Add);
+      add_instruction state (IStore index_var);
+      
+      add_instruction state IPopScope;
+      
+      (* Jump back to start *)
+      add_instruction state (IJump start_label);
+      add_instruction state (ILabel end_label)
+      
   | ForRange(var, start, end_expr, body) ->
+      (* Generate code for:
+         var = start
+         var __end = end_expr
+         while var < __end do
+           body
+           var = var + 1
+         end while
+      *)
+      let end_var = "__end_" ^ var in
+      let start_label = new_label state in
+      let loop_end_label = new_label state in
+      
+      (* var = start *)
       generate_expr state start;
+      add_instruction state (IDefine var);
+      
+      (* var __end = end_expr *)
       generate_expr state end_expr;
-      (* For now, just generate the expressions *)
-      (* In a full implementation, we'd handle the range loop *)
-      generate_stmt state body
+      add_instruction state (IDefine end_var);
+      
+      (* Loop start *)
+      add_instruction state (ILabel start_label);
+      
+      (* Check: var < __end *)
+      add_instruction state (ILoad var);
+      add_instruction state (ILoad end_var);
+      add_instruction state (IBinOp Lt);
+      add_instruction state (IJumpIfFalse loop_end_label);
+      
+      (* Execute body *)
+      add_instruction state IPushScope;
+      generate_stmt state body;
+      add_instruction state IPopScope;
+      
+      (* var = var + 1 *)
+      add_instruction state (ILoad var);
+      add_instruction state (IConstInt 1);
+      add_instruction state (IBinOp Add);
+      add_instruction state (IStore var);
+      
+      (* Jump back to start *)
+      add_instruction state (IJump start_label);
+      add_instruction state (ILabel loop_end_label)
+
 
 and generate_function state func =
   let old_function = state.current_function in

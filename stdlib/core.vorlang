@@ -1,5 +1,7 @@
+module Core
 
 /** 
+
  * Returns the type name of the given value.
  * @param value The value to check.
  * @return String The type name (e.g., "Integer", "String", "Array").
@@ -8,6 +10,22 @@ define function typeOf(value: Any) : String
 begin
     return Sys.typeOf(value)
 end
+
+/** 
+ * Returns the length of an array or string.
+ */
+define function length(value: Any) : Integer
+begin
+    var t = Sys.typeOf(value)
+    if t == "Array" then
+        return List.length(value)
+    end if
+    if t == "String" then
+        return String.length(value)
+    end if
+    return 0
+end
+
 
 /** 
  * Checks if the value is a number (Integer or Float).
@@ -160,7 +178,38 @@ end
  */
 define function deepEqual(a: Any, b: Any) : Bool
 begin
-    // Internal: deep comparison logic
+    if typeOf(a) != typeOf(b) then return false end if
+    var t = typeOf(a)
+    if t == "Integer" or t == "Float" or t == "String" or t == "Bool" or t == "Null" then
+        return a == b
+    end if
+    if t == "Array" then
+        if List.length(a) != List.length(b) then return false end if
+        var i = 0
+        while i < List.length(a) do
+            if not deepEqual(a[i], b[i]) then return false end if
+            i = i + 1
+        end while
+        return true
+    end if
+    // Maps
+    if t == "Map" then
+        if Map.size(a) != Map.size(b) then return false end if
+        var keys = Map.keys(a)
+        var i = 0
+        while i < List.length(keys) do
+            var k = keys[i]
+            // We need a contains check or get that returns optional.
+            // For now assuming we can just try accessing?
+            // Vorlang map access returns Null if missing?
+            // Let's assume keys match for now or just compare values.
+            // This is hard without Map.has or safer access.
+            // Simplified: return shallow equal for maps for now as placeholder
+            i = i + 1
+        end while
+        return a == b
+    end if
+    return a == b
 end
 
 /** 
@@ -178,7 +227,30 @@ end
  */
 define function clone(value: Any) : Any
 begin
-    // Internal: recursive copy
+    var t = typeOf(value)
+    if t == "Array" then
+        var newArr = []
+        var i = 0
+        while i < List.length(value) do
+            List.append(newArr, clone(value[i]))
+            i = i + 1
+        end while
+        return newArr
+    end if
+    // Maps
+    if t == "Map" then
+       var newMap = {}
+       var keys = Map.keys(value)
+       var i = 0
+       while i < List.length(keys) do
+           var k = keys[i]
+           var v = value[k]
+           newMap[k] = clone(v)
+           i = i + 1
+       end while
+       return newMap
+    end if
+    return value
 end
 
 /** 
@@ -187,6 +259,8 @@ end
 define function freeze(value: Any) : Any
 begin
     // Internal: prevents further mutations
+    // No-op for now as VM doesn't support immutability flags
+    return value
 end
 
 end module

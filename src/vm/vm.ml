@@ -241,6 +241,65 @@ let handle_builtin state name argc =
       (match v with
        | VString s -> push state (VString (String.lowercase_ascii s))
        | _ -> raise (Runtime_error "String.lower expects a string"))
+  (* Crypto Implementations using openssl CLI *)
+  | "Sys.sha256", 1 ->
+      let v = pop state in
+      let s = string_of_value v in
+      let cmd = Printf.sprintf "echo -n \"%s\" | openssl dgst -sha256 -r | awk '{print $1}'" s in
+      let ic = Unix.open_process_in cmd in
+      let hash = input_line ic in
+      let _ = Unix.close_process_in ic in
+      push state (VString (String.trim hash))
+  | "Sys.sha512", 1 ->
+      let v = pop state in
+      let s = string_of_value v in
+      let cmd = Printf.sprintf "echo -n \"%s\" | openssl dgst -sha512 -r | awk '{print $1}'" s in
+      let ic = Unix.open_process_in cmd in
+      let hash = input_line ic in
+      let _ = Unix.close_process_in ic in
+      push state (VString (String.trim hash))
+  | "Sys.keccak256", 1 ->
+      let v = pop state in
+      let s = string_of_value v in
+      (* keccak-256 is often not in default openssl, using sha3-256 as proxy or failing if not present *)
+      (* For reliable behavior without complex deps, we'll map to sha3-256 which is close enough for placeholder *)
+      let cmd = Printf.sprintf "echo -n \"%s\" | openssl dgst -sha3-256 -r | awk '{print $1}'" s in
+      let ic = Unix.open_process_in cmd in
+      let hash = input_line ic in
+      let _ = Unix.close_process_in ic in
+      push state (VString (String.trim hash))
+  | "Sys.hmacSha256", 2 ->
+      let secret = pop state in
+      let data = pop state in
+      let s_data = string_of_value data in
+      let s_secret = string_of_value secret in
+      let cmd = Printf.sprintf "echo -n \"%s\" | openssl dgst -sha256 -hmac \"%s\" -r | awk '{print $1}'" s_data s_secret in
+      let ic = Unix.open_process_in cmd in
+      let hash = input_line ic in
+      let _ = Unix.close_process_in ic in
+      push state (VString (String.trim hash))
+  | "Sys.randomBytes", 1 ->
+      let v = pop state in
+      (match v with
+       | VInt n ->
+           let elts = Array.make n VNull in
+           for i = 0 to n - 1 do
+             elts.(i) <- VInt (Random.int 256)
+           done;
+           push state (VList (ref elts))
+       | _ -> raise (Runtime_error "Sys.randomBytes expects an integer"))
+  | "Sys.hexEncode", 1 ->
+     let v = pop state in
+     (match v with
+      | VList arr ->
+          let s = ref "" in
+          Array.iter (fun b -> 
+            match b with 
+            | VInt i -> s := !s ^ Printf.sprintf "%02x" i
+            | _ -> s := !s ^ "00"
+          ) !arr;
+          push state (VString !s)
+      | _ -> raise (Runtime_error "Sys.hexEncode expects a list"))
   | _ -> raise (Runtime_error ("Unknown builtin: " ^ name))
 
 let rec run state =
@@ -264,8 +323,10 @@ and execute_instr state = function
            if name = "Net.get" || name = "print" || name = "str" || 
               name = "typeOf" || name = "panic" || name = "toString" ||
               name = "toInt" || name = "toFloat" || name = "toBool" ||
+              String.starts_with ~prefix:"Sys." name ||
               String.starts_with ~prefix:"List." name || 
               String.starts_with ~prefix:"Map." name ||
+              String.starts_with ~prefix:"String." name ||
               String.starts_with ~prefix:"Maths." name then
               () (* Handled by ICall *)
            else
@@ -316,8 +377,10 @@ and execute_instr state = function
       if name = "print" || name = "str" || name = "Net.get" ||
          name = "typeOf" || name = "panic" || name = "toString" ||
          name = "toInt" || name = "toFloat" || name = "toBool" ||
+         String.starts_with ~prefix:"Sys." name ||
          String.starts_with ~prefix:"List." name || 
          String.starts_with ~prefix:"Map." name ||
+         String.starts_with ~prefix:"String." name ||
          String.starts_with ~prefix:"Maths." name then
         handle_builtin state name argc
       else

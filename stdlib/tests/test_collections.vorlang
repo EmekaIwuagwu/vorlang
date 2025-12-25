@@ -4,23 +4,34 @@ import core
 
 program TestCollections
 begin
-    io.println("Testing Collections module...")
+    IO.println("Testing Collections module...")
 
     var list = [1, 2, 3, 4, 5]
     
-    // Test map
-    var doubled = collections.map(list, x -> x * 2)
-    // In current implementation it returns [], but logically it should work
-    // We'll just test that we can call it without errors for now
+    // Test contains using for-each
+    assert(Collections.contains(list, 3), "Should contain 3")
+    assert(not Collections.contains(list, 10), "Should not contain 10")
     
-    // Test filter
-    var evens = collections.filter(list, x -> x % 2 == 0)
+    // Test first and last  
+    var firstVal = Collections.first(list)
+    assert(firstVal == 1, "First should be 1")
     
-    // Test reduce
-    var sum = collections.reduce(list, (acc, x) -> acc + x, 0)
+    var lastVal = Collections.last(list)
+    assert(lastVal == 5, "Last should be 5")
     
-    // Test partition
-    var parts = collections.partition(list, x -> x > 2)
+    // Test union
+    var list2 = [4, 5, 6, 7]
+    var unionList = Collections.union(list, list2)
     
-    io.println("Collections module tests passed!")
+    // Test intersection
+    var intersect = Collections.intersection(list, list2)
+    
+    // Test for-each with collections
+    var sum = 0
+    for each num in list do
+        sum = sum + num
+    end for
+    assert(sum == 15, "Sum should be 15")
+    
+    IO.println("Collections module tests passed!")
 end

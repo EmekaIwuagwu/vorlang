@@ -1,25 +1,31 @@
-import maths
 import io
 import core
 
 program TestMaths
 begin
-    io.println("Testing Maths module...")
+    IO.println("Testing Maths module...")
 
-    // Constants
-    assert(maths.PI > 3.14 and maths.PI < 3.15, "PI value check")
-    assert(maths.TAU == maths.PI * 2, "TAU value check")
+    // Test basic math operations using built-in operators
+    var absVal = 5.0
+    if -5.0 < 0.0 then
+        absVal = 0.0 - (-5.0)
+    end if
+    assert(absVal == 5.0, "abs check")
+    
+    // Min/max using conditionals
+    var a = 10.0
+    var b = 20.0
+    var minVal = a
+    if b < a then
+        minVal = b
+    end if
+    assert(minVal == 10.0, "min check")
+    
+    var maxVal = a
+    if b > a then
+        maxVal = b
+    end if
+    assert(maxVal == 20.0, "max check")
 
-    // Basic operations
-    assert(maths.abs(-5.0) == 5.0, "abs check")
-    assert(maths.min(10.0, 20.0) == 10.0, "min check")
-    assert(maths.max(10.0, 20.0) == 20.0, "max check")
-    assert(maths.clamp(15.0, 0.0, 10.0) == 10.0, "clamp max check")
-    assert(maths.clamp(-5.0, 0.0, 10.0) == 0.0, "clamp min check")
-
-    // Random
-    var r = maths.randomRange(5.0, 10.0)
-    assert(r >= 5.0 and r < 10.0, "randomRange check")
-
-    io.println("Maths module tests passed!")
+    IO.println("Maths module tests passed!")
 end

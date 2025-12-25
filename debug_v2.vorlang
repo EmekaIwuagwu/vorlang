@@ -1,0 +1,14 @@
+import core
+import io
+
+program DebugV2
+begin
+    IO.println("DebugV2 running...")
+    if isNull(null) then
+        IO.println("isNull works")
+    else
+        IO.println("isNull failed")
+    end if
+    
+    // Test Crypto placeholder
+end

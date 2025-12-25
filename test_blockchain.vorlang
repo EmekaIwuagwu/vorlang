@@ -1,0 +1,202 @@
+import blockchain
+// import crypto <-- removed to fix collision
+import io
+import core
+
+program TestBlockchain
+begin
+    IO.println("===========================================")
+    IO.println("  Vorlang Blockchain Test Suite")
+    IO.println("===========================================")
+    IO.println("")
+    
+    // Test 1: Wallet Creation
+    IO.println("Test 1: Creating Wallets...")
+    IO.println("-------------------------------------------")
+    
+    var wallet1 = Blockchain.createWallet()
+    var wallet2 = Blockchain.createWallet()
+    var wallet3 = Blockchain.createWallet()
+    
+    IO.println("Wallet 1 Created:")
+    IO.println("  Address: " + wallet1["address"])
+    IO.println("  Public Key: " + String.slice(wallet1["publicKey"], 0, 16) + "...")
+    IO.println("")
+    
+    IO.println("Wallet 2 Created:")
+    IO.println("  Address: " + wallet2["address"])
+    IO.println("  Public Key: " + String.slice(wallet2["publicKey"], 0, 16) + "...")
+    IO.println("")
+    
+    IO.println("Wallet 3 Created:")
+    IO.println("  Address: " + wallet3["address"])
+    IO.println("  Public Key: " + String.slice(wallet3["publicKey"], 0, 16) + "...")
+    IO.println("")
+    
+    // Verify addresses are valid
+    assert(Blockchain.isValidAddress(wallet1["address"]), "Wallet 1 address should be valid")
+    assert(Blockchain.isValidAddress(wallet2["address"]), "Wallet 2 address should be valid")
+    assert(Blockchain.isValidAddress(wallet3["address"]), "Wallet 3 address should be valid")
+    
+    IO.println("✓ All wallet addresses are valid")
+    IO.println("")
+    
+    // Test 2: Wallet Import
+    IO.println("Test 2: Importing Wallet from Private Key...")
+    IO.println("-------------------------------------------")
+    
+    var privateKey = wallet1["privateKey"]
+    var importedWallet = Blockchain.importWallet(privateKey)
+    
+    IO.println("Original Address:  " + wallet1["address"])
+    IO.println("Imported Address:  " + importedWallet["address"])
+    
+    assert(wallet1["address"] == importedWallet["address"], "Imported wallet should have same address")
+    IO.println("✓ Wallet import successful")
+    IO.println("")
+    
+    // Test 3: Transaction Creation
+    IO.println("Test 3: Creating Transactions...")
+    IO.println("-------------------------------------------")
+    
+    var tx1 = Blockchain.createTransaction(
+        wallet1["address"],
+        wallet2["address"],
+        100,
+        0
+    )
+    
+    IO.println("Transaction Created:")
+    IO.println("  From: " + tx1["from"])
+    IO.println("  To: " + tx1["to"])
+    IO.println("  Amount: " + str(tx1["amount"]))
+    IO.println("")
+    
+    // Sign the transaction
+    var signedTx1 = Blockchain.signTransaction(wallet1, tx1)
+    
+    IO.println("Transaction Signed:")
+    IO.println("  Hash: " + String.slice(signedTx1["hash"], 0, 16) + "...")
+    IO.println("  Signature: " + String.slice(signedTx1["signature"], 0, 16) + "...")
+    IO.println("")
+    
+    assert(String.length(signedTx1["hash"]) > 0, "Transaction should have a hash")
+    assert(String.length(signedTx1["signature"]) > 0, "Transaction should have a signature")
+    IO.println("✓ Transaction creation and signing successful")
+    IO.println("")
+    
+    // Test 4: Blockchain Creation
+    IO.println("Test 4: Creating Blockchain...")
+    IO.println("-------------------------------------------")
+    
+    var blockchain = Blockchain.createBlockchain()
+    var genesisBlock = Blockchain.getLatestBlock(blockchain)
+    
+    IO.println("Genesis Block Created:")
+    IO.println("  Index: " + str(genesisBlock["index"]))
+    IO.println("  Hash: " + String.slice(genesisBlock["hash"], 0, 16) + "...")
+    IO.println("  Previous Hash: " + genesisBlock["previousHash"])
+    IO.println("")
+    
+    assert(genesisBlock["index"] == 0, "Genesis block should have index 0")
+    assert(genesisBlock["previousHash"] == "0", "Genesis block should have previous hash '0'")
+    IO.println("✓ Blockchain initialized with genesis block")
+    IO.println("")
+    
+    // Test 5: Mining Blocks
+    IO.println("Test 5: Mining Blocks...")
+    IO.println("-------------------------------------------")
+    
+    // Create second transaction
+    var tx2 = Blockchain.createTransaction(
+        wallet2["address"],
+        wallet3["address"],
+        50,
+        0
+    )
+    var signedTx2 = Blockchain.signTransaction(wallet2, tx2)
+    
+    // Create a new block with transactions
+    var transactions = [signedTx1, signedTx2]
+    var newBlock = Blockchain.createBlock(
+        1,
+        genesisBlock["hash"],
+        transactions
+    )
+    
+    IO.println("Mining block (this may take a moment)...")
+    var minedBlock = Blockchain.mineBlock(newBlock, 1)
+    
+    IO.println("Block Mined:")
+    IO.println("  Index: " + str(minedBlock["index"]))
+    IO.println("  Hash: " + String.slice(minedBlock["hash"], 0, 16) + "...")
+    IO.println("  Nonce: " + str(minedBlock["nonce"]))
+    IO.println("  Transactions: " + str(List.length(minedBlock["transactions"])))
+    IO.println("")
+    
+    assert(minedBlock["index"] == 1, "New block should have index 1")
+    assert(List.length(minedBlock["transactions"]) == 2, "Block should have 2 transactions")
+    IO.println("✓ Block mining successful")
+    IO.println("")
+    
+    // Test 6: Adding Block to Chain
+    IO.println("Test 6: Adding Block to Blockchain...")
+    IO.println("-------------------------------------------")
+    
+    var addResult = Blockchain.addBlock(blockchain, minedBlock)
+    
+    IO.println("Block Added: " + str(addResult))
+    IO.println("Chain Length: " + str(List.length(blockchain["chain"])))
+    IO.println("")
+    
+    assert(addResult == true, "Block should be added successfully")
+    assert(List.length(blockchain["chain"]) == 2, "Chain should have 2 blocks")
+    IO.println("✓ Block added to blockchain")
+    IO.println("")
+    
+    // Test 7: Blockchain Validation
+    IO.println("Test 7: Validating Blockchain...")
+    IO.println("-------------------------------------------")
+    
+    var isValid = Blockchain.validateChain(blockchain)
+    
+    IO.println("Blockchain Valid: " + str(isValid))
+    IO.println("")
+    
+    assert(isValid == true, "Blockchain should be valid")
+    IO.println("✓ Blockchain validation successful")
+    IO.println("")
+    
+    // Test 8: Display Final Blockchain State
+    IO.println("Test 8: Final Blockchain State...")
+    IO.println("-------------------------------------------")
+    
+    IO.println("Total Blocks: " + str(List.length(blockchain["chain"])))
+    IO.println("Total Transactions: " + str(List.length(transactions)))
+    IO.println("")
+    
+    IO.println("Block 0 (Genesis):")
+    IO.println("  Hash: " + String.slice(genesisBlock["hash"], 0, 32) + "...")
+    IO.println("")
+    
+    IO.println("Block 1:")
+    IO.println("  Hash: " + String.slice(minedBlock["hash"], 0, 32) + "...")
+    IO.println("  Previous: " + String.slice(minedBlock["previousHash"], 0, 32) + "...")
+    IO.println("")
+    
+    // Summary
+    IO.println("===========================================")
+    IO.println("  Test Summary")
+    IO.println("===========================================")
+    IO.println("✓ Wallet Creation: PASS")
+    IO.println("✓ Wallet Import: PASS")
+    IO.println("✓ Transaction Creation: PASS")
+    IO.println("✓ Blockchain Initialization: PASS")
+    IO.println("✓ Block Mining: PASS")
+    IO.println("✓ Block Addition: PASS")
+    IO.println("✓ Blockchain Validation: PASS")
+    IO.println("✓ Final State Display: PASS")
+    IO.println("")
+    IO.println("All blockchain tests passed! ✓")
+    IO.println("===========================================")
+end

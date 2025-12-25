@@ -7,7 +7,6 @@ module IO
 define function println(message: Any)
 begin
     print(message)
-    print("\n")
 end
 
 /** 

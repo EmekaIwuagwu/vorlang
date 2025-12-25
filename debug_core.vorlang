@@ -1,0 +1,26 @@
+import core
+import io
+
+program DebugCore
+begin
+    io.println("Checking isNumber...")
+    if isNumber(10) then
+        io.println("isNumber found and returned true")
+    else
+        io.println("isNumber found and returned false")
+    end if
+
+    io.println("Checking toBool...")
+    if toBool(null) then
+        io.println("toBool found")
+    else
+        io.println("toBool found (false)")
+    end if
+    
+    io.println("Checking isNull...")
+    if isNull(null) then
+       io.println("isNull found (true)")
+    else
+       io.println("isNull found (false)")
+    end if
+end

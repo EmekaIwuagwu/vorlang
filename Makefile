@@ -13,11 +13,11 @@ all: $(TARGETS)
 
 main.native: $(SOURCES)
 	$(OCAMLBUILD) -r -pkg str -pkg menhirLib -pkg unix src/main.native
-	mv main.native vorlang.native
+	mv main.native vorlangc
 
 main.byte: $(SOURCES)
 	$(OCAMLBUILD) -r -pkg str -pkg menhirLib -pkg unix src/main.byte
-	mv main.byte vorlang.byte
+	mv main.byte vorlangc.byte
 
 # Test targets
 test:
@@ -29,23 +29,23 @@ docs:
 	ocamldoc -html -d docs/api $(SOURCES)
 
 # Install
-install: vorlang.native
-	cp _build/src/main.native /usr/local/bin/vorlang
+install: vorlangc
+	cp vorlangc /usr/local/bin/vorlangc
 
 # Clean build artifacts
 clean:
 	$(OCAMLBUILD) -clean
 	rm -rf _build
-	rm -f vorlang.native vorlang.byte
+	rm -f vorlangc vorlangc.byte
 
 # Run REPL
-repl: vorlang.native
-	./_build/src/main.native repl
+repl: vorlangc
+	./vorlangc repl
 
 # Compile a single file
-compile: vorlang.native
-	./_build/src/main.native compile $(FILE)
+compile: vorlangc
+	./vorlangc compile $(FILE)
 
 # Run a program
-run: vorlang.native
-	./_build/src/main.native run $(FILE)
+run: vorlangc
+	./vorlangc run $(FILE)

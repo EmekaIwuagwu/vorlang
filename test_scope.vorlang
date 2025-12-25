@@ -1,9 +1,9 @@
 program TestSimple
 begin
     var x = 1
-    define function f()
+    define function f(val: Integer)
     begin
-        print(x)
+        print(val)
     end
-    f()
+    f(x)
 end

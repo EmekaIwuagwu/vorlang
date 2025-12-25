@@ -13,3 +13,4 @@ vorlang.native
 # Editor / OS junk
 .DS_Store
 Thumbs.db
+vorlangc

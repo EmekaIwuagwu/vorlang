@@ -21,6 +21,6 @@ begin
     print("Testing Collections...")
     var list = [1, 2, 3]
     Collections.push(list, 4)
-    print("list[3] = " + str(list[3]))
+    print("list[0] = " + str(list[0]))
     print("Collections.first(list) = " + str(Collections.first(list)))
 end

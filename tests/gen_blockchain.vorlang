@@ -1,0 +1,52 @@
+import blockchain
+import io
+import core
+
+program GenBlockchain
+begin
+    IO.println("=== Blockchain Generation Demo ===")
+    
+    // 1. Create Blockchain
+    var chain = Blockchain.createBlockchain()
+    IO.println("Blockchain created!")
+    
+    // 2. Generate Wallets
+    IO.println("")
+    IO.println("Generating Wallets...")
+    var w1 = Blockchain.createWallet()
+    var w2 = Blockchain.createWallet()
+    var w3 = Blockchain.createWallet()
+    
+    IO.println("Wallet 1: " + w1["address"])
+    IO.println("Wallet 2: " + w2["address"])
+    IO.println("Wallet 3: " + w3["address"])
+    
+    // 3. Create a transaction
+    IO.println("")
+    IO.println("Creating Transaction: W1 -> W2 (50 coins)")
+    var tx = Blockchain.createTransaction(w1["address"], w2["address"], 50, 0)
+    var signedTx = Blockchain.signTransaction(w1, tx)
+    
+    // 4. Mine a block
+    IO.println("Mining block with transaction...")
+    var latest = Blockchain.getLatestBlock(chain)
+    var newBlock = Blockchain.createBlock(1, latest["hash"], [signedTx])
+    var minedBlock = Blockchain.mineBlock(newBlock, 1)
+    
+    // 5. Add to chain
+    if Blockchain.addBlock(chain, minedBlock) then
+        IO.println("Block added successfully!")
+    else
+        IO.println("Failed to add block!")
+    end if
+    
+    // 6. Validate
+    if Blockchain.validateChain(chain) then
+        IO.println("Chain is valid.")
+    else
+        IO.println("Chain is INVALID.")
+    end if
+    
+    IO.println("")
+    IO.println("=== Demo Complete ===")
+end

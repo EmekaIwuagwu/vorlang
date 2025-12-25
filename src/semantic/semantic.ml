@@ -100,7 +100,10 @@ let lookup_symbol_dotted env name =
            (match s.scope with
             | Some sc -> resolve_dotted sc rest head
             | None -> None)
-       | None -> None)
+       | None -> 
+           (* Fallback: Try looking up the full dotted name as a single symbol 
+              (e.g. for flattened modules or prefixed imports) *)
+           lookup_symbol env name)
 
 (* Check if a type is valid *)
 let rec is_valid_type = function
@@ -568,6 +571,14 @@ let rec analyze_program program =
   add_builtin env "String.lastIndexOf" FunctionSymbol (TFunction([TString; TString], TInteger)) None;
   add_builtin env "String.upper" FunctionSymbol (TFunction([TString], TString)) None;
   add_builtin env "String.lower" FunctionSymbol (TFunction([TString], TString)) None;
+  (* Crypto builtins *)
+  add_builtin env "Sys.sha256" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "Sys.sha512" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "Sys.keccak256" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "Sys.hmacSha256" FunctionSymbol (TFunction([TString; TString], TString)) None;
+  add_builtin env "Sys.randomBytes" FunctionSymbol (TFunction([TInteger], TList TInteger)) None;
+  add_builtin env "Sys.hexEncode" FunctionSymbol (TFunction([TList TInteger], TString)) None;
+  
   
   (* Analyze imports *)
   List.iter (fun _ -> ()) program.imports;
@@ -584,7 +595,8 @@ let rec analyze_program program =
           "Sys.typeOf"; "Sys.panic"; "Sys.toString"; "Sys.toInt"; "Sys.toFloat"; "Sys.toBool";
           "List.length"; "List.append"; "Map.size"; "Map.keys";
           "Maths.floor"; "Maths.ceil"; "Maths.sqrt"; "Maths.sin"; "Maths.cos"; "Maths.random";
-          "String.length"; "String.slice"; "String.split"; "String.indexOf"; "String.lastIndexOf"; "String.upper"; "String.lower"
+          "String.length"; "String.slice"; "String.split"; "String.indexOf"; "String.lastIndexOf"; "String.upper"; "String.lower";
+          "Sys.sha256"; "Sys.sha512"; "Sys.keccak256"; "Sys.hmacSha256"; "Sys.randomBytes"; "Sys.hexEncode"
         ] in
         if is_primitive then
           add_builtin env name FunctionSymbol (TFunction(param_types, ret_type)) None
