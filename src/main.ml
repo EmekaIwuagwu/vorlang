@@ -26,23 +26,27 @@ let parse_args () =
   | _ :: "help" :: _ -> Help
   | _ :: "--help" :: _ -> Help
   | _ :: "-h" :: _ -> Help
+  | _ :: "--version" :: _ -> Printf.printf "Vorlang Compiler v0.10-super\n"; exit 0
+  | _ :: filename :: _ when Filename.check_suffix filename ".vorlang" -> Run filename
   | _ -> Help
 
 (* Print help message *)
 let print_help () =
-  Printf.printf "Vorlang Compiler\n";
-  Printf.printf "Usage: vorlang <command> [options]\n";
+  Printf.printf "Vorlang Compiler v0.10-super\n";
+  Printf.printf "Usage: vorlangc <command> [file]\n";
+  Printf.printf "   or: vorlangc <file.vorlang> (implies run)\n";
   Printf.printf "\n";
   Printf.printf "Commands:\n";
-  Printf.printf "  compile <file>    Compile a Vorlang file\n";
-  Printf.printf "  run <file>        Compile and run a Vorlang file\n";
-  Printf.printf "  repl              Start the interactive REPL\n";
-  Printf.printf "  help              Show this help message\n";
+  Printf.printf "  run <file>        Compile and execute a script\n";
+  Printf.printf "  compile <file>    Show AST and Bytecode for a file\n";
+  Printf.printf "  repl              Enter interactive mode\n";
+  Printf.printf "  help, --help      Show this menu\n";
+  Printf.printf "  --version         Show version info\n";
   Printf.printf "\n";
   Printf.printf "Examples:\n";
-  Printf.printf "  vorlang compile hello.vorlang\n";
-  Printf.printf "  vorlang run hello.vorlang\n";
-  Printf.printf "  vorlang repl\n"
+  Printf.printf "  vorlangc helloworld.vorlang\n";
+  Printf.printf "  vorlangc run examples/test_simple.vorlang\n";
+  Printf.printf "  vorlang\n"
 
 (* Compile a single file *)
 let compile_file filename =

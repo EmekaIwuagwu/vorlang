@@ -14,17 +14,30 @@ Welcome to Vorlang! This guide will help you write your first programs.
 
 ## Installation
 
-### Quick Install
+### One-Line Install (Recommended)
+
+**Linux, macOS, or WSL:**
+```bash
+curl -fsSL https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.sh | bash
+```
+
+**Windows (PowerShell Admin):**
+```powershell
+iwr https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.ps1 -useb | iex
+```
+
+### Manual Build
+
+If you prefer building from source:
 
 ```bash
 # Clone and build
-git clone https://github.com/yourusername/vorlang.git
+git clone https://github.com/EmekaIwuagwu/vorlang.git
 cd vorlang
 make
 
-# Verify installation
-./vorlangc --help
-bash run_tests.sh
+# Install globally
+sudo make install
 ```
 
 ### System Requirements
@@ -391,11 +404,11 @@ end if
 ## Next Steps
 
 ### 1. Explore Examples
-Check out the `examples/` directory for 37 working programs:
+Check out the `examples/` directory for **51** working programs:
 ```bash
-./vorlangc run examples/bubble_sort.vorlang
-./vorlangc run examples/blockchain_demo.vorlang
-./vorlangc run examples/statistics.vorlang
+vorlangc run examples/bubble_sort.vorlang
+vorlangc run examples/blockchain_demo.vorlang
+vorlangc run examples/statistics.vorlang
 ```
 
 ### 2. Try Blockchain Features

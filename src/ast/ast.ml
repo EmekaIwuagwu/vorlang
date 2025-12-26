@@ -168,6 +168,9 @@ let rec print_expr indent expr =
       in
       Printf.printf "%sLiteral: %s\n" prefix s
   | Identifier id -> Printf.printf "%sIdentifier: %s\n" prefix id
+  | Self -> Printf.printf "%sSelf\n" prefix
+  | This -> Printf.printf "%sThis\n" prefix
+  | Super -> Printf.printf "%sSuper\n" prefix
   | BinaryOp(op, l, r) ->
       Printf.printf "%sBinaryOp\n" prefix;
       print_expr (indent + 2) l;

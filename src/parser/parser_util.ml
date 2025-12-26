@@ -53,6 +53,7 @@ let rec prefix_calls_in_expr prefix global_names local_names expr =
       if List.mem id local_names then Identifier id
       else if List.mem id global_names then Identifier (prefix ^ "." ^ id) 
       else expr
+  | Self | This | Super as e -> e
   | BinaryOp(op, l, r) -> BinaryOp(op, p l, p r)
   | UnaryOp(op, e) -> UnaryOp(op, p e)
   | Assignment(l, r) -> Assignment(p l, p r)
