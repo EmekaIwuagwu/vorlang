@@ -144,8 +144,7 @@ end
  */
 define function tan(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.tan(x)
 end
 
 /** 
@@ -153,8 +152,7 @@ end
  */
 define function asin(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.asin(x)
 end
 
 /** 
@@ -162,8 +160,7 @@ end
  */
 define function acos(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.acos(x)
 end
 
 /** 
@@ -171,8 +168,7 @@ end
  */
 define function atan(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.atan(x)
 end
 
 // Logarithms
@@ -182,8 +178,7 @@ end
  */
 define function log(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.log(x)
 end
 
 /** 
@@ -191,8 +186,7 @@ end
  */
 define function log10(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.log10(x)
 end
 
 /** 
@@ -209,8 +203,7 @@ end
  */
 define function exp(x: Float) : Float
 begin
-    // Internal: implementation mapping
-    return 0.0
+    return Maths.exp(x)
 end
 
 // Random number generation

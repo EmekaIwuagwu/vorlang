@@ -96,6 +96,81 @@ let rec string_of_value = function
       let elts = Array.to_list !arr in
       "[" ^ String.concat ", " (List.map string_of_value elts) ^ "]"
 
+let rec json_of_value = function
+  | VInt n -> string_of_int n
+  | VFloat f -> string_of_float f
+  | VString s -> "\"" ^ String.escaped s ^ "\""
+  | VBool b -> string_of_bool b
+  | VNull -> "null"
+  | VMap m -> 
+      let pairs = Hashtbl.fold (fun k v acc -> ("\"" ^ String.escaped k ^ "\": " ^ json_of_value v) :: acc) m [] in
+      "{" ^ String.concat ", " pairs ^ "}"
+  | VList arr -> 
+      let elts = Array.to_list !arr in
+      "[" ^ String.concat ", " (List.map json_of_value elts) ^ "]"
+
+let parse_json s =
+  let s = String.trim s in
+  let rec parse_val i =
+    let i = skip_ws i in
+    if i >= String.length s then (VNull, i)
+    else match s.[i] with
+    | '{' -> parse_map (i + 1)
+    | '[' -> parse_list (i + 1)
+    | '"' -> parse_string (i + 1)
+    | 't' when String.sub s i 4 = "true" -> (VBool true, i + 4)
+    | 'f' when String.sub s i 5 = "false" -> (VBool false, i + 5)
+    | 'n' when String.sub s i 4 = "null" -> (VNull, i + 4)
+    | c when (c >= '0' && c <= '9') || c = '-' -> parse_num i
+    | _ -> (VNull, i + 1)
+  and skip_ws i = if i < String.length s && (s.[i] = ' ' || s.[i] = '\n' || s.[i] = '\t' || s.[i] = '\r') then skip_ws (i + 1) else i
+  and parse_string i =
+    let start = i in
+    let rec find_end i =
+      if i >= String.length s then i
+      else if s.[i] = '"' && (i = 0 || s.[i-1] <> '\\') then i
+      else find_end (i + 1)
+    in
+    let e = find_end i in
+    (VString (String.sub s start (e - start)), e + 1)
+  and parse_num i =
+    let start = i in
+    let rec find_end i =
+      if i < String.length s && ((s.[i] >= '0' && s.[i] <= '9') || s.[i] = '.' || s.[i] = '-') then find_end (i + 1) else i
+    in
+    let e = find_end i in
+    let num_s = String.sub s start (e - start) in
+    if String.contains num_s '.' then (VFloat (float_of_string num_s), e) else (VInt (int_of_string num_s), e)
+  and parse_list i =
+    let elts = ref [] in
+    let rec loop i =
+      let i = skip_ws i in
+      if i < String.length s && s.[i] = ']' then (VList (ref (Array.of_list (List.rev !elts))), i + 1)
+      else
+        let (v, next_i) = parse_val i in
+        elts := v :: !elts;
+        let next_i = skip_ws next_i in
+        if next_i < String.length s && s.[next_i] = ',' then loop (next_i + 1) else loop next_i
+    in loop i
+  and parse_map i =
+    let m = Hashtbl.create 10 in
+    let rec loop i =
+      let i = skip_ws i in
+      if i < String.length s && s.[i] = '}' then (VMap m, i + 1)
+      else
+        let (k_val, next_i) = parse_val i in
+        let key = match k_val with VString k -> k | _ -> string_of_value k_val in
+        let next_i = skip_ws next_i in
+        let next_i = if next_i < String.length s && s.[next_i] = ':' then next_i + 1 else next_i in
+        let next_i = skip_ws next_i in
+        let (v, next_i) = parse_val next_i in
+        Hashtbl.add m key v;
+        let next_i = skip_ws next_i in
+        if next_i < String.length s && s.[next_i] = ',' then loop (next_i + 1) else loop next_i
+    in loop i
+  in
+  let (v, _) = parse_val 0 in v
+
 let handle_builtin state name argc =
   match name, argc with
   | "print", 1 ->
@@ -242,6 +317,13 @@ let handle_builtin state name argc =
   | "Maths.sqrt", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (sqrt f)) | _ -> raise (Runtime_error "Float expected"))
   | "Maths.sin", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (sin f)) | _ -> raise (Runtime_error "Float expected"))
   | "Maths.cos", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (cos f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.tan", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (tan f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.asin", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (asin f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.acos", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (acos f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.atan", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (atan f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.log", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (log f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.log10", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (log10 f)) | _ -> raise (Runtime_error "Float expected"))
+  | "Maths.exp", 1 -> let v = pop state in (match v with VFloat f -> push state (VFloat (exp f)) | _ -> raise (Runtime_error "Float expected"))
   | "Maths.random", 0 -> push state (VFloat (Random.float 1.0))
   | "String.length", 1 ->
       let v = pop state in
@@ -318,6 +400,11 @@ let handle_builtin state name argc =
       (match v with
        | VString s -> push state (VString (String.lowercase_ascii s))
        | _ -> raise (Runtime_error "String.lower expects a string"))
+  | "String.trim", 1 ->
+      let v = pop state in
+      (match v with
+       | VString s -> push state (VString (String.trim s))
+       | _ -> raise (Runtime_error "String.trim expects a string"))
   (* Crypto Implementations using openssl CLI *)
   | "Sys.sha256", 1 ->
       let v = pop state in
@@ -350,10 +437,13 @@ let handle_builtin state name argc =
       let data = pop state in
       let s_data = string_of_value data in
       let s_secret = string_of_value secret in
-      let cmd = Printf.sprintf "echo -n \"%s\" | openssl dgst -sha256 -hmac \"%s\" -r | awk '{print $1}'" s_data s_secret in
+      let tmp_data = Filename.temp_file "hmac_data" ".txt" in
+      let oc = open_out tmp_data in output_string oc s_data; close_out oc;
+      let cmd = Printf.sprintf "openssl dgst -sha256 -hmac \"%s\" -r %s | awk '{print $1}'" (String.escaped s_secret) tmp_data in
       let ic = Unix.open_process_in cmd in
-      let hash = input_line ic in
+      let hash = try input_line ic with _ -> "" in
       let _ = Unix.close_process_in ic in
+      (try Sys.remove tmp_data with _ -> ());
       push state (VString (String.trim hash))
   | "Sys.call", 2 ->
       let args_val = pop state in
@@ -394,6 +484,207 @@ let handle_builtin state name argc =
           ) !arr;
           push state (VString !s)
       | _ -> raise (Runtime_error "Sys.hexEncode expects a list"))
+  | "Sys.sign", 2 ->
+      let priv_val = pop state in
+      let msg_val = pop state in
+      let priv = string_of_value priv_val in
+      let msg = string_of_value msg_val in
+      let tmp_msg = Filename.temp_file "msg" ".txt" in
+      let tmp_key = Filename.temp_file "key" ".pem" in
+      let tmp_sig = Filename.temp_file "sig" ".bin" in
+      let oc_msg = open_out tmp_msg in output_string oc_msg msg; close_out oc_msg;
+      let oc_key = open_out tmp_key in output_string oc_key priv; close_out oc_key;
+      let _ = Sys.command (Printf.sprintf "openssl dgst -sha256 -sign %s -out %s %s 2>/dev/null" tmp_key tmp_sig tmp_msg) in
+      let cmd_b64 = Printf.sprintf "base64 -w 0 < %s" tmp_sig in
+      let ic = Unix.open_process_in cmd_b64 in
+      let sig_str = try input_line ic with End_of_file -> "" in
+      let _ = Unix.close_process_in ic in
+      (try Sys.remove tmp_msg with _ -> ()); (try Sys.remove tmp_key with _ -> ()); (try Sys.remove tmp_sig with _ -> ());
+      push state (VString sig_str)
+  | "Sys.verify", 3 ->
+      let pub_val = pop state in
+      let sig_val = pop state in
+      let msg_val = pop state in
+      let pub = string_of_value pub_val in
+      let signature = string_of_value sig_val in
+      let msg = string_of_value msg_val in
+      let tmp_msg = Filename.temp_file "msg" ".txt" in
+      let tmp_pub = Filename.temp_file "pub" ".pem" in
+      let tmp_sig = Filename.temp_file "sig" ".bin" in
+      let oc_msg = open_out tmp_msg in output_string oc_msg msg; close_out oc_msg;
+      let oc_pub = open_out tmp_pub in output_string oc_pub pub; close_out oc_pub;
+      let cmd_sig = Printf.sprintf "echo -n \"%s\" | base64 -d > %s 2>/dev/null" signature tmp_sig in
+      let _ = Sys.command cmd_sig in
+      let cmd_verify = Printf.sprintf "openssl dgst -sha256 -verify %s -signature %s %s 2>/dev/null" tmp_pub tmp_sig tmp_msg in
+      let exit_code = Sys.command cmd_verify in
+      (try Sys.remove tmp_msg with _ -> ()); (try Sys.remove tmp_pub with _ -> ()); (try Sys.remove tmp_sig with _ -> ());
+      push state (VBool (exit_code = 0))
+  | "Sys.encrypt", 2 ->
+      let key_val = pop state in
+      let data_val = pop state in
+      let key = string_of_value key_val in
+      let data = string_of_value data_val in
+      let tmp_in = Filename.temp_file "enc_in" ".txt" in
+      let oc = open_out tmp_in in output_string oc data; close_out oc;
+      let cmd = Printf.sprintf "openssl enc -aes-256-cbc -a -salt -pass pass:\"%s\" -in %s 2>/dev/null" key tmp_in in
+      let ic = Unix.open_process_in cmd in
+      let result = ref "" in
+      (try while true do result := !result ^ input_line ic ^ "\n" done with End_of_file -> ());
+      let _ = Unix.close_process_in ic in
+      (try Sys.remove tmp_in with _ -> ());
+      push state (VString (String.trim !result))
+  | "Sys.decrypt", 2 ->
+      let key_val = pop state in
+      let data_val = pop state in
+      let key = string_of_value key_val in
+      let data = string_of_value data_val in
+      let tmp_in = Filename.temp_file "dec_in" ".txt" in
+      let oc = open_out tmp_in in output_string oc data; close_out oc;
+      let cmd = Printf.sprintf "openssl enc -aes-256-cbc -d -a -pass pass:\"%s\" -in %s 2>/dev/null" key tmp_in in
+      let ic = Unix.open_process_in cmd in
+      let result = ref "" in
+      (try while true do result := !result ^ input_line ic ^ "\n" done with End_of_file -> ());
+      let _ = Unix.close_process_in ic in
+      (try Sys.remove tmp_in with _ -> ());
+      push state (VString (String.trim !result))
+  | "Sys.genKeyPair", 0 ->
+      let tmp_key = Filename.temp_file "key" ".pem" in
+      let tmp_pub = Filename.temp_file "pub" ".pem" in
+      let _ = Sys.command (Printf.sprintf "openssl genpkey -algorithm RSA -out %s 2>/dev/null" tmp_key) in
+      let _ = Sys.command (Printf.sprintf "openssl rsa -in %s -pubout -out %s 2>/dev/null" tmp_key tmp_pub) in
+      let read_file f = 
+        try
+          let ic = open_in f in 
+          let n = in_channel_length ic in 
+          let s = really_input_string ic n in 
+          close_in ic; s 
+        with _ -> ""
+      in
+      let priv = read_file tmp_key in
+      let pub = read_file tmp_pub in
+      (try Sys.remove tmp_key with _ -> ()); (try Sys.remove tmp_pub with _ -> ());
+      let m = Hashtbl.create 2 in
+      Hashtbl.add m "private" (VString priv);
+      Hashtbl.add m "public" (VString pub);
+      push state (VMap m)
+  | "Sys.getPublicKey", 1 ->
+      let priv_val = pop state in
+      let priv = string_of_value priv_val in
+      let tmp_key = Filename.temp_file "key" ".pem" in
+      let tmp_pub = Filename.temp_file "pub" ".pem" in
+      let oc_key = open_out tmp_key in output_string oc_key priv; close_out oc_key;
+      let _ = Sys.command (Printf.sprintf "openssl rsa -in %s -pubout -out %s 2>/dev/null" tmp_key tmp_pub) in
+      let read_file f = 
+        try
+          let ic = open_in f in 
+          let n = in_channel_length ic in 
+          let s = really_input_string ic n in 
+          close_in ic; s 
+        with _ -> ""
+      in
+      let pub = read_file tmp_pub in
+      (try Sys.remove tmp_key with _ -> ()); (try Sys.remove tmp_pub with _ -> ());
+      push state (VString pub)
+  | "Sys.writeFile", 2 ->
+      let content_val = pop state in
+      let path_val = pop state in
+      let path = string_of_value path_val in
+      let content = string_of_value content_val in
+      let oc = open_out path in
+      output_string oc content;
+      close_out oc;
+      push state VNull
+  | "Sys.readFile", 1 ->
+      let path_val = pop state in
+      let path = string_of_value path_val in
+      let ic = open_in path in
+      let n = in_channel_length ic in
+      let s = really_input_string ic n in
+      close_in ic;
+      push state (VString s)
+  | "Sys.deleteFile", 1 ->
+      let path_val = pop state in
+      let path = string_of_value path_val in
+      Sys.remove path;
+      push state VNull
+  | "Sys.mkdir", 1 ->
+      let path_val = pop state in
+      let path = string_of_value path_val in
+      let _ = Sys.command (Printf.sprintf "mkdir -p \"%s\"" path) in
+      push state VNull
+  | "Sys.ls", 1 ->
+      let path_val = pop state in
+      let path = string_of_value path_val in
+      let cmd = Printf.sprintf "ls \"%s\"" path in
+      let ic = Unix.open_process_in cmd in
+      let lines = ref [] in
+      (try while true do lines := input_line ic :: !lines done with End_of_file -> ());
+      let _ = Unix.close_process_in ic in
+      push state (VList (ref (Array.of_list (List.map (fun s -> VString s) (List.rev !lines)))))
+  | "Sys.fileExists", 1 ->
+      let path_val = pop state in
+      let path = string_of_value path_val in
+      push state (VBool (Sys.file_exists path))
+  | "Sys.now", 0 ->
+      push state (VInt (int_of_float (Unix.time ())))
+  | "Sys.sleep", 1 ->
+      let v = pop state in
+      let s = match v with VFloat f -> f | VInt n -> float_of_int n | _ -> 0.0 in
+      let _ = Unix.sleepf s in
+      push state VNull
+  | "Sys.jsonStringify", 1 ->
+      let v = pop state in
+      push state (VString (json_of_value v))
+  | "Sys.getenv", 1 ->
+      let v = pop state in
+      let k = string_of_value v in
+      (try push state (VString (Sys.getenv k)) with Not_found -> push state (VString ""))
+  | "Sys.setenv", 2 ->
+      let v_val = pop state in
+      let k_val = pop state in
+      let k = string_of_value k_val in
+      let v = string_of_value v_val in
+      Unix.putenv k v;
+      push state VNull
+  | "Sys.exit", 1 ->
+      let v = pop state in
+      let code = match v with VInt n -> n | _ -> 0 in
+      exit code
+  | "Sys.jsonParse", 1 ->
+      let v = pop state in
+      let s = string_of_value v in
+      push state (parse_json s)
+  | "Sys.date", 1 ->
+      let format_val = pop state in
+      let fmt = string_of_value format_val in
+      let cmd = Printf.sprintf "date +\"%s\"" fmt in
+      let ic = Unix.open_process_in cmd in
+      let res = input_line ic in
+      let _ = Unix.close_process_in ic in
+      push state (VString res)
+  | "Sys.base64Encode", 1 ->
+      let v = pop state in
+      let s = string_of_value v in
+      let tmp_in = Filename.temp_file "b64_in" ".txt" in
+      let oc = open_out tmp_in in output_string oc s; close_out oc;
+      let cmd = Printf.sprintf "base64 -w 0 < %s" tmp_in in
+      let ic = Unix.open_process_in cmd in
+      let res = try input_line ic with _ -> "" in
+      let _ = Unix.close_process_in ic in
+      (try Sys.remove tmp_in with _ -> ());
+      push state (VString res)
+  | "Sys.base64Decode", 1 ->
+      let v = pop state in
+      let s = string_of_value v in
+      let tmp_in = Filename.temp_file "b64_dec_in" ".txt" in
+      let oc = open_out tmp_in in output_string oc s; close_out oc;
+      let cmd = Printf.sprintf "base64 -d < %s" tmp_in in
+      let ic = Unix.open_process_in cmd in
+      let b = Buffer.create 1024 in
+      (try while true do Buffer.add_channel b ic 1 done with End_of_file -> ());
+      let _ = Unix.close_process_in ic in
+      (try Sys.remove tmp_in with _ -> ());
+      push state (VString (Buffer.contents b))
   | _ -> raise (Runtime_error ("Unknown builtin: " ^ name))
 
 let rec run state =
@@ -470,6 +761,7 @@ and execute_instr state = function
       
   | ICall (name, argc) ->
       if name = "print" || name = "str" || name = "Net.get" ||
+         name = "typeOf" || name = "panic" ||
          name = "toString" || name = "toInt" || name = "toFloat" || name = "toBool" ||
          String.starts_with ~prefix:"Sys." name ||
          String.starts_with ~prefix:"Net." name ||

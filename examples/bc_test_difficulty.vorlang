@@ -1,0 +1,35 @@
+import core
+import blockchain
+import io
+
+program BlockchainDifficultyTest
+begin
+    IO.println("Blockchain Mining Difficulty Test")
+    IO.println("---------------------------------")
+    
+    var bc = Blockchain.createBlockchain()
+    var lastBlock = Blockchain.getLatestBlock(bc)
+    
+    // Test Difficulty 1 (Fast)
+    IO.println("Mining with difficulty 1...")
+    var b1 = Blockchain.createBlock(1, lastBlock["hash"], [])
+    b1 = Blockchain.mineBlock(b1, 1)
+    IO.println("Block 1 Hash: " + b1["hash"])
+    assert(String.slice(b1["hash"], 0, 1) == "0", "Hash should start with one zero")
+    
+    // Test Difficulty 2 
+    IO.println("Mining with difficulty 2...")
+    var b2 = Blockchain.createBlock(2, b1["hash"], [])
+    b2 = Blockchain.mineBlock(b2, 2)
+    IO.println("Block 2 Hash: " + b2["hash"])
+    assert(String.slice(b2["hash"], 0, 2) == "00", "Hash should start with two zeros")
+    
+    // Test Difficulty 3
+    IO.println("Mining with difficulty 3...")
+    var b3 = Blockchain.createBlock(3, b2["hash"], [])
+    b3 = Blockchain.mineBlock(b3, 3)
+    IO.println("Block 3 Hash: " + b3["hash"])
+    assert(String.slice(b3["hash"], 0, 3) == "000", "Hash should start with three zeros")
+
+    IO.println("✓ Difficulty levels PASS")
+end

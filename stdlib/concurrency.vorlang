@@ -9,9 +9,10 @@ module Concurrency
  */
 define function spawn(callback: Function) : Map
 begin
-    // Internal: starts a lightweight task/thread
-    // Returns a Task object
-    return {}
+    return {
+        "status": "completed",
+        "result": callback()
+    }
 end
 
 // Futures/Promises
@@ -21,8 +22,10 @@ end
  */
 define function Future(callback: Function) : Map
 begin
-    // Internal: implementation mapping
-    return {}
+    return {
+        "value": callback(),
+        "resolved": true
+    }
 end
 
 /** 

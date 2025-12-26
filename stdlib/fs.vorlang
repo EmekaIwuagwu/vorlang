@@ -9,8 +9,7 @@ module FS
  */
 define function read(path: String) : String
 begin
-    // Internal: mapping to syscall
-    return ""
+    return Sys.readFile(path)
 end
 
 /** 
@@ -37,7 +36,7 @@ end
  */
 define function write(path: String, content: String)
 begin
-    // Internal: mapping
+    Sys.writeFile(path, content)
 end
 
 /** 
@@ -53,7 +52,11 @@ end
  */
 define function append(path: String, content: String)
 begin
-    // Internal: mapping
+    var existing = ""
+    if FS.exists(path) then
+        existing = FS.read(path)
+    end if
+    FS.write(path, existing + content)
 end
 
 // File operations
@@ -63,8 +66,7 @@ end
  */
 define function exists(path: String) : Bool
 begin
-    // Internal: mapping
-    return false
+    return Sys.fileExists(path)
 end
 
 /** 
@@ -72,7 +74,7 @@ end
  */
 define function delete(path: String)
 begin
-    // Internal: mapping
+    Sys.deleteFile(path)
 end
 
 /** 
@@ -144,8 +146,7 @@ end
  */
 define function list(path: String) : Array
 begin
-    // Internal: mapping
-    return []
+    return Sys.ls(path)
 end
 
 /** 
@@ -153,7 +154,7 @@ end
  */
 define function create(path: String, recursive: Bool = true)
 begin
-    // Internal: mapping
+    Sys.mkdir(path)
 end
 
 /** 

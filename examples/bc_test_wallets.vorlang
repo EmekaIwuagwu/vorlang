@@ -1,0 +1,34 @@
+import core
+import blockchain
+import io
+import crypto
+
+program BlockchainWalletSecurityTest
+begin
+    IO.println("Blockchain Wallet Security Test")
+    IO.println("-------------------------------")
+    
+    var w = Blockchain.createWallet()
+    var target = "0xRecipientAddress"
+    var amount = 500
+    
+    var tx = Blockchain.createTransaction(w["address"], target, amount, 1)
+    
+    // Valid Signing
+    tx = Blockchain.signTransaction(w, tx)
+    var txHash = tx["hash"]
+    
+    IO.println("Checking valid signature...")
+    var isValid = Crypto.verify(txHash, tx["signature"], w["publicKey"])
+    assert(isValid, "Original signature should be valid")
+    
+    // Tamper with Transaction after signing
+    IO.println("Checking tampered transaction...")
+    tx["amount"] = 500000 // Change amount
+    var newHash = Crypto.sha256(tx["from"] + tx["to"] + str(tx["amount"]) + str(tx["nonce"]))
+    var isStillValid = Crypto.verify(newHash, tx["signature"], w["publicKey"])
+    IO.println("Tampered TX still valid? " + str(isStillValid))
+    assert(not isStillValid, "Tampered transaction hash should not match original signature")
+    
+    IO.println("✓ Wallet security PASS")
+end

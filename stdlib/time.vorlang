@@ -7,8 +7,9 @@ module Time
  */
 define function now() : Map
 begin
-    // Internal: implementation mapping
-    return {}
+    return {
+        "timestamp": Sys.now()
+    }
 end
 
 /** 
@@ -16,8 +17,7 @@ end
  */
 define function unixTimestamp() : Integer
 begin
-    // Internal: implementation mapping
-    return 0
+    return Sys.now()
 end
 
 /** 
@@ -25,8 +25,7 @@ end
  */
 define function milliseconds() : Integer
 begin
-    // Internal: implementation mapping
-    return 0
+    return Sys.now() * 1000
 end
 
 // Sleep/delay
@@ -36,7 +35,7 @@ end
  */
 define function sleep(seconds: Float)
 begin
-    // Internal: implementation mapping
+    Sys.sleep(seconds)
 end
 
 /** 
@@ -63,8 +62,10 @@ end
  */
 define function format(t: Map, formatStr: String) : String
 begin
-    // Internal: implementation mapping
-    return ""
+    // Simple mapping: t may contain ts or we just format now
+    // For this implementation, we use Sys.date
+    // formatStr should be in 'date' command format, e.g. %Y-%m-%d
+    return Sys.date(formatStr)
 end
 
 /** 
@@ -72,7 +73,7 @@ end
  */
 define function toISOString(t: Map) : String
 begin
-    return format(t, "YYYY-MM-DDTHH:mm:ss.SSSZ")
+    return Sys.date("%Y-%m-%dT%H:%M:%S")
 end
 
 // Date components

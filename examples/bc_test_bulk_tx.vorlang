@@ -1,0 +1,42 @@
+import core
+import blockchain
+import io
+
+program BlockchainBulkTxTest
+begin
+    IO.println("Blockchain Bulk Transaction Test")
+    IO.println("--------------------------------")
+    
+    var bc = Blockchain.createBlockchain()
+    var w = Blockchain.createWallet()
+    
+    IO.println("Generating 20 transactions...")
+    var txBatch = []
+    var i = 0
+    while i < 20 do
+        var tx = Blockchain.createTransaction(w["address"], "User" + str(i), 10 * i, i)
+        tx = Blockchain.signTransaction(w, tx)
+        List.append(txBatch, tx)
+        i = i + 1
+    end while
+    
+    IO.println("Adding 20 transactions to a single block...")
+    var lastBlock = Blockchain.getLatestBlock(bc)
+    var bulkBlock = Blockchain.createBlock(1, lastBlock["hash"], txBatch)
+    
+    bulkBlock = Blockchain.mineBlock(bulkBlock, 1)
+    
+    var success = Blockchain.addBlock(bc, bulkBlock)
+    IO.println("Bulk block added: " + str(success))
+    assert(success, "Bulk block should be added successfully")
+    
+    var chain = bc["blocks"]
+    var latest = chain[1]
+    IO.println("Block 1 Tx Count: " + str(List.length(latest["transactions"])))
+    assert(List.length(latest["transactions"]) == 20, "Should have 20 transactions")
+    
+    IO.println("Validating entire chain...")
+    assert(Blockchain.validateChain(bc), "Chain with bulk block should be valid")
+    
+    IO.println("✓ Bulk transaction processing PASS")
+end

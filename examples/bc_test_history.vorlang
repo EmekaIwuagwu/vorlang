@@ -1,0 +1,47 @@
+import core
+import blockchain
+import io
+
+program BlockchainHistoryTest
+begin
+    IO.println("Blockchain Transaction History Test")
+    IO.println("-----------------------------------")
+    
+    var bc = Blockchain.createBlockchain()
+    var w = Blockchain.createWallet()
+    
+    // Create 5 blocks with 1 tx each
+    var i = 1
+    while i <= 5 do
+        var tx = Blockchain.createTransaction(w["address"], "Recipient", 100 * i, i)
+        tx = Blockchain.signTransaction(w, tx)
+        
+        var last = Blockchain.getLatestBlock(bc)
+        var b = Blockchain.createBlock(i, last["hash"], [tx])
+        b = Blockchain.mineBlock(b, 1)
+        Blockchain.addBlock(bc, b)
+        i = i + 1
+    end while
+    
+    IO.println("Chain length reached: " + str(List.length(bc["blocks"])))
+    assert(List.length(bc["blocks"]) == 6, "Total blocks should be 6 (Genesis + 5)")
+    
+    // Scan history for specific recipient
+    IO.println("Scanning history for 'Recipient'...")
+    var totalReceived = 0
+    var blocks = bc["blocks"]
+    for each block in blocks do
+        var txs = block["transactions"]
+        for each tx in txs do
+            if tx["to"] == "Recipient" then
+                totalReceived = totalReceived + tx["amount"]
+            end if
+        end for
+    end for
+    
+    IO.println("Total Amount Received: " + str(totalReceived))
+    // 100+200+300+400+500 = 1500
+    assert(totalReceived == 1500, "History calculation should be correct")
+    
+    IO.println("✓ Transaction history scanning PASS")
+end

@@ -68,9 +68,12 @@ end
  */
 define function uuid() : String
 begin
-    // Internal: mapping
-    // Simple mock v4 UUID
-    return "00000000-0000-0000-0000-000000000000"
+    var b = randomBytes(16)
+    // Version 4 UUID: Set the 4 bits of most significant byte of 2nd tuple to 4
+    // Variant: Set 2 bits of most significant byte of 3rd tuple to 10
+    // Simplified for now: hex encode and add dashes
+    var s = Sys.hexEncode(b)
+    return String.slice(s, 0, 8) + "-" + String.slice(s, 8, 12) + "-" + String.slice(s, 12, 16) + "-" + String.slice(s, 16, 20) + "-" + String.slice(s, 20, 32)
 end
 
 // Key generation
@@ -78,10 +81,9 @@ end
 /** 
  * Generates a key pair.
  */
-define function generateKeyPair(algo: String = "ecdsa") : Map
+define function generateKeyPair(algo: String = "rsa") : Map
 begin
-    // Internal: mapping
-    return {"private": "mock_private", "public": "mock_public"}
+    return Sys.genKeyPair()
 end
 
 // Signing & verification
@@ -91,8 +93,7 @@ end
  */
 define function sign(message: String, privateKey: String) : String
 begin
-    // Internal: mapping
-    return "mock_signature"
+    return Sys.sign(message, privateKey)
 end
 
 /** 
@@ -100,8 +101,7 @@ end
  */
 define function verify(message: String, signature: String, publicKey: String) : Bool
 begin
-    // Internal: mapping
-    return true
+    return Sys.verify(message, signature, publicKey)
 end
 
 // Encryption
@@ -109,19 +109,17 @@ end
 /** 
  * Encrypts data.
  */
-define function encrypt(data: String, key: String, algo: String = "aes-256-gcm") : String
+define function encrypt(data: String, key: String, algo: String = "aes-256-cbc") : String
 begin
-    // Internal: mapping
-    return "mock_encrypted"
+    return Sys.encrypt(data, key)
 end
 
 /** 
  * Decrypts data.
  */
-define function decrypt(data: String, key: String, algo: String = "aes-256-gcm") : String
+define function decrypt(data: String, key: String, algo: String = "aes-256-cbc") : String
 begin
-    // Internal: mapping
-    return "mock_decrypted"
+    return Sys.decrypt(data, key)
 end
 
 // Address derivation

@@ -1,0 +1,50 @@
+import json
+
+module Storage
+
+/**
+ * Saves a value to a persistent file.
+ */
+define function save(key: String, value: Any) : Bool
+begin
+    var filename = ".storage_" + key + ".json"
+    var content = JSON.stringify(value)
+    Sys.writeFile(filename, content)
+    return true
+end
+
+/**
+ * Loads a value from a persistent file.
+ */
+define function load(key: String) : Any
+begin
+    var filename = ".storage_" + key + ".json"
+    if Sys.fileExists(filename) then
+        var content = Sys.readFile(filename)
+        return JSON.parse(content)
+    end if
+    return null
+end
+
+/**
+ * Deletes a stored value.
+ */
+define function delete(key: String) : Bool
+begin
+    var filename = ".storage_" + key + ".json"
+    if Sys.fileExists(filename) then
+        Sys.deleteFile(filename)
+        return true
+    end if
+    return false
+end
+
+/**
+ * Checks if a key exists in storage.
+ */
+define function exists(key: String) : Bool
+begin
+    return Sys.fileExists(".storage_" + key + ".json")
+end
+
+end module

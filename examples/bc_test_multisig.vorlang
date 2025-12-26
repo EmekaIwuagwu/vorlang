@@ -1,0 +1,39 @@
+import core
+import blockchain
+import io
+import crypto
+
+program BlockchainMultisigTest
+begin
+    IO.println("Blockchain Multisig Logic Test")
+    IO.println("------------------------------")
+    
+    var wallet1 = Blockchain.createWallet()
+    var wallet2 = Blockchain.createWallet()
+    
+    var msg = "Authorize high-value transfer: 5000 BTC"
+    
+    IO.println("Signing with Wallet 1...")
+    var sig1 = Crypto.sign(msg, wallet1["privateKey"])
+    
+    IO.println("Signing with Wallet 2...")
+    var sig2 = Crypto.sign(msg, wallet2["privateKey"])
+    
+    // Multisig check logic
+    IO.println("Verifying Signatures...")
+    var v1 = Crypto.verify(msg, sig1, wallet1["publicKey"])
+    var v2 = Crypto.verify(msg, sig2, wallet2["publicKey"])
+    
+    IO.println("Wallet 1 Valid: " + str(v1))
+    IO.println("Wallet 2 Valid: " + str(v2))
+    
+    assert(v1 and v2, "Both signatures must be valid for multisig")
+    
+    // Test failure with wrong key
+    var fakeSig = Crypto.sign(msg, wallet1["privateKey"])
+    var vFail = Crypto.verify(msg, fakeSig, wallet2["publicKey"])
+    IO.println("Correct rejection of wrong signer: " + str(not vFail))
+    assert(not vFail, "Should not verify sig1 with wallet2's public key")
+    
+    IO.println("✓ Multisig verification PASS")
+end

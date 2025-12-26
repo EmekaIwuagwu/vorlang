@@ -1,0 +1,68 @@
+import crypto
+import json
+
+module Security
+
+/**
+ * Creates a secure password hash.
+ */
+define function hashPassword(password: String, salt: String) : String
+begin
+    return Crypto.sha256(password + salt)
+end
+
+/**
+ * Sanitizes input to prevent common vulnerabilities.
+ */
+define function sanitize(input: String) : String
+begin
+    var res = input
+    res = String.replaceAll(res, "<", "&lt;")
+    res = String.replaceAll(res, ">", "&gt;")
+    res = String.replaceAll(res, "'", "&#39;")
+    res = String.replaceAll(res, "\"", "&quot;")
+    res = String.replaceAll(res, "--", " ") // Simple SQL comment bypass protection
+    return res
+end
+
+/**
+ * Generates a simple secure token.
+ */
+define function generateToken(payload: Map, secret: String) : String
+begin
+    var pStr = JSON.stringify(payload)
+    var header = "{\"alg\": \"sha256\"}"
+    
+    var hBase64 = Sys.base64Encode(header)
+    var pBase64 = Sys.base64Encode(pStr)
+    
+    var signature = Crypto.hmacSha256(hBase64 + "." + pBase64, secret)
+    
+    return hBase64 + "." + pBase64 + "." + signature
+end
+
+/**
+ * Verifies a token and returns the payload.
+ */
+define function verifyToken(token: String, secret: String) : Map
+begin
+    var parts = String.split(token, ".")
+    if List.length(parts) != 3 then
+        return null
+    end if
+    
+    var hBase64 = parts[0]
+    var pBase64 = parts[1]
+    var sigActual = parts[2]
+    
+    var sigExpected = Crypto.hmacSha256(hBase64 + "." + pBase64, secret)
+    
+    if sigActual == sigExpected then
+        var pJson = Sys.base64Decode(pBase64)
+        return JSON.parse(pJson)
+    end if
+    
+    return null
+end
+
+end module

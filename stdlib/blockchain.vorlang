@@ -10,12 +10,10 @@ module Blockchain
  */
 define function createWallet() : Map
 begin
-    // Generate a random private key (32 bytes)
-    var privateKeyBytes = Crypto.randomBytes(32)
-    var privateKey = Crypto.hexEncode(privateKeyBytes)
-    
-    // Derive public key (simplified - using hash of private key)
-    var publicKey = Crypto.sha256(privateKey)
+    // Generate a real cryptographic key pair
+    var keys = Crypto.generateKeyPair("rsa")
+    var privateKey = keys["private"]
+    var publicKey = keys["public"]
     
     // Derive address from public key (last 20 bytes of keccak256)
     var address = Crypto.publicKeyToAddress(publicKey)
@@ -28,14 +26,12 @@ begin
 end
 
 /** 
- * Imports a wallet from a private key.
+ * Imports a wallet from a private key (PEM).
  */
 define function importWallet(privateKey: String) : Map
 begin
-    // Derive public key from private key
-    var publicKey = Crypto.sha256(privateKey)
-    
-    // Derive address
+    // Derive real public key from private key PEM
+    var publicKey = Sys.getPublicKey(privateKey)
     var address = Crypto.publicKeyToAddress(publicKey)
     
     return {
@@ -83,9 +79,21 @@ begin
         "to": recipient,
         "amount": amount,
         "nonce": nonce,
-        "timestamp": 0,  // Would use Time.now() in production
+        "timestamp": Sys.now(),
         "signature": ""
     }
+end
+
+/** 
+ * Signs a transaction.
+ */
+/**
+ * Calculates the hash of a transaction.
+ */
+define function calculateTransactionHash(tx: Map) : String
+begin
+    var txData = tx["from"] + tx["to"] + str(tx["amount"]) + str(tx["nonce"])
+    return Crypto.sha256(txData)
 end
 
 /** 
@@ -94,8 +102,7 @@ end
 define function signTransaction(wallet: Map, tx: Map) : Map
 begin
     // Create transaction hash
-    var txData = tx["from"] + tx["to"] + str(tx["amount"]) + str(tx["nonce"])
-    var txHash = Crypto.sha256(txData)
+    var txHash = calculateTransactionHash(tx)
     
     // Sign the hash
     var signature = signMessage(wallet, txHash)
@@ -109,20 +116,25 @@ end
 
 // Block Management
 
+/**
+ * Calculates the combined hash of a list of transactions.
+ */
+define function calculateTransactionsHash(transactions: Array) : String
+begin
+    var txHashes = ""
+    for each tx in transactions do
+        txHashes = txHashes + tx["hash"]
+    end for
+    return Crypto.sha256(txHashes)
+end
+
 /** 
  * Creates a new block.
  */
 define function createBlock(index: Integer, previousHash: String, transactions: Array) : Map
 begin
-    var timestamp = 0  // Would use Time.now()
-    
-    // Calculate transactions hash
-    var txHashes = ""
-    for each tx in transactions do
-        txHashes = txHashes + tx["hash"]
-    end for
-    
-    var transactionsHash = Crypto.sha256(txHashes)
+    var timestamp = Sys.now()
+    var transactionsHash = calculateTransactionsHash(transactions)
     
     // Create block
     var block = {
@@ -223,7 +235,20 @@ begin
         return false
     end if
     
-    // Recalculate and verify hash
+    // Verify each transaction's integrity
+    for each tx in block["transactions"] do
+        if tx["hash"] != calculateTransactionHash(tx) then
+            return false
+        end if
+    end for
+
+    // Verify transactions list hash
+    var currentTxsHash = calculateTransactionsHash(block["transactions"])
+    if block["transactionsHash"] != currentTxsHash then
+        return false
+    end if
+
+    // Recalculate and verify block hash
     var calculatedHash = calculateBlockHash(block)
     if block["hash"] != calculatedHash then
         return false

@@ -1,0 +1,85 @@
+import core
+import storage
+import security
+import io
+
+program TestStorageSecurity
+begin
+    IO.println("================================")
+    IO.println("  Storage & Security Test Suite ")
+    IO.println("================================")
+    IO.println("")
+
+    // 1. Storage Test
+    IO.println("Test 1: Persistent Storage")
+    IO.println("-------------------------")
+    
+    var userProfile = {
+        "id": "user_123",
+        "name": "Alice Developer",
+        "roles": ["Admin", "Reviewer"],
+        "active": true
+    }
+    
+    IO.println("Saving user profile to disk...")
+    Storage.save("user_1", userProfile)
+    
+    IO.println("Loading user profile back...")
+    var loadedProfile = Storage.load("user_1")
+    
+    if loadedProfile != null then
+        IO.println("Loaded Name: " + loadedProfile["name"])
+        IO.println("Loaded Active: " + str(loadedProfile["active"]))
+        assert(loadedProfile["id"] == "user_123", "Data integrity check failed")
+    else
+        IO.println("Failed to load profile")
+        panic("Storage failure")
+    end if
+    IO.println("✓ Storage PASS")
+    IO.println("")
+
+    // 2. Security Test: Password Hashing
+    IO.println("Test 2: Password Security")
+    IO.println("-------------------------")
+    var pass = "super_secret_123"
+    var salt = "random_salt_v1"
+    var hash = Security.hashPassword(pass, salt)
+    
+    IO.println("Password Hash: " + hash)
+    assert(String.length(hash) > 0, "Hash should not be empty")
+    IO.println("✓ Password Hashing PASS")
+    IO.println("")
+
+    // 3. Security Test: Token Management
+    IO.println("Test 3: Token Auth (JWT-like)")
+    IO.println("-------------------------")
+    var secret = "my_app_secret_key"
+    var sessionData = {"uid": "user_1", "exp": 1700000000}
+    
+    var token = Security.generateToken(sessionData, secret)
+    IO.println("Generated Token: " + String.slice(token, 0, 50) + "...")
+    
+    var verified = Security.verifyToken(token, secret)
+    if verified != null then
+        IO.println("Verified UID: " + verified["uid"])
+        assert(verified["uid"] == "user_1", "Token verification failed")
+    else
+        IO.println("Token verification failed!")
+        panic("Security failure")
+    end if
+    IO.println("✓ Token Auth PASS")
+    IO.println("")
+
+    // 4. Security Test: Sanitization
+    IO.println("Test 4: Input Sanitization")
+    IO.println("-------------------------")
+    var evil = "<script>alert('XSS')</script> OR 1=1 --"
+    var clean = Security.sanitize(evil)
+    IO.println("Original: " + evil)
+    IO.println("Sanitized: " + clean)
+    assert(String.indexOf(clean, "<") == -1, "Sanitization failed")
+    IO.println("✓ Sanitization PASS")
+    IO.println("")
+
+    IO.println("All Storage & Security tests completed successfully! ✓")
+end

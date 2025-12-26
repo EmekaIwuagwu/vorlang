@@ -1,0 +1,39 @@
+import core
+import blockchain
+import io
+
+program BlockchainTamperTest
+begin
+    IO.println("Blockchain Tamper Resistance Test")
+    IO.println("---------------------------------")
+    
+    var bc = Blockchain.createBlockchain()
+    var wallet = Blockchain.createWallet()
+    
+    // Add a valid block
+    var tx = Blockchain.createTransaction(wallet["address"], "recipient", 100, 0)
+    tx = Blockchain.signTransaction(wallet, tx)
+    
+    var lastBlock = Blockchain.getLatestBlock(bc)
+    var newBlock = Blockchain.createBlock(1, lastBlock["hash"], [tx])
+    newBlock = Blockchain.mineBlock(newBlock, 1)
+    
+    Blockchain.addBlock(bc, newBlock)
+    IO.println("Initially Valid: " + str(Blockchain.validateChain(bc)))
+    assert(Blockchain.validateChain(bc), "Chain should be valid initially")
+    
+    // Tamper with the block data
+    IO.println("Tampering with block 1 data...")
+    var blocks = bc["blocks"]
+    var block1 = blocks[1]
+    
+    // Modify a transaction amount in the block
+    var txs = block1["transactions"]
+    var tamperedTx = txs[0]
+    tamperedTx["amount"] = 999999 // MAGIC MONEY!
+    
+    IO.println("Valid after tampering? " + str(Blockchain.validateChain(bc)))
+    assert(not Blockchain.validateChain(bc), "Chain should be INVALID after tampering")
+    
+    IO.println("✓ Tamper detection PASS")
+end

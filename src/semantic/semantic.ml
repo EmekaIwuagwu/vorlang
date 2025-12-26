@@ -227,7 +227,8 @@ let rec analyze_expr env = function
               String.starts_with ~prefix:"List." name ||
               String.starts_with ~prefix:"Map." name ||
               String.starts_with ~prefix:"String." name ||
-              String.starts_with ~prefix:"Maths." name then
+              String.starts_with ~prefix:"Maths." name ||
+              String.starts_with ~prefix:"Net." name then
              (List.iter (fun arg -> ignore (analyze_expr env arg)) args; TIdentifier "Any")
            else
              raise (Semantic_error ("Undefined function: " ^ name)))
@@ -564,6 +565,13 @@ let rec analyze_program program =
   add_builtin env "Maths.sqrt" FunctionSymbol (TFunction([TFloat], TFloat)) None;
   add_builtin env "Maths.sin" FunctionSymbol (TFunction([TFloat], TFloat)) None;
   add_builtin env "Maths.cos" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.tan" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.asin" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.acos" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.atan" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.log" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.log10" FunctionSymbol (TFunction([TFloat], TFloat)) None;
+  add_builtin env "Maths.exp" FunctionSymbol (TFunction([TFloat], TFloat)) None;
   add_builtin env "Maths.random" FunctionSymbol (TFunction([], TFloat)) None;
   add_builtin env "String.length" FunctionSymbol (TFunction([TString], TInteger)) None;
   add_builtin env "String.slice" FunctionSymbol (TFunction([TString; TInteger; TInteger], TString)) None;
@@ -572,6 +580,7 @@ let rec analyze_program program =
   add_builtin env "String.lastIndexOf" FunctionSymbol (TFunction([TString; TString], TInteger)) None;
   add_builtin env "String.upper" FunctionSymbol (TFunction([TString], TString)) None;
   add_builtin env "String.lower" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "String.trim" FunctionSymbol (TFunction([TString], TString)) None;
   (* Crypto builtins *)
   add_builtin env "Sys.sha256" FunctionSymbol (TFunction([TString], TString)) None;
   add_builtin env "Sys.sha512" FunctionSymbol (TFunction([TString], TString)) None;
@@ -579,6 +588,37 @@ let rec analyze_program program =
   add_builtin env "Sys.hmacSha256" FunctionSymbol (TFunction([TString; TString], TString)) None;
   add_builtin env "Sys.randomBytes" FunctionSymbol (TFunction([TInteger], TList TInteger)) None;
   add_builtin env "Sys.hexEncode" FunctionSymbol (TFunction([TList TInteger], TString)) None;
+  add_builtin env "Sys.call" FunctionSymbol (TFunction([TString; TList (TIdentifier "Any")], TIdentifier "Any")) None;
+  add_builtin env "String.replace" FunctionSymbol (TFunction([TString; TString; TString], TString)) None;
+  add_builtin env "String.replaceAll" FunctionSymbol (TFunction([TString; TString; TString], TString)) None;
+  add_builtin env "Net.get" FunctionSymbol (TFunction([TString], TMap(TString, TIdentifier "Any"))) None;
+  add_builtin env "Net.listen" FunctionSymbol (TFunction([TInteger], TInteger)) None;
+  add_builtin env "Net.accept" FunctionSymbol (TFunction([TInteger], TInteger)) None;
+  add_builtin env "Net.readRequest" FunctionSymbol (TFunction([TInteger], TMap(TString, TIdentifier "Any"))) None;
+  add_builtin env "Net.sendResponse" FunctionSymbol (TFunction([TInteger; TMap(TString, TIdentifier "Any")], TNull)) None;
+  add_builtin env "Sys.sign" FunctionSymbol (TFunction([TString; TString], TString)) None;
+  add_builtin env "Sys.verify" FunctionSymbol (TFunction([TString; TString; TString], TBoolean)) None;
+  add_builtin env "Sys.encrypt" FunctionSymbol (TFunction([TString; TString], TString)) None;
+  add_builtin env "Sys.decrypt" FunctionSymbol (TFunction([TString; TString], TString)) None;
+  add_builtin env "Sys.genKeyPair" FunctionSymbol (TFunction([], TMap(TString, TString))) None;
+  add_builtin env "Sys.getPublicKey" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "Sys.writeFile" FunctionSymbol (TFunction([TString; TString], TNull)) None;
+  add_builtin env "Sys.readFile" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "Sys.deleteFile" FunctionSymbol (TFunction([TString], TNull)) None;
+  add_builtin env "Sys.mkdir" FunctionSymbol (TFunction([TString], TNull)) None;
+  add_builtin env "Sys.ls" FunctionSymbol (TFunction([TString], TList (TString))) None;
+  add_builtin env "Sys.fileExists" FunctionSymbol (TFunction([TString], TBoolean)) None;
+  add_builtin env "Sys.time" FunctionSymbol (TFunction([], TInteger)) None;
+  add_builtin env "Sys.now" FunctionSymbol (TFunction([], TInteger)) None;
+  add_builtin env "Sys.sleep" FunctionSymbol (TFunction([TFloat], TNull)) None;
+  add_builtin env "Sys.getenv" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "Sys.setenv" FunctionSymbol (TFunction([TString; TString], TNull)) None;
+  add_builtin env "Sys.exit" FunctionSymbol (TFunction([TInteger], TNull)) None;
+  add_builtin env "Sys.date" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "Sys.jsonStringify" FunctionSymbol (TFunction([TIdentifier "Any"], TString)) None;
+  add_builtin env "Sys.jsonParse" FunctionSymbol (TFunction([TString], TIdentifier "Any")) None;
+  add_builtin env "Sys.base64Encode" FunctionSymbol (TFunction([TString], TString)) None;
+  add_builtin env "Sys.base64Decode" FunctionSymbol (TFunction([TString], TString)) None;
   
   
   (* Analyze imports *)
@@ -595,9 +635,15 @@ let rec analyze_program program =
           "print"; "str"; "typeOf"; "panic"; "toString"; "toInt"; "toFloat"; "toBool";
           "Sys.typeOf"; "Sys.panic"; "Sys.toString"; "Sys.toInt"; "Sys.toFloat"; "Sys.toBool";
           "List.length"; "List.append"; "Map.size"; "Map.keys";
-          "Maths.floor"; "Maths.ceil"; "Maths.sqrt"; "Maths.sin"; "Maths.cos"; "Maths.random";
-          "String.length"; "String.slice"; "String.split"; "String.indexOf"; "String.lastIndexOf"; "String.upper"; "String.lower";
-          "Sys.sha256"; "Sys.sha512"; "Sys.keccak256"; "Sys.hmacSha256"; "Sys.randomBytes"; "Sys.hexEncode"
+          "Maths.floor"; "Maths.ceil"; "Maths.sqrt"; "Maths.sin"; "Maths.cos"; "Maths.tan"; "Maths.asin"; "Maths.acos"; "Maths.atan"; "Maths.log"; "Maths.log10"; "Maths.exp"; "Maths.random";
+          "String.length"; "String.slice"; "String.split"; "String.indexOf"; "String.lastIndexOf"; "String.upper"; "String.lower"; "String.trim";
+          "String.replace"; "String.replaceAll";
+          "Sys.sha256"; "Sys.sha512"; "Sys.keccak256"; "Sys.hmacSha256"; "Sys.randomBytes"; "Sys.hexEncode"; "Sys.call";
+          "Sys.sign"; "Sys.verify"; "Sys.encrypt"; "Sys.decrypt"; "Sys.genKeyPair"; "Sys.getPublicKey";
+          "Sys.writeFile"; "Sys.readFile"; "Sys.deleteFile"; "Sys.mkdir"; "Sys.ls"; "Sys.fileExists"; "Sys.time"; "Sys.now"; "Sys.sleep";
+          "Sys.getenv"; "Sys.setenv"; "Sys.exit"; "Sys.date";
+          "Sys.jsonStringify"; "Sys.jsonParse"; "Sys.base64Encode"; "Sys.base64Decode";
+          "Net.get"; "Net.listen"; "Net.accept"; "Net.readRequest"; "Net.sendResponse"
         ] in
         if is_primitive then
           add_builtin env name FunctionSymbol (TFunction(param_types, ret_type)) None

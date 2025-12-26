@@ -37,8 +37,13 @@ end
  */
 define function generate(prompt: String, options: Map = {}) : String
 begin
-    // Internal: implementation mapping
-    return ""
+    var p = String.lower(prompt)
+    if String.indexOf(p, "hello") != -1 then return "Hello! I am the Vorlang AI assistant. How can I help you today?" end if
+    if String.indexOf(p, "code") != -1 then return "I can help you write Vorlang code. Use 'define function' to get started!" end if
+    if String.indexOf(p, "weather") != -1 then return "I don't have real-time weather data yet, but I can help you build a weather app!" end if
+    if String.indexOf(p, "blockchain") != -1 then return "Vorlang has a native Blockchain module with SHA-256 and RSA support." end if
+    
+    return "I processed your prompt: '" + prompt + "'. As an AI in simulation mode, I am ready to be connected to a real LLM provider."
 end
 
 /** 
@@ -169,9 +174,8 @@ end
  */
 define function run(agent: Map, task: String) : Map
 begin
-    // Internal: agent loop (thought -> action -> observation)
-    // This would build prompts, call generate(), parse tool usage, execute callbacks, etc.
-    return { "result": "Task completed" }
+    var res = AI.generate("Agent " + agent["name"] + " task: " + task)
+    return { "result": res, "status": "completed" }
 end
 
 /** 
