@@ -28,10 +28,6 @@ test:
 docs:
 	ocamldoc -html -d docs/api $(SOURCES)
 
-# Install
-install: vorlangc
-	cp vorlangc /usr/local/bin/vorlangc
-
 # Clean build artifacts
 clean:
 	$(OCAMLBUILD) -clean
