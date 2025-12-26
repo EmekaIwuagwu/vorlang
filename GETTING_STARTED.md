@@ -18,13 +18,16 @@ Welcome to Vorlang! This guide will help you write your first programs.
 
 **Linux, macOS, or WSL:**
 ```bash
-curl -fsSL https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.sh | bash
+curl -fsSL https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.sh | sudo bash
 ```
 
 **Windows (PowerShell Admin):**
 ```powershell
 iwr https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.ps1 -useb | iex
 ```
+
+> **Tip:** If you are a developer and want to ensure you are getting the absolutely latest version without GitHub's CDN cache, use the cache-buster:
+> `curl -fsSL "https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.sh?$(date +%s)" | sudo bash`
 
 ### Manual Build
 

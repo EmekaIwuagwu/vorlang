@@ -76,12 +76,12 @@ Vorlang provides production-ready installers for all major platforms.
 
 **Linux, macOS, or WSL:**
 ```bash
-curl -fsSL https://get.vorlang.dev | bash
+curl -fsSL https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.sh | sudo bash
 ```
 
 **Windows (PowerShell Admin):**
 ```powershell
-iwr https://get.vorlang.dev/install.ps1 -useb | iex
+iwr https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.ps1 -useb | iex
 ```
 
 ---
