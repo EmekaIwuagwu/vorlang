@@ -12,11 +12,11 @@ TARGETS = main.native main.byte
 all: $(TARGETS)
 
 main.native: $(SOURCES)
-	$(OCAMLBUILD) -r -pkg str -pkg menhirLib -pkg unix src/main.native
+	$(OCAMLBUILD) -r -pkg str -pkg unix src/main.native
 	mv main.native vorlangc
 
 main.byte: $(SOURCES)
-	$(OCAMLBUILD) -r -pkg str -pkg menhirLib -pkg unix src/main.byte
+	$(OCAMLBUILD) -r -pkg str -pkg unix src/main.byte
 	mv main.byte vorlangc.byte
 
 # Test targets

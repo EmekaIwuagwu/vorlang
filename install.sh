@@ -27,7 +27,8 @@ if [[ "$(uname -s)" == "Linux" ]]; then
     if command -v apt-get &>/dev/null; then
         log "Installing OCaml toolchain and OpenSSL via apt..."
         $SUDO apt-get update -qq
-        $SUDO apt-get install -y make git ocaml ocaml-findlib ocamlbuild libssl-dev menhir libmenhir-ocaml-dev > /dev/null
+        # Removed libmenhir-ocaml-dev as it's often problematic and no longer needed for build
+        $SUDO apt-get install -y make git ocaml ocaml-findlib ocamlbuild libssl-dev menhir
     fi
 fi
 
