@@ -52,26 +52,32 @@ run: vorlangc
 
 # --- Installation & Uninstallation ---
 PREFIX ?= /usr/local
-BINDIR = $(PREFIX)/bin
-SHAREDIR = $(PREFIX)/share/vorlang
+BIN_DIR = $(PREFIX)/bin
+SHARE_DIR = $(PREFIX)/share/vorlang
 
 install: vorlangc
-	mkdir -p $(BINDIR)
-	mkdir -p $(SHAREDIR)
-	cp vorlangc $(BINDIR)/vorlangc
-	cp -r stdlib $(SHAREDIR)/
-	cp -r examples $(SHAREDIR)/
-	@echo "#!/bin/sh" > $(BINDIR)/vorlang
-	@echo "export VORLANG_STDLIB=$(SHAREDIR)/stdlib" >> $(BINDIR)/vorlang
-	@echo "$(BINDIR)/vorlangc repl \"\$$@\"" >> $(BINDIR)/vorlang
-	chmod +x $(BINDIR)/vorlang
-	@echo "✅ Installed to $(PREFIX)"
+	@echo "📦 Installing Vorlang to $(PREFIX)..."
+	mkdir -p $(BIN_DIR)
+	mkdir -p $(SHARE_DIR)
+	@# Copy binary
+	cp vorlangc $(BIN_DIR)/vorlangc
+	chmod 755 $(BIN_DIR)/vorlangc
+	@# Copy StdLib and Examples
+	cp -r stdlib $(SHARE_DIR)/
+	cp -r examples $(SHARE_DIR)/
+	@# Create 'vorlang' REPL wrapper
+	@echo "#!/bin/sh" > $(BIN_DIR)/vorlang
+	@echo "export VORLANG_STDLIB=$(SHARE_DIR)/stdlib" >> $(BIN_DIR)/vorlang
+	@echo "$(BIN_DIR)/vorlangc repl \"\$$@\"" >> $(BIN_DIR)/vorlang
+	chmod +x $(BIN_DIR)/vorlang
+	@echo "✅ vorlangc and vorlang (REPL) installed successfully."
 
 uninstall:
-	rm -f $(BINDIR)/vorlangc
-	rm -f $(BINDIR)/vorlang
-	rm -rf $(SHAREDIR)
-	@echo "🗑️  Uninstalled from $(PREFIX)"
+	@echo "🗑️  Removing Vorlang from $(PREFIX)..."
+	rm -f $(BIN_DIR)/vorlangc
+	rm -f $(BIN_DIR)/vorlang
+	rm -rf $(SHARE_DIR)
+	@echo "✨ Cleaned up."
 
 # --- Packaging ---
 VERSION = 1.0.0
