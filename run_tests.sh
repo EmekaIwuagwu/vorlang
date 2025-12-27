@@ -5,13 +5,13 @@ FAIL=0
 run_test() {
     file=$1
     echo -n "Testing $file... "
-    if ./_build/src/main.native run "$file" > /dev/null 2>&1; then
+    if ./vorlangc run "$file" > /dev/null 2>&1; then
         echo "PASS"
         PASS=$((PASS+1))
     else
         echo "FAIL"
         echo "Error output:"
-        ./_build/src/main.native run "$file" 2>&1 | sed 's/^/  /'
+        ./vorlangc run "$file" 2>&1 | sed 's/^/  /'
         FAIL=$((FAIL+1))
     fi
 }

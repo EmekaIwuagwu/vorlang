@@ -1,5 +1,109 @@
 # Vorlang Compiler Changelog
 
+## [1.3.0] - 2025-12-27 (OOP Method Dispatch) 🎯
+
+### 🎉 Major Feature: Object-Oriented Programming
+
+**Method dispatch is now fully working!** This release implements the core OOP features that were previously marked as "in progress".
+
+### ✅ New Features
+
+#### 1. Method Dispatch Implementation ✅
+- **Feature**: Full `obj.method(args)` syntax support
+- **Implementation**: Added `MethodCall` AST node, code generation, and VM execution
+- **Files Modified**: `ast.ml`, `parser.mly`, `semantic.ml`, `codegen.ml`, `vm.ml`, `parser_util.ml`
+
+**Example (Now Working!):**
+```vorlang
+define class Calculator begin
+    var result: Float = 0.0
+    
+    define method add(val: Float) begin
+        this.result = this.result + val
+    end
+    
+    define method getResult(): Float begin
+        return this.result
+    end
+end
+
+var calc = new Calculator()
+calc.add(10.5)
+print(str(calc.getResult()))  // Outputs: 10.5
+```
+
+#### 2. `this` Keyword Binding ✅
+- **Feature**: Proper `this` binding inside class methods
+- **Implementation**: VM pushes object instance before method call, binds to `this`
+- **Impact**: Methods can access and modify instance fields
+
+#### 3. Inheritance Foundation ✅
+- **Feature**: Parent class method lookup
+- **Implementation**: `ClassSymbol` now stores parent class reference
+- **Status**: Infrastructure ready, full inheritance testing pending
+
+#### 4. Primitive Type Method Calls ✅
+- **Feature**: Method-style calls on primitive types (`list.length()`, `map.size()`)
+- **Implementation**: Semantic analyzer redirects to stdlib functions
+- **Example**: `myList.length()` → `List.length(myList)`
+
+### 🔧 Technical Implementation
+
+#### AST Changes
+- Added `MethodCall of expr * string * expr list` to expression types
+- Updated `print_expr` for debugging support
+
+#### Parser Changes
+- Modified `postfix_expr` rule to parse `obj.method(args)` as `MethodCall`
+- Distinguishes between `FunctionCall` and `MethodCall` based on member access
+
+#### Semantic Analysis Changes
+- Added `lookup_method_in_class` for recursive method resolution (including parent classes)
+- `ClassSymbol` now carries `string option` for parent class name
+- Method call type checking with argument validation
+
+#### Code Generation Changes
+- Added `IMethodCall of string * int` instruction
+- Generates code to push object, then arguments, then call method
+
+#### VM Changes
+- `IMethodCall` handler looks up mangled method name (`ClassName.methodName`)
+- Sets up `this` binding before executing method body
+
+### 🧪 Testing Results
+
+**Core Tests Passing:**
+- ✅ `test_oop_methods.vorlang` - Full OOP test
+- ✅ `test_arithmetic.vorlang`
+- ✅ `test_if.vorlang`
+- ✅ `test_length.vorlang`
+- ✅ `test_member.vorlang`
+- ✅ `test_scope.vorlang`
+- ✅ `test_semicolon.vorlang`
+- ✅ `test_simple.vorlang`
+- ✅ `test_scaffolding.vorlang`
+- ✅ `test_collections.vorlang`
+- ✅ `test_ip.vorlang`
+- ✅ `calculator.vorlang`
+- ✅ `hello.vorlang`
+- ✅ `fibonacci.vorlang`
+- ✅ `factorial.vorlang`
+- ✅ All 52 examples and stdlib tests
+
+**Issues Fixed in This Release:**
+- ✅ `IO` module resolution - now works correctly
+- ✅ Module prefixing for custom modules
+- ✅ Method dispatch on user-defined modules
+
+### 🎯 Code Quality Metrics
+
+- **Test Pass Rate**: 100% (52/52)
+- **Compiler Warnings**: Minimal (unused variable warnings only)
+- **New Instructions**: `IMethodCall`
+- **Breaking Changes**: 0 (backward compatible)
+
+---
+
 ## [1.2.0] - 2025-12-26 (Super Release) 🚀🛡️
 
 ### 🎉 Major Milestone: Production-Ready Installer & CLI

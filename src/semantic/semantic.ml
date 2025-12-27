@@ -10,7 +10,7 @@ type symbol_kind =
   | VarSymbol
   | ConstSymbol
   | FunctionSymbol
-  | ClassSymbol
+  | ClassSymbol of string option
   | ContractSymbol
   | ModuleSymbol
   | ParameterSymbol
@@ -104,6 +104,28 @@ let lookup_symbol_dotted env name =
            (* Fallback: Try looking up the full dotted name as a single symbol 
               (e.g. for flattened modules or prefixed imports) *)
            lookup_symbol env name)
+
+(* Helper to lookup recursive method in class hierarchy *)
+let rec lookup_method_in_class env class_name method_name =
+  match lookup_symbol_dotted env class_name with
+  | Some symbol ->
+      (match symbol.kind with
+      | ClassSymbol _ | ContractSymbol ->
+           let parent_opt = match symbol.kind with ClassSymbol p -> p | _ -> None in
+           (match symbol.scope with
+            | Some scope ->
+                (match Hashtbl.find_opt scope.symbols method_name with
+                 | Some method_sym -> Some method_sym
+                 | None -> 
+                     (* Recursively check parent *)
+                     (match parent_opt with
+                      | Some parent -> lookup_method_in_class env parent method_name
+                      | None -> None))
+            | None -> None)
+      | _ -> None)
+  | None -> None
+
+
 
 (* Check if a type is valid *)
 let rec is_valid_type = function
@@ -292,6 +314,59 @@ let rec analyze_expr env = function
       let return_type = analyze_expr env body in
       exit_scope env;
       TFunction(List.map (fun _ -> TIdentifier "Any") params, return_type)
+  | MethodCall(obj, method_name, args) ->
+      (* Check if it's a builtin namespace first *)
+      let namespace_opt = match obj with 
+        | Identifier id -> Some id 
+        | _ -> None 
+      in
+      
+      let resolved_as_builtin = match namespace_opt with
+        | Some ns when List.mem ns ["List"; "Map"; "Maths"; "String"; "Sys"; "Net"; "JSON"; "Crypto"; "Blockchain"; "FS"; "IO"; "Collections"; "Storage"; "Security"; "HTTP"; "RPC"; "BlockchainAPI"; "BlockchainRPC"; "HttpServer"; "Time"; "Log"; "Env"] -> 
+            let full_name = ns ^ "." ^ method_name in
+            Some (analyze_expr env (FunctionCall(full_name, args)))
+        | Some ns ->
+            (* Check if ns is a module in the symbol table *)
+            (match lookup_symbol env ns with
+             | Some sym when sym.kind = ModuleSymbol ->
+                 let full_name = ns ^ "." ^ method_name in
+                 Some (analyze_expr env (FunctionCall(full_name, args)))
+             | _ -> None)
+        | _ -> None
+      in
+      
+      (match resolved_as_builtin with
+       | Some t -> t
+       | None -> 
+          (* Regular method call *)
+          let obj_type = analyze_expr env obj in
+          match normalize_type obj_type with
+          | TIdentifier "Any" -> 
+             List.iter (fun arg -> ignore (analyze_expr env arg)) args;
+             TIdentifier "Any"
+          | TIdentifier class_name ->
+             (match lookup_method_in_class env class_name method_name with
+              | Some method_sym ->
+                  (match normalize_type method_sym.typ with
+                   | TFunction(param_types, ret_type) ->
+                       if List.length args <> List.length param_types then
+                          raise (Semantic_error ("Argument count mismatch in method call: " ^ method_name));
+                       List.iter2 (fun arg param_type ->
+                         let arg_type = analyze_expr env arg in
+                         if not (types_compatible param_type arg_type) then
+                           raise (Semantic_error ("Argument type mismatch in method call: " ^ method_name))
+                       ) args param_types;
+                       ret_type
+                   | _ -> raise (Semantic_error ("Member " ^ method_name ^ " is not a function")))
+              | None -> raise (Semantic_error ("Method " ^ method_name ^ " not found in " ^ class_name ^ " or its parents")))
+          (* Primitive type method support *)
+          | TList _ -> 
+             analyze_expr env (FunctionCall("List." ^ method_name, args))
+          | TMap(_, _) ->
+             analyze_expr env (FunctionCall("Map." ^ method_name, args))
+          | TString -> 
+             analyze_expr env (FunctionCall("String." ^ method_name, args))
+          | _ -> raise (Semantic_error ("Cannot call method on primitive type")))
   | Conditional(cond, t, f) ->
       let cond_type = analyze_expr env cond in
       if not (types_compatible cond_type TBoolean) then
@@ -303,9 +378,12 @@ let rec analyze_expr env = function
       t_type
   | New(class_name, args) ->
       (match lookup_symbol env class_name with
-       | Some symbol when symbol.kind = ClassSymbol ->
-           List.iter (fun arg -> ignore (analyze_expr env arg)) args;
-           TIdentifier class_name
+       | Some symbol -> 
+           (match symbol.kind with 
+            | ClassSymbol _ -> 
+                List.iter (fun arg -> ignore (analyze_expr env arg)) args;
+                TIdentifier class_name
+            | _ -> raise (Semantic_error ("Not a class: " ^ class_name)))
        | _ -> raise (Semantic_error ("Undefined class: " ^ class_name)))
 
 and analyze_literal = function
@@ -528,7 +606,7 @@ and analyze_declaration_body env = function
             let param_types = List.map (fun (_, t, _) -> t) func.params in
             let ret_type = match func.return_type with Some t -> t | None -> TNull in
             add_symbol env func.name FunctionSymbol (TFunction(param_types, ret_type)) None
-        | DClass c -> add_symbol env c.name ClassSymbol (TIdentifier c.name) None
+        | DClass c -> add_symbol env c.name (ClassSymbol c.parent) (TIdentifier c.name) None
         | DContract c -> add_symbol env c.name ContractSymbol (TIdentifier c.name) None
         | DModule m -> add_symbol env m.name ModuleSymbol (TIdentifier m.name) None
       ) module_def.declarations;
@@ -649,7 +727,7 @@ let rec analyze_program program =
           add_builtin env name FunctionSymbol (TFunction(param_types, ret_type)) None
         else
           add_symbol env name FunctionSymbol (TFunction(param_types, ret_type)) None
-    | DClass c -> add_symbol env c.name ClassSymbol (TIdentifier c.name) None
+    | DClass c -> add_symbol env c.name (ClassSymbol c.parent) (TIdentifier c.name) None
     | DContract c -> add_symbol env c.name ContractSymbol (TIdentifier c.name) None
     | DModule m -> add_symbol env m.name ModuleSymbol (TIdentifier m.name) None
   ) program.declarations;

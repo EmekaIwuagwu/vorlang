@@ -37,6 +37,7 @@ type expr =
   | Lambda of string list * expr
   | Conditional of expr * expr * expr  (* if cond then true_expr else false_expr *)
   | New of string * expr list
+  | MethodCall of expr * string * expr list
 
 and literal =
   | LInteger of int
@@ -211,6 +212,10 @@ let rec print_expr indent expr =
       print_expr (indent + 2) f
   | New(class_name, args) ->
       Printf.printf "%sNew: %s\n" prefix class_name;
+      List.iter (print_expr (indent + 2)) args
+  | MethodCall(obj, method_name, args) ->
+      Printf.printf "%sMethodCall: .%s\n" prefix method_name;
+      print_expr (indent + 2) obj;
       List.iter (print_expr (indent + 2)) args
 
 let rec print_stmt indent stmt =

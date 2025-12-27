@@ -1,0 +1,39 @@
+program TestOOP begin
+
+    define class Calculator begin
+        var result: Float = 0.0
+
+        define method add(val: Float) begin
+            this.result = this.result + val
+        end
+
+        define method getResult(): Float begin
+            return this.result
+        end
+    end
+
+    define function run_test() begin
+        print("Testing OOP Methods...")
+        var calc = new Calculator()
+        
+        calc.result = 0.0
+        
+        print("Initial Result:")
+        print(str(calc.getResult()))
+        
+        print("Adding 10.5...")
+        calc.add(10.5)
+        
+        print("Result:")
+        print(str(calc.getResult()))
+        
+        if calc.getResult() == 10.5 then
+            print("PASS")
+        else
+            print("FAIL")
+        end if
+    end
+
+    run_test()
+
+end

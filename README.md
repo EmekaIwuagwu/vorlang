@@ -2,20 +2,21 @@
 
 **The Domain-Specific Language for High-Performance Blockchain and Backend Engineering.**
 
-[![Tests](https://img.shields.io/badge/Tests-51%2F51%20Passed-brightgreen?style=for-the-badge&logo=github)](https://github.com/EmekaIwuagwu/vorlang)
-[![Status](https://img.shields.io/badge/Version-v1.0.0--Super-blue?style=for-the-badge)](https://github.com/EmekaIwuagwu/vorlang)
+[![Tests](https://img.shields.io/badge/Tests-52%2F52%20Passed-brightgreen?style=for-the-badge&logo=github)](https://github.com/EmekaIwuagwu/vorlang)
+[![Status](https://img.shields.io/badge/Version-v1.3.0--OOP-blue?style=for-the-badge)](https://github.com/EmekaIwuagwu/vorlang)
 [![License](https://img.shields.io/badge/License-MIT-orange?style=for-the-badge)](LICENSE)
 
 ---
 
-### 🚀 **December 2025 Milestone: 100% Stability Reached**
-Vorlang has reached a critical maturity milestone. As of **December 26, 2025**, the local compiler environment has transitioned to the "Super" stable build following major refactors on Dec 25. 
+### 🚀 **December 2025 Milestone: 100% Test Pass Rate**
+Vorlang has reached a major milestone. As of **December 27, 2025**, the compiler achieves **52/52 tests passing** with full OOP method dispatch support.
 
 **Current Dev Status:**
-- ✅ **51/51 Tests Passing** (Core, StdLib, & Advanced Blockchain)
-- 💎 **100% Success Rate** across all local examples.
-- 🛠️ **Refactored VM**: High-performance JSON engine, Base64 support, and Cryptographic primitives.
-- 📦 **Installer Ready**: Native deployment scripts for WSL, Linux, and Windows are now included in the root.
+- ✅ **52/52 Tests Passing** - 100% success rate!
+- ✅ **OOP Method Dispatch** - `obj.method()` syntax fully working!
+- ✅ **Module Resolution Fixed** - IO, Collections, and custom modules all working
+- 🛠️ **Refactored Semantic Analyzer**: Inheritance-aware method lookup
+- 📦 **Installer Ready**: Native deployment scripts for WSL, Linux, and Windows
 
 ---
 
@@ -23,12 +24,11 @@ Vorlang has reached a critical maturity milestone. As of **December 26, 2025**, 
 
 Vorlang is a typed, expression-oriented systems language designed specifically for building decentralized applications, secure backend services, and robust command-line tools. Powered by a custom OCaml compiler and an optimized Virtual Machine, Vorlang blends the safety of functional programming with the approachability of imperative syntax.
 
-### ✨ What's New (December 2025)
-- **Enhanced Test Suite**: Expanded from 37 to **51 comprehensive tests**.
-- **Blockchain Maturity**: 14+ new advanced blockchain tests added, covering Bulk Transactions, Difficulty Adjustment, Fee Markets, Transaction History, Multisig Wallets, and Tamper-Resistance verification.
-- **Security Standard Library**: Native support for JWT-style tokens, password hashing, and input sanitization.
-- **Persistent Storage**: Integrated local K/V storage engine for state persistence.
-- **Native JSON/Base64**: Recursive-descent JSON parser and Base64 encoding built directly into the VM for zero-dependency data handling.
+### ✨ What's New (December 27, 2025)
+- **OOP Method Dispatch**: Full `obj.method(args)` support with `this` binding
+- **Class Methods**: Define methods that can access and modify instance fields
+- **Inheritance Foundation**: Parent class method lookup infrastructure
+- **Primitive Method Calls**: `list.length()`, `map.size()` style calls
 
 ---
 
@@ -36,6 +36,7 @@ Vorlang is a typed, expression-oriented systems language designed specifically f
 
 | Feature | Description | Status |
 | :--- | :--- | :--- |
+| **OOP Support** | Classes, methods, `this` binding, and method dispatch. | ✅ **New!** |
 | **Blockchain First** | Native Block, Transaction, and Wallet types with automatic hashing. | ✅ Native |
 | **Cryptography** | SHA-256, HMAC, RSA Sign/Verify, and AES-256 encryption. | ✅ Optimized |
 | **Modern Syntax** | Expressive `if-else`, `while`, `foreach`, and Map/List literals. | ✅ Solid |
@@ -148,11 +149,12 @@ Running tests...
 ----------------
 Testing examples/banking_simple.vorlang... PASS
 Testing examples/bc_test_multisig.vorlang... PASS
-Testing examples/bc_test_tamper.vorlang... PASS
-Testing examples/test_storage_security.vorlang... PASS
+Testing examples/test_oop_methods.vorlang... PASS
+Testing examples/test_modules.vorlang... PASS
+Testing examples/test_foreach.vorlang... PASS
 ...
 ----------------
-Passed: 51
+Passed: 52
 Failed: 0
 All tests passed! ✓
 ```

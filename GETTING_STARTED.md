@@ -8,9 +8,10 @@ Welcome to Vorlang! This guide will help you write your first programs.
 3. [Basic Syntax](#basic-syntax)
 4. [Working with Data](#working-with-data)
 5. [Functions](#functions)
-6. [Modules](#modules)
-7. [Common Patterns](#common-patterns)
-8. [Next Steps](#next-steps)
+6. [Object-Oriented Programming](#object-oriented-programming)
+7. [Modules](#modules)
+8. [Common Patterns](#common-patterns)
+9. [Next Steps](#next-steps)
 
 ## Installation
 
@@ -294,6 +295,94 @@ end
 var result = factorial(5)
 IO.println("5! = " + str(result))  // 120
 ```
+
+## Object-Oriented Programming
+
+Vorlang supports object-oriented programming with classes, methods, and the `this` keyword.
+
+### Defining Classes
+
+```vorlang
+program OOPDemo
+begin
+    define class Person begin
+        var name: String = ""
+        var age: Integer = 0
+        
+        define method introduce() begin
+            print("Hi, I'm " + this.name + " and I'm " + str(this.age))
+        end
+        
+        define method birthday() begin
+            this.age = this.age + 1
+            print(this.name + " is now " + str(this.age))
+        end
+    end
+    
+    // Create an instance
+    var alice = new Person()
+    alice.name = "Alice"
+    alice.age = 30
+    
+    // Call methods
+    alice.introduce()   // Hi, I'm Alice and I'm 30
+    alice.birthday()    // Alice is now 31
+end
+```
+
+### Classes with Computed Properties
+
+```vorlang
+program CalculatorDemo
+begin
+    define class Calculator begin
+        var result: Float = 0.0
+        
+        define method add(val: Float) begin
+            this.result = this.result + val
+        end
+        
+        define method subtract(val: Float) begin
+            this.result = this.result - val
+        end
+        
+        define method multiply(val: Float) begin
+            this.result = this.result * val
+        end
+        
+        define method divide(val: Float) begin
+            if val != 0.0 then
+                this.result = this.result / val
+            end if
+        end
+        
+        define method getResult(): Float begin
+            return this.result
+        end
+        
+        define method reset() begin
+            this.result = 0.0
+        end
+    end
+    
+    var calc = new Calculator()
+    calc.add(100.0)
+    calc.divide(4.0)
+    print("Result: " + str(calc.getResult()))  // Result: 25.0
+end
+```
+
+### Key OOP Features
+
+| Feature | Syntax | Example |
+|---------|--------|---------|
+| Class definition | `define class Name begin ... end` | `define class Car begin ... end` |
+| Field declaration | `var fieldName: Type = value` | `var speed: Integer = 0` |
+| Method definition | `define method name() begin ... end` | `define method accelerate() begin ... end` |
+| Object creation | `new ClassName()` | `var myCar = new Car()` |
+| Field access | `object.field` | `myCar.speed` |
+| Method call | `object.method(args)` | `myCar.accelerate()` |
+| Self reference | `this` | `this.speed = this.speed + 10` |
 
 ## Modules
 

@@ -33,6 +33,7 @@ type instruction =
   | IPopScope
   | ILabel of string
   | IHalt
+  | IMethodCall of string * int
   | IThrow
 
 (* Bytecode program *)
@@ -158,6 +159,24 @@ let rec generate_expr state = function
   | New(class_name, args) ->
       List.iter (generate_expr state) args;
       add_instruction state (INew(class_name, List.length args))
+  | MethodCall(obj, method_name, args) ->
+       let namespace_opt = match obj with Identifier id -> Some id | _ -> None in
+       let is_builtin_or_module = match namespace_opt with
+       | Some ns when List.mem ns ["List"; "Map"; "Maths"; "String"; "Sys"; "Net"; "JSON"; "Crypto"; "Blockchain"; "FS"; "IO"; "Collections"; "Storage"; "Security"; "HTTP"; "RPC"; "BlockchainAPI"; "BlockchainRPC"; "HttpServer"; "Time"; "Log"; "Env"] -> true
+       | Some ns -> 
+           (* Treat capitalized identifiers as potential module namespaces *)
+           String.length ns > 0 && Char.uppercase_ascii ns.[0] = ns.[0]
+       | _ -> false
+       in
+       
+       if is_builtin_or_module then
+           let ns = match namespace_opt with Some s -> s | None -> "" in
+           generate_expr state (FunctionCall(ns ^ "." ^ method_name, args))
+       else (
+           generate_expr state obj;
+           List.iter (generate_expr state) args;
+           add_instruction state (IMethodCall(method_name, List.length args))
+       )
 
 and generate_store state lhs rhs =
   match lhs with
@@ -361,7 +380,29 @@ and generate_function state func =
 and generate_declaration state = function
   | DFunction func -> generate_function state func
   | DClass class_def ->
-      List.iter (generate_function state) class_def.methods
+
+      List.iter (fun (func : Ast.function_def) -> 
+          let mangled_name = class_def.name ^ "." ^ func.name in
+          let old_function = state.current_function in
+          state.current_function <- Some mangled_name;
+          ignore (add_function state mangled_name);
+          add_instruction state (ILabel mangled_name);
+          add_instruction state IPushScope;
+          
+          (* Define params *)
+          List.iter (fun (name, _, _) ->
+            add_instruction state (IDefine name)
+          ) (List.rev func.params);
+          
+          (* Define 'this' - consumes the object instance from stack *)
+          add_instruction state (IDefine "this");
+          
+          (* Body *)
+          List.iter (generate_stmt state) func.body;
+          add_instruction state IReturn;
+          add_instruction state IPopScope;
+          state.current_function <- old_function
+      ) class_def.methods
   | DContract contract_def ->
       List.iter (generate_function state) contract_def.methods
   | DModule module_def ->
@@ -472,6 +513,7 @@ and string_of_instruction = function
   | IHalt -> "IHalt"
   | IThrow -> "IThrow"
   | INew(class_name, argc) -> "INew " ^ class_name ^ " " ^ string_of_int argc
+  | IMethodCall(name, argc) -> "IMethodCall " ^ name ^ " " ^ string_of_int argc
 
 and string_of_binary_op = function
   | Add -> "Add"

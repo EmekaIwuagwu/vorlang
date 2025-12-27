@@ -1,9 +1,5 @@
 program TestModules
 begin
-    print("Testing Module Scaffolding...")
-    print("MyUtils.double(5) = " + str(MyUtils.double(5)))
-    print("MyUtils.Inner.triple(5) = " + str(MyUtils.Inner.triple(5)))
-
     define module MyUtils
     begin
         define function double(x)
@@ -11,12 +7,13 @@ begin
             return x * 2
         end
 
-        define module Inner
+        define function triple(x)
         begin
-            define function triple(x)
-            begin
-                return x * 3
-            end
+            return x * 3
         end
     end
+
+    print("Testing Module Scaffolding...")
+    print("MyUtils.double(5) = " + str(MyUtils.double(5)))
+    print("MyUtils.triple(5) = " + str(MyUtils.triple(5)))
 end

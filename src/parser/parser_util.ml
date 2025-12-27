@@ -74,6 +74,7 @@ let rec prefix_calls_in_expr prefix global_names local_names expr =
   | New(cls, args) -> 
       let new_cls = if List.mem cls global_names && not (List.mem cls local_names) then prefix ^ "." ^ cls else cls in
       New(new_cls, List.map p args)
+  | MethodCall(obj, m, args) -> MethodCall(p obj, m, List.map p args)
 
 let rec prefix_calls_in_stmt prefix global_names local_names stmt =
   let p_e = prefix_calls_in_expr prefix global_names local_names in

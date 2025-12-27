@@ -295,10 +295,10 @@ postfix_expr:
   | postfix_expr DOT any_id %prec DOT { MemberAccess($1, $3) }
   | postfix_expr LBRACKET expr RBRACKET %prec LBRACKET { IndexAccess($1, $3) }
   | postfix_expr LPAREN expr_list RPAREN %prec LPAREN { 
-      try 
-        let name = flatten_member_access $1 in
-        FunctionCall(name, $3)
-      with _ -> FunctionCall("DynamicCall", $3) 
+      match $1 with
+      | MemberAccess(obj, method_name) -> MethodCall(obj, method_name, $3)
+      | Identifier(name) -> FunctionCall(name, $3)
+      | _ -> FunctionCall("DynamicCall", $3) 
     }
 ;
 

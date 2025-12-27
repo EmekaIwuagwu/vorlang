@@ -833,7 +833,43 @@ and execute_instr state = function
       (* Create a new instance as a map for now *)
       let instance = Hashtbl.create 10 in
       Hashtbl.add instance "__type__" (VString class_name);
+      
+      (* TODO: Call constructor if it exists *)
+      (* For now, we assume fields are initialized via default or not at all *)
+      
       push state (VMap instance)
+
+  | IMethodCall(method_name, argc) ->
+      (* 1. Identify valid object *)
+      (* Stack: [Arg1...ArgN, Obj] (Obj is at index N) *)
+      let obj_val = try List.nth state.stack argc 
+                    with _ -> raise (Runtime_error "Stack underflow in method call") in
+      
+      let class_name, is_primitive = match obj_val with
+        | VMap headers ->
+            (match Hashtbl.find_opt headers "__type__" with
+             | Some (VString s) -> s, false
+             | _ -> "Map", true)
+        | VList _ -> "List", true
+        | VString _ -> "String", true
+        | VInt _ -> "Integer", true
+        | VFloat _ -> "Float", true
+        | _ -> "", false
+      in
+      
+      if is_primitive || (class_name = "Map" && is_primitive) then (
+          let full_name = class_name ^ "." ^ method_name in
+          (* Call builtin with argc + 1 (including implicit 'this' obj) *)
+          handle_builtin state full_name (argc + 1)
+      ) else (
+          let full_name = class_name ^ "." ^ method_name in
+          match Hashtbl.find_opt state.labels full_name with
+           | Some target ->
+               let frame = { return_ip = state.ip; saved_scopes = state.scopes } in
+               state.call_stack <- frame :: state.call_stack;
+               state.ip <- target
+           | None -> raise (Runtime_error ("Method not found: " ^ full_name))
+      )
         
   | IPushScope ->
       state.scopes <- Hashtbl.create 10 :: state.scopes
