@@ -8,15 +8,16 @@
 
 ---
 
-### 🚀 **December 2025 Milestone: 100% Test Pass Rate**
-Vorlang has reached a major milestone. As of **December 27, 2025**, the compiler achieves **52/52 tests passing** with full OOP method dispatch support.
+### 🚀 **December 2025 Milestone: 100% Test Pass Rate + PPA Available!**
+Vorlang has reached a major milestone. As of **December 27, 2025**, the compiler achieves **52/52 tests passing** with full OOP method dispatch support and is now available via Ubuntu PPA!
 
 **Current Dev Status:**
 - ✅ **52/52 Tests Passing** - 100% success rate!
 - ✅ **OOP Method Dispatch** - `obj.method()` syntax fully working!
 - ✅ **Module Resolution Fixed** - IO, Collections, and custom modules all working
+- ✅ **Ubuntu PPA Available** - Install with `sudo apt install vorlang`
 - 🛠️ **Refactored Semantic Analyzer**: Inheritance-aware method lookup
-- 📦 **Installer Ready**: Native deployment scripts for WSL, Linux, and Windows
+- 📦 **Multiple Installers**: APT, curl script, PowerShell, and source build
 
 ---
 
@@ -73,7 +74,15 @@ end
 
 Vorlang provides production-ready installers for all major platforms.
 
-### **One-Line Install (Recommended)**
+### **Ubuntu/Debian (APT) - Recommended** 🆕
+
+```bash
+sudo add-apt-repository ppa:eiwuagwu/vorlang
+sudo apt update
+sudo apt install vorlang
+```
+
+### **One-Line Install (All Platforms)**
 
 **Linux, macOS, or WSL:**
 ```bash

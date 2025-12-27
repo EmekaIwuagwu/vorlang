@@ -34,6 +34,12 @@
 - ✅ Code Generator - Bytecode generation
 - ✅ VM - Bytecode execution
 
+### Distribution
+- ✅ **Ubuntu PPA** - `ppa:eiwuagwu/vorlang` (`sudo apt install vorlang`)
+- ✅ **Curl Script** - One-liner for Linux/macOS/WSL
+- ✅ **PowerShell Script** - Windows installer
+- ✅ **Source Build** - Make-based build system
+
 ---
 
 ## 🔧 What Could Be Enhanced (Optional Improvements)

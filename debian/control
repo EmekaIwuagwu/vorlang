@@ -1,0 +1,25 @@
+Source: vorlang
+Section: devel
+Priority: optional
+Maintainer: Emeka Iwuagwu <e.iwuagwu@hotmail.com>
+Build-Depends: debhelper-compat (= 13), ocaml, ocaml-findlib, menhir
+Standards-Version: 4.6.0
+Homepage: https://github.com/EmekaIwuagwu/vorlang
+Vcs-Browser: https://github.com/EmekaIwuagwu/vorlang
+Vcs-Git: https://github.com/EmekaIwuagwu/vorlang.git
+Rules-Requires-Root: no
+
+Package: vorlang
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}, openssl
+Description: Domain-specific language for blockchain and backend engineering
+ Vorlang is a typed, expression-oriented systems language designed
+ specifically for building decentralized applications, secure backend
+ services, and robust command-line tools.
+ .
+ Features include:
+  - Full OOP support with classes, methods, and inheritance
+  - Native blockchain types (Block, Transaction, Wallet)
+  - Cryptographic functions (SHA-256, RSA, AES-256)
+  - Comprehensive standard library
+  - Modern syntax with if/else, while, for-each loops

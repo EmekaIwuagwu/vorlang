@@ -1,0 +1,9 @@
+vorlang (1.3.0) jammy; urgency=medium
+
+  * OOP Method Dispatch implementation
+  * Full module resolution for IO, Collections, and custom modules
+  * 52/52 tests passing (100% success rate)
+  * Inheritance foundation with parent class method lookup
+  * Primitive type method calls support
+
+ -- Emeka Iwuagwu <e.iwuagwu@hotmail.com>  Fri, 27 Dec 2025 19:00:00 +0100

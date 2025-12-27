@@ -1,10 +1,12 @@
 # Vorlang Compiler Changelog
 
-## [1.3.0] - 2025-12-27 (OOP Method Dispatch) 🎯
+## [1.3.0] - 2025-12-27 (OOP Method Dispatch + Ubuntu PPA) 🎯📦
 
-### 🎉 Major Feature: Object-Oriented Programming
+### 🎉 Major Features: OOP + Ubuntu PPA
 
 **Method dispatch is now fully working!** This release implements the core OOP features that were previously marked as "in progress".
+
+**Ubuntu PPA is now available!** Install Vorlang with `sudo apt install vorlang`.
 
 ### ✅ New Features
 
@@ -94,6 +96,10 @@ print(str(calc.getResult()))  // Outputs: 10.5
 - ✅ `IO` module resolution - now works correctly
 - ✅ Module prefixing for custom modules
 - ✅ Method dispatch on user-defined modules
+
+**New Distribution:**
+- ✅ **Ubuntu PPA**: `ppa:eiwuagwu/vorlang`
+- Install with: `sudo add-apt-repository ppa:eiwuagwu/vorlang && sudo apt install vorlang`
 
 ### 🎯 Code Quality Metrics
 

@@ -15,7 +15,17 @@ Welcome to Vorlang! This guide will help you write your first programs.
 
 ## Installation
 
-### One-Line Install (Recommended)
+### Ubuntu/Debian (APT) - Recommended 🆕
+
+The easiest way to install Vorlang on Ubuntu or Debian-based systems:
+
+```bash
+sudo add-apt-repository ppa:eiwuagwu/vorlang
+sudo apt update
+sudo apt install vorlang
+```
+
+### One-Line Install (All Platforms)
 
 **Linux, macOS, or WSL:**
 ```bash
@@ -30,7 +40,7 @@ iwr https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.ps1 -use
 > **Tip:** If you are a developer and want to ensure you are getting the absolutely latest version without GitHub's CDN cache, use the cache-buster:
 > `curl -fsSL "https://raw.githubusercontent.com/EmekaIwuagwu/vorlang/main/install.sh?$(date +%s)" | sudo bash`
 
-### Manual Build
+### Manual Build (From Source)
 
 If you prefer building from source:
 
@@ -45,8 +55,8 @@ sudo make install
 ```
 
 ### System Requirements
-- OCaml 4.12+
-- Make
+- OCaml 4.12+ (for building from source)
+- Make (for building from source)
 - OpenSSL
 - Bash
 
